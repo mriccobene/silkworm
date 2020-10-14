@@ -16,3 +16,6 @@
 	path = cpp-lru-cache
 	url = https://github.com/torquem-ch/cpp-lru-cache.git
 	branch = clear
+[submodule "libmdbx"]
+	path = libmdbx
+	url = https://github.com/erthink/libmdbx
