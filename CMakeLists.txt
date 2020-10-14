@@ -121,6 +121,9 @@ add_library(evmone evmone/lib/evmone/analysis.cpp
 target_include_directories(evmone PUBLIC evmone/lib/evmone)
 target_link_libraries(evmone PUBLIC evmc intx::intx PRIVATE ethash::keccak)
 
+# libmdbx
+add_subdirectory(libmdbx)
+
 # Silkworm itself
 add_subdirectory(silkworm)
 

@@ -58,11 +58,6 @@ struct options {
 static const MDB_dbi FREE_DBI = 0;  // Reserved for tracking free pages
 static const MDB_dbi MAIN_DBI = 1;  // Reserved for tracking named tables
 
-struct TableConfig {
-    const char* name{nullptr};
-    bool dupsort{false};  // MDB_DUPSORT
-};
-
 /**
  * Exception thrown by lmdb
  */
@@ -180,17 +175,17 @@ class Transaction {
      */
 
     /*
-    * Andrea Lanfranchi
-    * I originally created a map of opened dbi(s) to persist the binding
-    * of a table name with its handle_. This however is incorrect as the
-    * handle_ is not an ordinal position rather an opened "slot" within
-    * the transaction. LMDB already takes care to keep a list of free
-    * slots to use for opening so this additional map is totally
-    * redundant. See for reference
-    * https://github.com/torquem-ch/lmdb/blob/mdb.master/libraries/liblmdb/mdb.c#L10797-L10810
-    * Keep the following line commented for reference
-    */
-    //std::map<std::string, MDB_dbi> dbis_;  // Collection of opened MDB_dbi
+     * Andrea Lanfranchi
+     * I originally created a map of opened dbi(s) to persist the binding
+     * of a table name with its handle_. This however is incorrect as the
+     * handle_ is not an ordinal position rather an opened "slot" within
+     * the transaction. LMDB already takes care to keep a list of free
+     * slots to use for opening so this additional map is totally
+     * redundant. See for reference
+     * https://github.com/torquem-ch/lmdb/blob/mdb.master/libraries/liblmdb/mdb.c#L10797-L10810
+     * Keep the following line commented for reference
+     */
+    // std::map<std::string, MDB_dbi> dbis_;  // Collection of opened MDB_dbi
 
     MDB_dbi open_dbi(const char* name, unsigned int flags = 0);
 
@@ -207,7 +202,7 @@ class Transaction {
     bool is_ro(void);  // Whether this transaction is readonly
 
     // Opens a "named" table or eventually - if name is null - main dbi with handle_ == 1
-    std::unique_ptr<Table> open(const TableConfig& config, unsigned flags = 0);
+    std::unique_ptr<Table> open(const db::table::Config& config, unsigned flags = 0);
 
     // This override allows opening of dbi 0 or 1 only which are reserved
     // dbi 0 : FREE_DBI
@@ -234,7 +229,7 @@ class Transaction {
  */
 class Table {
    public:
-    explicit Table(Transaction* parent, MDB_dbi dbi, const char * name);
+    explicit Table(Transaction* parent, MDB_dbi dbi, const char* name);
     ~Table();
 
     /*
@@ -369,7 +364,7 @@ class Table {
 
    private:
     static MDB_cursor* open_cursor(Transaction* parent, MDB_dbi dbi);
-    Table(Transaction* parent, MDB_dbi dbi, const char * name, MDB_cursor* cursor);
+    Table(Transaction* parent, MDB_dbi dbi, const char* name, MDB_cursor* cursor);
 
     int get(MDB_val* key, MDB_val* data,
             MDB_cursor_op operation);  // Gets data by cursor on behalf of operation

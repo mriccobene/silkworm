@@ -24,4 +24,11 @@ void create_all(lmdb::Transaction& txn) {
     }
 }
 
+void create_all(mdbx::txn& txn) {
+    for (const auto& table : kTables) {
+        txn.create_map(table.name, mdbx::key_mode::usual,
+                       table.multi_val ? mdbx::value_mode::multi : mdbx::value_mode::single);
+    }
+}
+
 }  // namespace silkworm::db::table

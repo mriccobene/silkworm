@@ -272,8 +272,8 @@ size_t Transaction::get_id(void) {
 
 bool Transaction::is_ro(void) { return ((flags_ & MDB_RDONLY) == MDB_RDONLY); }
 
-std::unique_ptr<Table> Transaction::open(const TableConfig& config, unsigned flags) {
-    if (config.dupsort) {
+std::unique_ptr<Table> Transaction::open(const db::table::Config& config, unsigned flags) {
+    if (config.multi_val) {
         flags |= MDB_DUPSORT;
     }
     MDB_dbi dbi{open_dbi(config.name, flags)};
@@ -322,7 +322,7 @@ int Transaction::commit(void) {
  * Tables
  */
 
-Table::Table(Transaction* parent, MDB_dbi dbi, const char * name)
+Table::Table(Transaction* parent, MDB_dbi dbi, const char* name)
     : Table::Table(parent, dbi, name, open_cursor(parent, dbi)) {}
 
 Table::~Table() { close(); }
@@ -336,7 +336,7 @@ MDB_cursor* Table::open_cursor(Transaction* parent, MDB_dbi dbi) {
     return retvar;
 }
 
-Table::Table(Transaction* parent, MDB_dbi dbi, const char * name, MDB_cursor* cursor)
+Table::Table(Transaction* parent, MDB_dbi dbi, const char* name, MDB_cursor* cursor)
     : parent_txn_{parent},
       dbi_{dbi},
       name_{name ? name : ""},
@@ -463,7 +463,7 @@ int Table::get_current(MDB_val* key, MDB_val* data) { return get(key, data, MDB_
 int Table::del_current(bool alldupkeys) {
     if (alldupkeys) {
         unsigned int flags{0};
-        int rc{ get_flags(&flags) };
+        int rc{get_flags(&flags)};
         if (rc) return rc;
         if ((flags & MDB_DUPSORT) != MDB_DUPSORT) {
             alldupkeys = false;

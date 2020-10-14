@@ -17,6 +17,7 @@
 #ifndef SILKWORM_DB_TABLES_H_
 #define SILKWORM_DB_TABLES_H_
 
+#include <libmdbx/mdbx.h++>
 #include <silkworm/db/chaindb.hpp>
 
 /*
@@ -25,26 +26,33 @@ see its common/dbutils/bucket.go.
 */
 namespace silkworm::db::table {
 
-constexpr lmdb::TableConfig kPlainState{"PLAIN-CST2", /*dupsort=*/true};
-constexpr lmdb::TableConfig kAccountChanges{"PLAIN-ACS"};
-constexpr lmdb::TableConfig kStorageChanges{"PLAIN-SCS"};
-constexpr lmdb::TableConfig kAccountHistory{"hAT"};
-constexpr lmdb::TableConfig kStorageHistory{"hST"};
-constexpr lmdb::TableConfig kCode{"CODE"};
-constexpr lmdb::TableConfig kCodeHash{"PLAIN-contractCode"};
-constexpr lmdb::TableConfig kBlockHeaders{"h"};
-constexpr lmdb::TableConfig kBlockBodies{"b"};
-constexpr lmdb::TableConfig kSenders{"txSenders"};
-constexpr lmdb::TableConfig kIncarnations{"incarnationMap"};
-constexpr lmdb::TableConfig kSyncStageProgress{"SSP2"};
+constexpr Config kPlainState{"PLAIN-CST2", /*multi_val=*/true};
+constexpr Config kAccountChanges{"PLAIN-ACS"};
+constexpr Config kStorageChanges{"PLAIN-SCS"};
+constexpr Config kAccountHistory{"hAT"};
+constexpr Config kStorageHistory{"hST"};
+constexpr Config kCode{"CODE"};
+constexpr Config kCodeHash{"PLAIN-contractCode"};
+constexpr Config kBlockHeaders{"h"};
+constexpr Config kBlockBodies{"b"};
+constexpr Config kSenders{"txSenders"};
+constexpr Config kIncarnations{"incarnationMap"};
+constexpr Config kSyncStageProgress{"SSP2"};
 
-constexpr lmdb::TableConfig kTables[]{
+constexpr Config kTables[]{
     kPlainState, kAccountChanges, kStorageChanges, kAccountHistory, kStorageHistory, kCode,
     kCodeHash,   kBlockHeaders,   kBlockBodies,    kSenders,        kIncarnations,   kSyncStageProgress,
 };
 
 // Create all tables that do not yet exist.
 void create_all(lmdb::Transaction& txn);
+void create_all(mdbx::txn& txn);
+
+inline mdbx::map_handle open(const mdbx::txn& txn, const Config& config) {
+    auto key_mode{mdbx::key_mode::usual};
+    auto value_mode{config.multi_val ? mdbx::value_mode::multi : mdbx::value_mode::single};
+    return txn.open_map(config.name, key_mode, value_mode);
+}
 
 }  // namespace silkworm::db::table
 

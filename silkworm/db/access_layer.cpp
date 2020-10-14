@@ -25,12 +25,28 @@
 
 namespace silkworm::db {
 
-std::optional<BlockHeader> read_header(lmdb::Transaction& txn, uint64_t block_number, const evmc::bytes32& block_hash) {
+std::optional<BlockHeader> read_header(mdbx::txn& txn, uint64_t block_number, const uint8_t (&hash)[kHashLength]) {
+    auto table{table::open(txn, table::kBlockHeaders)};
+    Bytes key{block_key(block_number, hash)};
+    mdbx::slice header_rlp{};
+    header_rlp = txn.get(table, mdbx::slice{key}, header_rlp);
+    if (header_rlp.empty()) {
+        return std::nullopt;
+    }
+
+    BlockHeader header;
+    ByteView view{slice_to_view(header_rlp)};
+    rlp::decode(view, header);
+    return header;
+}
+
+std::optional<BlockHeader> read_header(lmdb::Transaction& txn, uint64_t block_number,
+                                       const uint8_t (&hash)[kHashLength]) {
     auto table{txn.open(table::kBlockHeaders)};
-    Bytes key{block_key(block_number, block_hash.bytes)};
+    Bytes key{block_key(block_number, hash)};
     std::optional<ByteView> header_rlp{table->get(key)};
     if (!header_rlp) {
-        return {};
+        return std::nullopt;
     }
 
     BlockHeader header;

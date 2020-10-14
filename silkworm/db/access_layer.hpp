@@ -19,6 +19,7 @@
 
 // Database Access Layer
 
+#include <libmdbx/mdbx.h++>
 #include <optional>
 #include <silkworm/db/chaindb.hpp>
 #include <silkworm/db/change.hpp>
@@ -28,7 +29,10 @@
 
 namespace silkworm::db {
 
-std::optional<BlockHeader> read_header(lmdb::Transaction& txn, uint64_t block_number, const evmc::bytes32& block_hash);
+std::optional<BlockHeader> read_header(mdbx::txn& txn, uint64_t block_number, const uint8_t (&hash)[kHashLength]);
+
+std::optional<BlockHeader> read_header(lmdb::Transaction& txn, uint64_t block_number,
+                                       const uint8_t (&hash)[kHashLength]);
 
 std::optional<BlockWithHash> read_block(lmdb::Transaction& txn, uint64_t block_number);
 

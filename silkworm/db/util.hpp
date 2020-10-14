@@ -24,6 +24,7 @@ see its package dbutils.
 
 #include <lmdb/lmdb.h>
 
+#include <libmdbx/mdbx.h++>
 #include <silkworm/common/base.hpp>
 #include <string>
 
@@ -33,6 +34,21 @@ constexpr size_t kIncarnationLength{8};
 static_assert(kIncarnationLength == sizeof(uint64_t));
 
 constexpr size_t kStoragePrefixLength{kAddressLength + kIncarnationLength};
+
+constexpr mdbx::env::operate_parameters kDefaultMdbxParameters{[]() {
+    mdbx::env::operate_parameters params{};
+    params.options.disable_readahead = true;
+    params.durability = mdbx::env::durability::lazy_weak_tail;
+    params.max_maps = 128;
+    return params;
+}()};
+
+namespace table {
+    struct Config {
+        const char* name{nullptr};
+        bool multi_val{false};  // MDB_DUPSORT or mdbx::value_mode::multi
+    };
+}  // namespace table
 
 struct Entry {
     ByteView key;
@@ -72,6 +88,9 @@ inline ByteView from_mdb_val(const MDB_val val) {
     auto* ptr{static_cast<uint8_t*>(val.mv_data)};
     return {ptr, val.mv_size};
 }
+
+inline ByteView slice_to_view(mdbx::slice slice) { return {slice.byte_ptr(), slice.size()}; }
+
 }  // namespace silkworm::db
 
 #endif  // SILKWORM_DB_UTIL_H_
