@@ -14,7 +14,7 @@
 
 image: Visual Studio 2019
 platform: x64
-configuration: Release
+configuration: RelWithDebInfo
 
 environment:
   APPVEYOR_SAVE_CACHE_ON_ERROR: true
