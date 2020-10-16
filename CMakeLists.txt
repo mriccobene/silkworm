@@ -78,6 +78,8 @@ if(MSVC)
 
   add_link_options(/ignore:4099)
   add_link_options(/STACK:10000000)
+
+  add_compile_options(/Zc:__cplusplus /utf-8)
 else()
   add_compile_options(-Wall -Wextra -Werror -Wno-missing-field-initializers)
 endif()
