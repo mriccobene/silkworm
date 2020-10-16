@@ -119,6 +119,7 @@ target_include_directories(evmone PUBLIC evmone/lib/evmone)
 target_link_libraries(evmone PUBLIC evmc intx::intx PRIVATE ethash::keccak)
 
 # libmdbx
+option(MDBX_HUGE_TRANSACTIONS "" ON)
 add_subdirectory(libmdbx)
 
 # Silkworm itself
