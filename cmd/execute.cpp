@@ -82,8 +82,10 @@ int main(int argc, char* argv[]) {
 
     std::clog << "Starting block execution. DB: " << db_file << std::endl;
 
-    silkworm::lmdb::DatabaseConfig db_config{db_path, *map_size};
+    silkworm::lmdb::DatabaseConfig db_config{db_path};
+    if (*map_size) db_config.map_size = *map_size;
     db_config.set_readonly(false);
+
     std::shared_ptr<silkworm::lmdb::Environment> env{nullptr};
     std::unique_ptr<silkworm::lmdb::Transaction> txn{nullptr};
 
