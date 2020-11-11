@@ -32,9 +32,7 @@ static constexpr const char* KStorageModeReceipts_key{"smReceipts"};
 
 static bool migration_happened(std::unique_ptr<silkworm::lmdb::Transaction>& txn, const char* migration_name) {
 
-    MDB_val key;
-    key.mv_size = std::strlen(migration_name);
-    key.mv_data = (void*)migration_name;
+    MDB_val key{std::strlen(migration_name), (void*)migration_name};
     auto data{txn->d_lookup(silkworm::db::table::kMigrations, &key)};
     if (!data.has_value()) return false;
     return true;
@@ -43,10 +41,8 @@ static bool migration_happened(std::unique_ptr<silkworm::lmdb::Transaction>& txn
 
 static bool storage_mode_has_write_receipts(std::unique_ptr<silkworm::lmdb::Transaction>& txn) {
 
-    MDB_val key;
-    key.mv_size = std::strlen(KStorageModeReceipts_key);
-    key.mv_data = (void*)KStorageModeReceipts_key;
-    auto data{ txn->d_lookup(silkworm::db::table::kDatabaseInfo, &key) };
+    MDB_val key{std::strlen(KStorageModeReceipts_key), (void*)KStorageModeReceipts_key};
+    auto data{txn->d_lookup(silkworm::db::table::kDatabaseInfo, &key)};
     if (data.has_value() && data->length() == 1 && data->at(0) == 1) return true;
     return false;
 }
