@@ -1,4 +1,4 @@
-{
+﻿{
   "configurations": [
     {
       "name": "x64-Debug",
@@ -11,7 +11,8 @@
       "buildCommandArgs": "",
       "ctestCommandArgs": "",
       "addressSanitizerEnabled": true,
-      "variables": []
+      "variables": [],
+      "cmakeExecutable": "C:/Program Files/CMake/bin/cmake.exe"
     }
   ]
 }
