@@ -34,8 +34,7 @@ static bool migration_happened(std::unique_ptr<silkworm::lmdb::Transaction>& txn
 
     MDB_val key{std::strlen(migration_name), (void*)migration_name};
     auto data{txn->d_lookup(silkworm::db::table::kMigrations, &key)};
-    if (!data.has_value()) return false;
-    return true;
+    return data.has_value();
 
 }
 
