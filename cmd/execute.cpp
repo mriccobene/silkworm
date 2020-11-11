@@ -21,32 +21,14 @@
 #include <stdexcept>
 
 #include <silkworm/db/chaindb.hpp>
-#include <silkworm/db/tables.hpp>
+#include <silkworm/db/stages.hpp>
 #include <silkworm/db/util.hpp>
 
 #include "tg_api/silkworm_tg_api.h"
 
-static constexpr const char* KExecutionStage_key{"Execution"};
+using namespace silkworm;
+
 static constexpr const char* KStorageModeReceipts_key{"smReceipts"};
-
-static uint64_t already_executed_block(std::unique_ptr<silkworm::lmdb::Transaction>& txn) {
-
-    MDB_val key;
-    key.mv_size = std::strlen(KExecutionStage_key);
-    key.mv_data = (void*)KExecutionStage_key;
-    auto data{txn->d_lookup(silkworm::db::table::kSyncStageProgress, &key)};
-    if (!data.has_value()) return 0;
-    return boost::endian::load_big_u64(data->c_str());
-
-}
-
-static void save_progress(std::unique_ptr<silkworm::lmdb::Transaction>& txn, uint64_t block_number) {
-
-    silkworm::Bytes value{ '\0', sizeof(uint64_t) };
-    boost::endian::store_big_u64(&value[0], block_number);
-    silkworm::db::Entry entry{ {(uint8_t*)(KExecutionStage_key), std::strlen(KExecutionStage_key)}, {value} };
-    silkworm::lmdb::err_handler(txn->d_upsert(silkworm::db::table::kSyncStageProgress, entry));
-}
 
 static bool migration_happened(std::unique_ptr<silkworm::lmdb::Transaction>& txn, const char* migration_name) {
 
@@ -122,7 +104,7 @@ int main(int argc, char* argv[]) {
         }
 
         uint64_t batch_size{batch_mib * 1024 * 1024};
-        uint64_t previous_progress{already_executed_block(txn)};
+        uint64_t previous_progress{db::stages::get_stage_progress(txn, db::stages::KExecution_key)};
         uint64_t current_progress{previous_progress};
 
         for (uint64_t block_number{ previous_progress + 1 }; block_number <= to_block; ++block_number) {
@@ -137,7 +119,7 @@ int main(int argc, char* argv[]) {
 
             block_number = current_progress;
 
-            save_progress(txn, current_progress);
+            db::stages::set_stage_progress(txn, db::stages::KExecution_key, current_progress);
             silkworm::lmdb::err_handler(txn->commit());
             txn.reset();
 
