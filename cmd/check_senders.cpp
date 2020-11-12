@@ -31,7 +31,7 @@
 #include <silkworm/crypto/ecdsa.hpp>
 #include <silkworm/db/access_layer.hpp>
 #include <silkworm/db/chaindb.hpp>
-#include <silkworm/db/tables.hpp>
+#include <silkworm/db/stages.hpp>
 #include <silkworm/db/util.hpp>
 #include <silkworm/types/block.hpp>
 #include <string>
@@ -45,15 +45,16 @@ std::atomic_bool main_thread_error_{false};     // Error detected in main thread
 std::atomic_bool workers_thread_error_{false};  // Error detected in one of workers threads
 
 struct app_options_t {
-    std::string datadir{};          // Provided database path
-    uint64_t mapsize{0};            // Provided lmdb map size
-    uint32_t numthreads{1};         // Number of recovery threads to start
-    size_t batch_size{10'000};      // Number of work packages to serve e worker
-    uint32_t block_from{1u};        // Initial block number to start from
-    uint32_t block_to{UINT32_MAX};  // Final block number to process
-    bool replay{false};             // Whether to replay already extracted senders
-    bool debug{false};              // Whether to display some debug info
-    bool rundry{false};             // Runs in dry mode (no data is persisted on disk)
+    std::string datadir{silkworm::db::default_path()};  // Where data file is located
+    std::string mapsize_str{};                          // Provided map_size literal
+    size_t mapsize{0};                                  // Computed map size
+    uint32_t numthreads{1};                             // Number of recovery threads to start
+    size_t batch_size{10'000};                          // Number of work packages to serve e worker
+    uint32_t block_from{1u};                            // Initial block number to start from
+    uint32_t block_to{UINT32_MAX};                      // Final block number to process
+    bool replay{false};                                 // Whether to replay already extracted senders
+    bool debug{false};                                  // Whether to display some debug info
+    bool rundry{false};                                 // Runs in dry mode (no data is persisted on disk)
 };
 
 void sig_handler(int signum) {
@@ -376,6 +377,7 @@ size_t write_results(std::queue<std::pair<uint32_t, uint32_t>>& batches, std::mu
 
 // Executes the recovery stage
 int do_recover(app_options_t& options) {
+
     std::shared_ptr<lmdb::Environment> lmdb_env{nullptr};  // Main lmdb environment
     std::unique_ptr<lmdb::Transaction> lmdb_txn{nullptr};  // Main lmdb transaction
     std::unique_ptr<lmdb::Table> lmdb_headers{nullptr};    // Block headers table
@@ -445,12 +447,21 @@ int do_recover(app_options_t& options) {
         // Open db and start transaction
         lmdb::DatabaseConfig db_config{options.datadir};
         db_config.set_readonly(false);
-        db_config.map_size = options.mapsize;
+        if (db_config.map_size) db_config.map_size = options.mapsize;
+
         lmdb_env = lmdb::get_env(db_config);
         lmdb_txn = lmdb_env->begin_rw_transaction();
         lmdb_senders = lmdb_txn->open(db::table::kSenders, MDB_CREATE);  // Throws on error
         lmdb_headers = lmdb_txn->open(db::table::kBlockHeaders);         // Throws on error
         lmdb_bodies = lmdb_txn->open(db::table::kBlockBodies);           // Throws on error
+
+        uint64_t stage_headers_height{db::stages::get_stage_progress(lmdb_txn, db::stages::KHeaders_key)};
+        uint64_t stage_bodies_height{db::stages::get_stage_progress(lmdb_txn, db::stages::KBlockBodies_key)};
+        uint64_t stage_senders_height{db::stages::get_stage_progress(lmdb_txn, db::stages::KSenders_key)};
+
+        if (!stage_headers_height) throw std::logic_error("No sync'ed headers");
+        if (!stage_bodies_height) throw std::logic_error("No sync'ed bodies");
+        if (stage_headers_height < stage_bodies_height) throw std::logic_error("Headers behind Block Bodies ??");
 
         size_t rcount{0};
 
@@ -817,17 +828,21 @@ int do_verify(app_options_t& options) {
 }
 
 int main(int argc, char* argv[]) {
+
+    signal(SIGINT, sig_handler);
+    signal(SIGTERM, sig_handler);
+
+
     // Init command line parser
     CLI::App app("Senders recovery tool.");
+
     app_options_t options{};
     options.datadir = silkworm::db::default_path();  // Default chain data db path
     options.numthreads = get_host_cpus() - 1;        // 1 thread per core leaving one slot for main thread
 
     // Command line arguments
     app.add_option("--datadir", options.datadir, "Path to chain db", true)->check(CLI::ExistingDirectory);
-
-    std::string mapSizeStr{"0"};
-    app.add_option("--lmdb.mapSize", mapSizeStr, "Lmdb map size", true);
+    app.add_option("--lmdb.mapSize", options.mapsize_str, "Lmdb map size", true);
     app.add_option("--threads", options.numthreads, "Number of recovering threads", true)
         ->check(CLI::Range(1u, get_host_cpus() - 1));
     app.add_option("--batch", options.batch_size, "Number of transactions to process per batch", true)
@@ -846,20 +861,13 @@ int main(int argc, char* argv[]) {
 
     CLI11_PARSE(app, argc, argv);
 
-    auto lmdb_mapSize{parse_size(mapSizeStr)};
+    auto lmdb_mapSize{parse_size(options.mapsize_str)};
     if (!lmdb_mapSize) {
-        std::cerr << "Provided --lmdb.mapSize \"" << mapSizeStr << "\" is invalid" << std::endl;
+        std::cerr << "Provided --lmdb.mapSize \"" << options.mapsize_str << "\" is invalid" << std::endl;
         return -1;
-    }
-    if (*lmdb_mapSize) {
-        // Adjust mapSize to a multiple of page_size
-        size_t host_page_size{boost::interprocess::mapped_region::get_page_size()};
-        options.mapsize = ((*lmdb_mapSize + host_page_size - 1) / host_page_size) * host_page_size;
     }
     if (!options.block_from) options.block_from = 1u;  // Block 0 (genesis) has no transactions
 
-    signal(SIGINT, sig_handler);
-    signal(SIGTERM, sig_handler);
 
     // If database path is provided (and has passed CLI::ExistingDirectory validator
     // check whether it is empty
