@@ -84,6 +84,11 @@ if(NOT SILKWORM_CORE_ONLY)
   target_link_libraries(extract_headers PRIVATE silkworm_db silkworm_tg_api CLI11::CLI11 Boost::filesystem)
   target_include_directories(extract_headers PRIVATE ${CMAKE_SOURCE_DIR})
 
+  find_package(gRPC CONFIG REQUIRED)
+  add_executable(download_headers download_headers.cpp "${CMAKE_SOURCE_DIR}/interfaces/sentry.grpc.pb.cc" "${CMAKE_SOURCE_DIR}/interfaces/sentry.pb.cc")
+  target_link_libraries(download_headers PRIVATE silkworm_db silkworm_tg_api CLI11::CLI11 Boost::filesystem gRPC::grpc++ protobuf::libprotobuf)
+  target_include_directories(download_headers PRIVATE ${CMAKE_SOURCE_DIR} "${CMAKE_SOURCE_DIR}/interfaces")
+
   # Ethereum Consensus Tests
   find_package(nlohmann_json CONFIG REQUIRED)
   add_executable(consensus consensus.cpp)
