@@ -235,3 +235,5 @@ endif()
 if(SILKWORM_WASM_API)
   add_subdirectory(wasm)
 endif()
+
+add_subdirectory(interfaces)
