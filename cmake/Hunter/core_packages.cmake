@@ -17,3 +17,5 @@
 hunter_add_package(Catch)
 hunter_add_package(intx)
 hunter_add_package(Microsoft.GSL)
+hunter_add_package(gRPC)
+hunter_add_package(Protobuf)

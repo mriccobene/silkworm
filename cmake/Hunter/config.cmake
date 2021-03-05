@@ -30,3 +30,6 @@ hunter_config(
   URL https://github.com/chfast/intx/archive/v0.5.1.tar.gz
   SHA1 743c46a82750143bd302a4394b7008a2112fc97b
 )
+
+hunter_config(Protobuf VERSION 3.12.4-p1)  # <-- Last working version (greater seems to have networking issues)
+hunter_config(gRPC VERSION 1.31.0-p0)      # <-- Last working version (greater seems to have networking issues)
