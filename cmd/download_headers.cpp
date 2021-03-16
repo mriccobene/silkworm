@@ -150,10 +150,15 @@ class SentryClient {
         google::protobuf::Empty response;
 
         request.set_network_id(chain_.chain_id);
-        request.set_total_difficulty(intx::to_string(total_difficulty));
+
+        //request.set_total_difficulty(intx::to_string(total_difficulty));
+        uint8_t dst[256 / 8];
+        intx::be::store(dst, total_difficulty);
+        request.set_total_difficulty(dst,32);   // todo: this writes leadings zeros, check if they are ok or not
+
         request.set_best_hash(best_hash.raw_bytes(), best_hash.length());
 
-        sentry::Forks* forks = new sentry::Forks{};
+        auto* forks = new sentry::Forks{};
         forks->set_genesis(genesis_.raw_bytes(), genesis_.length());
         for(uint64_t block: hard_forks_)
             forks->add_forks(block);
@@ -187,7 +192,7 @@ int main(int argc, char* argv[]) {
 
     string db_path = db::default_path();
     string temporary_file_path = ".";
-    string sentry_addr = "localhost:9999";
+    string sentry_addr = "127.0.0.1:9091";
 
     app.add_option("-d,--datadir", db_path, "Path to the chain database", true)
         ->check(CLI::ExistingDirectory);
@@ -204,17 +209,18 @@ int main(int argc, char* argv[]) {
 
         // EIP-2124 based chain identity scheme (networkId + genesis + forks)
         ChainConfig chain = kMainnetConfig;  // todo: parameterize
-        Hash genesis_hash = Hash::from_hex("0xd4e56740f876aef8c010b86a40d5f56745a118d0906a34e69aec8c0db1cb8fa3"); // mainnet genesis hash in hex // todo: parameterize
+        Hash genesis_hash = Hash::from_hex("d4e56740f876aef8c010b86a40d5f56745a118d0906a34e69aec8c0db1cb8fa3"); // mainnet genesis hash in hex // todo: parameterize
         vector<BlockNum> forks; // todo: improve, but how???
         forks.push_back(*chain.homestead_block);
+        forks.push_back(*chain.dao_block);
         forks.push_back(*chain.tangerine_whistle_block);
         forks.push_back(*chain.spurious_dragon_block);
         forks.push_back(*chain.byzantium_block);
         forks.push_back(*chain.constantinople_block);
-        forks.push_back(*chain.petersburg_block);
+        //forks.push_back(*chain.petersburg_block);     // todo: uses all the forks but erase block numbers with the same value
         forks.push_back(*chain.istanbul_block);
         forks.push_back(*chain.muir_glacier_block);
-        forks.push_back(*chain.berlin_block);
+        //forks.push_back(*chain.berlin_block); // next april 2021
 
         // Node current status
         BlockNum head_height = db.stage_progress(db::stages::kBlockBodiesKey);
@@ -223,8 +229,13 @@ int main(int argc, char* argv[]) {
         std::optional<BigInt> head_td = db.read_total_difficulty(head_height, *head_hash);
         if (!head_td) throw std::logic_error("total difficulty of canonical hash at height " + std::to_string(head_height) + " not found in db");
 
+        cerr << "head_hash = " << head_hash->to_hex() << "\n";
+        cerr << "head_td   = " << intx::to_string(*head_td) << "\n";
+
         // Connect to p2p sentry
         auto channel = grpc::CreateChannel(sentry_addr, grpc::InsecureChannelCredentials());
+        //auto ch_stat = channel->GetState(true);
+        //cout << ch_stat << "\n";
 
         SentryClient client(chain, genesis_hash, forks, channel);
 
