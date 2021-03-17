@@ -151,10 +151,8 @@ class SentryClient {
 
         request.set_network_id(chain_.chain_id);
 
-        //request.set_total_difficulty(intx::to_string(total_difficulty));
-        uint8_t dst[256 / 8];
-        intx::be::store(dst, total_difficulty);
-        request.set_total_difficulty(dst,32);   // todo: this writes leadings zeros, check if they are ok or not
+        ByteView td = rlp::big_endian(total_difficulty);    // remove trailing zeros
+        request.set_total_difficulty(td.data(), td.length());
 
         request.set_best_hash(best_hash.raw_bytes(), best_hash.length());
 
