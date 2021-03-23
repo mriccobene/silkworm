@@ -151,7 +151,7 @@ class SentryClient {
 
         request.set_network_id(chain_.chain_id);
 
-        ByteView td = rlp::big_endian(total_difficulty);    // remove trailing zeros
+        ByteView td = rlp::big_endian(total_difficulty);    // remove trailing zeros - WARNING it uses thread_local var
         request.set_total_difficulty(td.data(), td.length());
 
         request.set_best_hash(best_hash.raw_bytes(), best_hash.length());
