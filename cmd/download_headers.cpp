@@ -73,9 +73,9 @@ class Db {
     }
 
     std::optional<Hash> read_canonical_hash(BlockNum b) {  // throws db exceptions // todo: add to db::access_layer.hpp?
-        auto header_table = txn->open(db::table::kBlockHeaders);
+        auto hashes_table = txn->open(db::table::kCanonicalHashes);
         // accessing this table with only b we will get the hash of the canonical block at height b
-        std::optional<ByteView> hash = header_table->get(db::header_hash_key(b));
+        std::optional<ByteView> hash = hashes_table->get(db::block_key(b));
         if (!hash) return std::nullopt; // not found
         assert(hash->size() == kHashLength);
         return hash.value(); // copy
@@ -100,7 +100,7 @@ class Db {
     }
 
     std::optional<ByteView> read_rlp_encoded_header(BlockNum b, Hash h)  {
-        auto header_table = txn->open(db::table::kBlockHeaders);
+        auto header_table = txn->open(db::table::kHeaders);
         std::optional<ByteView> rlp = header_table->get(db::block_key(b, h.bytes));
         return rlp;
     }
@@ -192,7 +192,7 @@ int main(int argc, char* argv[]) {
     string temporary_file_path = ".";
     string sentry_addr = "127.0.0.1:9091";
 
-    app.add_option("-d,--datadir", db_path, "Path to the chain database", true)
+    app.add_option("--chaindata", db_path, "Path to the chain database", true)
         ->check(CLI::ExistingDirectory);
     app.add_option("-s,--sentryaddr", sentry_addr, "address:port of sentry", true);
     //  todo ->check?
