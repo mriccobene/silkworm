@@ -145,7 +145,7 @@ class SentryClient {
     */
     bool setStatus(Hash best_hash, BigInt total_difficulty)
     {
-        grpc::ClientContext context;
+        grpc::ClientContext context;    // call context, with optional config, do not reuse between calls
         sentry::StatusData request;
         google::protobuf::Empty response;
 
