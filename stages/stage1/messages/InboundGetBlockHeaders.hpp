@@ -25,9 +25,10 @@
 #include <silkworm/rlp/decode.hpp>
 #include <silkworm/rlp/encode.hpp>
 
-#include "../Types.hpp"
-#include "InboundMessage.hpp"
+#include "stages/stage1/Types.hpp"
 #include "stages/stage1/HashOrNumber.hpp"
+
+#include "InboundMessage.hpp"
 
 namespace silkworm {
 
@@ -35,7 +36,7 @@ class InboundGetBlockHeaders: public InboundMessage {
   public:
     InboundGetBlockHeaders(const sentry::InboundMessage& msg);
 
-    void execute() override;
+    reply_t execute() override;
 
   private:
     struct GetBlockHeadersPacket {

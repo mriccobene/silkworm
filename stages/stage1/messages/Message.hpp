@@ -20,7 +20,8 @@
 namespace silkworm {
 
 class Message {
-    virtual void execute() = 0;
+  public:
+    virtual ~Message() = default;
 };
 
 }

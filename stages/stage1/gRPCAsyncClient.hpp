@@ -9,6 +9,7 @@
 #include <chrono>
 #include <string>
 #include <vector>
+#include <stdexcept>
 
 #include <grpcpp/grpcpp.h>
 
@@ -23,21 +24,44 @@
 
 #include "Types.hpp"
 
+#define UNUSED(x) (void)(x)
+
 namespace silkworm::rpc {
+
+template <class STUB>
+class AsyncClient;
 
 // AsyncCall ----------------------------------------------------------------------------------------------------------
 // A generic async RPC call with preparation, executing and reply handling
 template <class STUB>
 class AsyncCall {
+  public:
+    using callback_t = std::function<void(AsyncCall&)>;
+
     // See concrete implementation for a public constructor
     // Use AsyncClient to send this call to a remote server
 
+    // Virtual destructor allows correct child destruction
+    virtual ~AsyncCall() = default;
+
+    void on_complete(callback_t f) {callback_ = f;}
+
+    virtual bool terminated(){ return terminated_; };
+
+    grpc::Status status() {
+        if (!terminated_)
+            throw std::logic_error("AsyncCall status not ready");
+        return status_;
+    }
+
   protected:
+    friend class AsyncClient<STUB>; // only to give access to start & complete
+
     // Start the remote proc call sending request to the server
     virtual void start(typename STUB::Stub* stub, grpc::CompletionQueue* cq) = 0;
 
     // Will be called on response arrival from the server
-    virtual void complete(bool ok) = 0;
+    virtual bool complete(bool ok) = 0;
 
 
     // See concrete implementations for a public constructor
@@ -51,9 +75,15 @@ class AsyncCall {
 
     // Status of the RPC upon completion
     grpc::Status status_;
+
+    // Callback that will be called on completion (i.e. response arrival)
+    callback_t callback_;
+
+    bool terminated_ = false;
 };
 
 // AsyncClient ----------------------------------------------------------------------------------------------------
+// A generic async RPC client that is able to execute and complete an async call
 template <class STUB>
 class AsyncClient {
   public:
@@ -64,21 +94,21 @@ class AsyncClient {
         : stub_(stub_t::NewStub(channel)) {}
 
     // send an remote call asynchronously
-    void send(call_t* call) {
-        call->start(stub_, completionQueue_);
+    void exec_remotely(call_t* call) {
+        call->start(stub_.get(), &completionQueue_);
     }
 
     // wait for a response and complete it; put this call in a infinite loop:
-    //    while(client.receive_one())
+    //    while(client.receive_one_result())
     //       ; // does nothing
-    bool receive_one() {
+    call_t* receive_one_result() {
         void* got_tag;
         bool ok = false;
 
         // Block until the next result is available in the completion queue
         bool got_event = completionQueue_.Next(&got_tag, &ok);  // todo: use AsyncNext to support a timeout
         if (!got_event) // the queue is fully drained and shut down
-            return false;
+            return nullptr;
 
         // The tag in this example is the memory location of the call object
         call_t* call = static_cast<call_t*>(got_tag);
@@ -92,42 +122,16 @@ class AsyncClient {
 
         // Once we're complete, deallocate the call object
         // if (...)
-        //    delete call;  // todo: here or in call->complete()?
-        return true;
+        //    delete call;
+        return call;
     }
 
   protected:
-
-    /*
-    // Loop while listening for completed responses.
-    static void receiving_loop() {
-        void* got_tag;
-        bool ok = false;
-
-        // Block until the next result is available in the completion queue "cq".
-        while (completionQueue_.Next(&got_tag, &ok)) {  // todo: use AsyncNext to test exiting_
-            // The tag in this example is the memory location of the call object
-            AsyncCall* call = static_cast<AsyncCall*>(got_tag);
-
-            // Verify that the request was completed successfully. Note that "ok"
-            // corresponds solely to the request for updates introduced by Finish().
-            // GPR_ASSERT(ok);  // works only for unary call
-
-            // Delegate status & reply handling to the call
-            call->complete(ok);
-
-            // Once we're complete, deallocate the call object
-            // if (...)
-            //    delete call;  // todo: here or in call->complete()?
-        }
-    }
-    */
-
     std::unique_ptr<typename STUB::Stub> stub_; // the stub class generated from grpc proto
     grpc::CompletionQueue completionQueue_;  // receives async-call completion events from the gRPC runtime
 };
 
-// AsyncClientCall ----------------------------------------------------------------------------------------------------
+// AsyncUnaryCall -----------------------------------------------------------------------------------------------------
 template <class STUB, class REQUEST, class REPLY>
 class AsyncUnaryCall: public AsyncCall<STUB> {
   public:
@@ -136,37 +140,38 @@ class AsyncUnaryCall: public AsyncCall<STUB> {
     using reply_t = REPLY;
     using response_reader_t = std::unique_ptr<grpc::ClientAsyncResponseReader<reply_t>>;
     using prepare_call_t = response_reader_t (STUB::Stub::*)(grpc::ClientContext* context, const request_t& request, grpc::CompletionQueue* cq);
-    using callback_t = std::function<void(AsyncUnaryCall&)>;
+    //using callback_t = std::function<void(AsyncUnaryCall&)>;
     using call_t::context_, call_t::status_, call_t::tag_;
 
-    AsyncUnaryCall(prepare_call_t pc, request_t request) : call_t{}, prepare_call_{pc}, request_t{std::move(request)} {
+    AsyncUnaryCall(prepare_call_t pc, request_t request) : call_t{}, prepare_call_{pc}, request_{std::move(request)} {
     }
 
-    void on_complete(callback_t f) {callback_ = f;}
+    virtual ~AsyncUnaryCall() = default;
+
+    //void on_complete(callback_t f) {callback_ = f;}
+
+    reply_t& reply() {return reply_;}
 
   protected:
 
-    void start(typename STUB::Stub* stub, grpc::CompletionQueue* completionQueue) override {
-        response_reader_ = (stub->*prepare_call_)(&context_, request_, completionQueue);  // creates an RPC object
+    void start(typename STUB::Stub* stub, grpc::CompletionQueue* cq) override {
+        response_reader_ = (stub->*prepare_call_)(&context_, request_, cq);  // creates an RPC object
 
         response_reader_->StartCall();  // initiates the RPC call
 
         response_reader_->Finish(&reply_, &status_, tag_);  // communicate replay & status slots and tag
     }
 
-    void complete(bool ok) override {
-        // only for test
-#if !defined(NDEBUG)
-        if (status_.ok())
-            std::cout << "RPC ok";
-        else
-            std::cerr << "RPC failed, error: " << status_.error_message() << ", code: " << status_.error_code()
-                      << ", details: " << status_.error_details() << std::endl;
-#endif
+    bool complete(bool ok) override {
+        UNUSED(ok);
 
         // use status & reply
-        if (callback_)
-            callback_(*this);
+        if (call_t::callback_)
+            call_t::callback_(*this);
+
+        call_t::terminated_ = true;
+
+        return status_.ok();
     }
 
     prepare_call_t prepare_call_; // Pointer to the prepare call method of the Stub
@@ -177,10 +182,10 @@ class AsyncUnaryCall: public AsyncCall<STUB> {
 
     reply_t reply_; // Container for the data we expect from the server.
 
-    callback_t callback_; // Callback that will be called on completion (i.e. response arrival)
+    //callback_t callback_; // Callback that will be called on completion (i.e. response arrival)
 };
 
-// AsyncClientCall --------------------------------------------------------------------------------------------------
+// AsyncOutStreamingCall ----------------------------------------------------------------------------------------------
 // A generic async RPC call with preparation, executing and reply handling
 template <class STUB, class REQUEST, class REPLY>
 class AsyncOutStreamingCall: public AsyncCall<STUB> {
@@ -190,59 +195,51 @@ class AsyncOutStreamingCall: public AsyncCall<STUB> {
     using reply_t = REPLY;
     using response_reader_t = std::unique_ptr<::grpc::ClientAsyncReader<reply_t>>;
     using prepare_call_t = response_reader_t (STUB::Stub::*)(grpc::ClientContext* context, const request_t& request, grpc::CompletionQueue* cq);
-    using callback_t = std::function<void(AsyncOutStreamingCall&)>;
+    //using callback_t = std::function<void(AsyncOutStreamingCall&)>;
     using call_t::context_, call_t::status_, call_t::tag_;
 
-    AsyncOutStreamingCall(prepare_call_t pc, const request_t& request) : call_t{}, prepare_call_{pc}, request_t{std::move(request)} {
+    AsyncOutStreamingCall(prepare_call_t pc, const request_t& request) : call_t{}, prepare_call_{pc}, request_{std::move(request)} {
     }
 
     ~AsyncOutStreamingCall() {
         response_reader_->Finish(&status_, tag_);  // communicate replay & status slots and tag
 
-        // only for test
-#if !defined(NDEBUG)
-        if (status_.ok())
-            std::cout << "RPC ok";
-        else
-            std::cerr << "RPC failed, error: " << status_.error_message() << ", code: " << status_.error_code()
-                      << ", details: " << status_.error_details() << std::endl;
-#endif
+        //if (!status_.ok())    // todo: check status here?
+        //    do some!
     }
 
-    void on_complete(callback_t f) {callback_ = f;}
+    //void on_complete(callback_t f) {callback_ = f;}
+
+    reply_t& reply() {return reply_;}
 
   protected:
-    void start(typename STUB::Stub* stub, grpc::CompletionQueue& cq) override {
-        response_reader_ = stub->PrepareAsyncReceiveMessages(&context_, request_, &cq);  // creates an RPC object
+    void start(typename STUB::Stub* stub, grpc::CompletionQueue* cq) override {
+        response_reader_ = (stub->*prepare_call_)(&context_, request_, cq);  // creates an RPC object
 
         response_reader_->StartCall(tag_);  // initiates the RPC call
 
-        response_reader_->Read(&reply_, tag_); // per quelle stream in output vanno chiamate le Read ogni volta per ottenere una risposta
+        response_reader_->Read(&reply_, tag_); // we have an output stream so we need call Read many times, see complete()
     }
 
-    void complete(bool ok) override {
-        if (!ok) // todo: check if it is correct!
-            return; // todo: return or raise exception?
+    bool complete(bool ok) override {
+        if (!ok) {         // todo: check if it is correct!
+            response_reader_->Finish(&status_, tag_);
+            call_t::terminated_ = true;
+            return false;
+        }
 
         // use status & reply
         // ...
-        if (callback_)
-            callback_(*this);
-
-        // only for test
-#if !defined(NDEBUG)
-        if (status_.ok())
-            std::cout << "RPC ok";
-        else
-            std::cerr << "RPC failed, error: " << status_.error_message() << ", code: " << status_.error_code()
-                      << ", details: " << status_.error_details() << std::endl;
-#endif
+        if (call_t::callback_)
+            call_t::callback_(*this);
 
         // todo: erase reply_ ?
         reply_ = {};
 
         // request next message
         response_reader_->Read(&reply_, tag_);
+
+        return true;
     }
 
     prepare_call_t prepare_call_; // Pointer to the prepare call method of the Stub
@@ -253,7 +250,7 @@ class AsyncOutStreamingCall: public AsyncCall<STUB> {
 
     reply_t reply_; // Container for the data we expect from the server
 
-    callback_t callback_; // Callback that will be called on completion (i.e. response arrival)
+    //callback_t callback_; // Callback that will be called on completion (i.e. response arrival)
 };
 
 } // namespace end

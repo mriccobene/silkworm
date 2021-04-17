@@ -15,9 +15,9 @@
 */
 
 #include "InboundGetBlockHeaders.hpp"
-#include "../stage1.hpp"
-#include "../Header.hpp"
-#include "../gRPCAsyncClient.hpp"
+#include "OutboundSendMessageByIdRequest.hpp"
+#include "stages/stage1/HeaderLogic.hpp"
+
 
 namespace silkworm {
 
@@ -34,30 +34,23 @@ InboundGetBlockHeaders::InboundGetBlockHeaders(const sentry::InboundMessage& msg
         throw rlp::rlp_error("rlp decoding error decoding GetBlockHeaders");
 }
 
-void InboundGetBlockHeaders::execute() {
+InboundMessage::reply_t InboundGetBlockHeaders::execute() {
     using namespace std;
     vector<Header> headers;
     if (holds_alternative<Hash>(packet_.origin))
-        headers = Header::recoverByHash(get<Hash>(packet_.origin), packet_.amount, packet_.skip, packet_.reverse);
+        headers = HeaderLogic::recoverByHash(get<Hash>(packet_.origin), packet_.amount, packet_.skip, packet_.reverse);
     else
-        headers = Header::recoverByNumber(get<BlockNum>(packet_.origin), packet_.amount, packet_.skip, packet_.reverse);
+        headers = HeaderLogic::recoverByNumber(get<BlockNum>(packet_.origin), packet_.amount, packet_.skip, packet_.reverse);
 
     auto rlp_encoding_len = rlp::length(headers);
     Bytes rlp_encoding(rlp_encoding_len, 0);
     rlp::encode(rlp_encoding, headers);
 
-    auto msg_reply = new sentry::OutboundMessageData{};
+    auto msg_reply = std::make_unique<sentry::OutboundMessageData>();
     msg_reply->set_id(sentry::MessageId::BlockHeaders);
     msg_reply->set_data(rlp_encoding.data(), rlp_encoding.length()); // copy
 
-    sentry::SendMessageByIdRequest reply; // todo: it is on the stack, is it ok?
-    reply.set_peer_id(peerId_);
-    reply.set_allocated_data(msg_reply);  // take ownership
-
-    auto* call = new rpc::AsyncUnaryCall<sentry::Sentry, sentry::SendMessageByIdRequest, sentry::SentPeers>(&sentry::Sentry::Stub::PrepareAsyncSendMessageById, reply);
-    // todo: who deletes call?
-
-    STAGE1.sentry().send(call);
+    return std::make_shared<OutboundSendMessageByIdRequest>(peerId_, std::move(msg_reply));
 }
 
 rlp::DecodingResult InboundGetBlockHeaders::decode(ByteView& from, GetBlockHeadersPacket& to) noexcept {
