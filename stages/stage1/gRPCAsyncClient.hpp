@@ -20,9 +20,8 @@
 
 #include <silkworm/chain/config.hpp>
 
-#include <interfaces/sentry.grpc.pb.h>
-
 #include "Types.hpp"
+#include "ConcurrentContainers.hpp"
 
 #define UNUSED(x) (void)(x)
 
@@ -44,7 +43,7 @@ class AsyncCall {
     // Virtual destructor allows correct child destruction
     virtual ~AsyncCall() = default;
 
-    void on_complete(callback_t f) {callback_ = f;}
+    void on_receive_reply(callback_t f) {callback_ = f;}
 
     virtual bool terminated(){ return terminated_; };
 
@@ -54,6 +53,8 @@ class AsyncCall {
         return status_;
     }
 
+    void* tag() {return tag_;}
+
   protected:
     friend class AsyncClient<STUB>; // only to give access to start & complete
 
@@ -61,8 +62,7 @@ class AsyncCall {
     virtual void start(typename STUB::Stub* stub, grpc::CompletionQueue* cq) = 0;
 
     // Will be called on response arrival from the server
-    virtual bool complete(bool ok) = 0;
-
+    virtual void reply_received(bool ok) = 0;
 
     // See concrete implementations for a public constructor
     AsyncCall() { tag_ = static_cast<void*>(this); }
@@ -94,14 +94,15 @@ class AsyncClient {
         : stub_(stub_t::NewStub(channel)) {}
 
     // send an remote call asynchronously
-    void exec_remotely(call_t* call) {
+    void exec_remotely(std::shared_ptr<call_t> call) {
+        waiting_calls_[call->tag()] = call; // save shared_ptr to extend call lifetime
         call->start(stub_.get(), &completionQueue_);
     }
 
     // wait for a response and complete it; put this call in a infinite loop:
     //    while(client.receive_one_result())
     //       ; // does nothing
-    call_t* receive_one_result() {
+    std::shared_ptr<call_t> receive_one_result() {
         void* got_tag;
         bool ok = false;
 
@@ -111,24 +112,29 @@ class AsyncClient {
             return nullptr;
 
         // The tag in this example is the memory location of the call object
-        call_t* call = static_cast<call_t*>(got_tag);
+        //call_t* call = static_cast<call_t*>(got_tag);  // UNSAFE
+        std::shared_ptr<call_t> call = waiting_calls_.value_of(got_tag);
+        if (!call)
+            throw std::logic_error("AsyncClient must always have the completed call in his map");
 
         // Verify that the request was completed successfully. Note that "ok"
         // corresponds solely to the request for updates introduced by Finish().
         // GPR_ASSERT(ok);  // works only for unary call
 
         // Delegate status & reply handling to the call
-        call->complete(ok);
+        call->reply_received(ok);
 
-        // Once we're complete, deallocate the call object
-        // if (...)
-        //    delete call;
+        if (call->terminated())
+            waiting_calls_.erase(got_tag);
+
+        // Return the call for custom processing or deletion
         return call;
     }
 
   protected:
     std::unique_ptr<typename STUB::Stub> stub_; // the stub class generated from grpc proto
     grpc::CompletionQueue completionQueue_;  // receives async-call completion events from the gRPC runtime
+    ConcurrentMap<void*,std::shared_ptr<call_t>> waiting_calls_; // extend rpc lifetime
 };
 
 // AsyncUnaryCall -----------------------------------------------------------------------------------------------------
@@ -162,7 +168,7 @@ class AsyncUnaryCall: public AsyncCall<STUB> {
         response_reader_->Finish(&reply_, &status_, tag_);  // communicate replay & status slots and tag
     }
 
-    bool complete(bool ok) override {
+    void reply_received(bool ok) override {
         UNUSED(ok);
 
         // use status & reply
@@ -170,8 +176,6 @@ class AsyncUnaryCall: public AsyncCall<STUB> {
             call_t::callback_(*this);
 
         call_t::terminated_ = true;
-
-        return status_.ok();
     }
 
     prepare_call_t prepare_call_; // Pointer to the prepare call method of the Stub
@@ -221,15 +225,14 @@ class AsyncOutStreamingCall: public AsyncCall<STUB> {
         response_reader_->Read(&reply_, tag_); // we have an output stream so we need call Read many times, see complete()
     }
 
-    bool complete(bool ok) override {
+    void reply_received(bool ok) override {
         if (!ok) {         // todo: check if it is correct!
             response_reader_->Finish(&status_, tag_);
             call_t::terminated_ = true;
-            return false;
+            return;
         }
 
         // use status & reply
-        // ...
         if (call_t::callback_)
             call_t::callback_(*this);
 
@@ -238,8 +241,6 @@ class AsyncOutStreamingCall: public AsyncCall<STUB> {
 
         // request next message
         response_reader_->Read(&reply_, tag_);
-
-        return true;
     }
 
     prepare_call_t prepare_call_; // Pointer to the prepare call method of the Stub

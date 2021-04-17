@@ -14,22 +14,21 @@
    limitations under the License.
 */
 
-#include "InStreamMessage.hpp"
+#ifndef SILKWORM_SENDMESSAGEBYID_HPP
+#define SILKWORM_SENDMESSAGEBYID_HPP
 
-namespace silkworm {
+#include "stages/stage1/SentryClient.hpp"
 
-void InStreamMessage::start_via(SentryClient& sentry) {
-    call_ = create_send_call();
+namespace silkworm::rpc {
 
-    std::weak_ptr<OutboundMessage> origin = weak_from_this();
+class SendMessageById: public rpc::AsyncUnaryCall<sentry::Sentry, sentry::SendMessageByIdRequest, sentry::SentPeers> {
+  public:
+    SendMessageById(sentry::SendMessageByIdRequest message);
 
-    call_->on_complete([origin](call_base_t& call) {
-      if (origin.expired()) return;
-      auto message = origin.lock();
-      message->receive_reply(call);
-    });
+    using SentryRpc::on_receive_reply;
 
-    sentry.exec_remotely(call_);
-}
+    static std::shared_ptr<SendMessageById> make(sentry::SendMessageByIdRequest message) {return std::make_shared<SendMessageById>(std::move(message));}
+};
 
 }
+#endif  // SILKWORM_SENDMESSAGEBYID_HPP

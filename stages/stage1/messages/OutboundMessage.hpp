@@ -13,32 +13,23 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 */
-
 #ifndef SILKWORM_OUTBOUNDMESSAGE_HPP
 #define SILKWORM_OUTBOUNDMESSAGE_HPP
 
 #include <memory>
-
-#include <interfaces/sentry.grpc.pb.h>
-#include <stages/stage1/SentryClient.hpp>
+#include "Message.hpp"
+#include "stages/stage1/SentryClient.hpp"
 #include "stages/stage1/Types.hpp"
-#include "InboundMessage.hpp"
 
 namespace silkworm {
 
-class OutboundMessage : public Message,
-                        std::enable_shared_from_this<OutboundMessage> {
+class OutboundMessage : public Message {
   public:
-    using call_base_t = rpc::AsyncCall<sentry::Sentry>; // base RPC to send this message
+    virtual std::shared_ptr<SentryRpc> create_send_rpc() =0;
 
-    void send_via(SentryClient&);
+    void send_via(SentryClient& sentry);
 
-  protected:
-    virtual std::shared_ptr<call_base_t> create_send_call() =0;
-    virtual void receive_reply(call_base_t& call) =0;
-
-  private:
-    std::shared_ptr<call_base_t> call_;
+    virtual void receive_reply(SentryRpc&) {}
 };
 
 }

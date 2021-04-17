@@ -13,29 +13,14 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 */
-#ifndef SILKWORM_SENTRYCLIENT_HPP
-#define SILKWORM_SENTRYCLIENT_HPP
 
-#include <interfaces/sentry.grpc.pb.h>
-#include "gRPCAsyncClient.hpp"
+#include "SendMessageById.hpp"
 
-namespace silkworm {
+namespace silkworm::rpc {
 
-using SentryRpc = rpc::AsyncCall<sentry::Sentry>;
-
-class SentryClient: public rpc::AsyncClient<sentry::Sentry> {
-  public:
-    using base_t = rpc::AsyncClient<sentry::Sentry>;
-
-    SentryClient(std::shared_ptr<grpc::Channel> channel):
-        base_t(channel)
-    {}
-
-    void exec_remotely(std::shared_ptr<SentryRpc> rpc) {
-        base_t::exec_remotely(rpc);
-    }
-};
-
+SendMessageById::SendMessageById(const sentry::SendMessageByIdRequest message):
+    AsyncUnaryCall(&sentry::Sentry::Stub::PrepareAsyncSendMessageById, std::move(message))
+{
 }
 
-#endif  // SILKWORM_SENTRYCLIENT_HPP
+}

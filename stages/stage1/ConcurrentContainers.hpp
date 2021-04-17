@@ -13,29 +13,21 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 */
-#ifndef SILKWORM_SENTRYCLIENT_HPP
-#define SILKWORM_SENTRYCLIENT_HPP
 
-#include <interfaces/sentry.grpc.pb.h>
-#include "gRPCAsyncClient.hpp"
+#ifndef SILKWORM_CONCURRENTCONTAINERS_HPP
+#define SILKWORM_CONCURRENTCONTAINERS_HPP
 
-namespace silkworm {
+/*
+ * Decisions about concurrent containers
+ */
 
-using SentryRpc = rpc::AsyncCall<sentry::Sentry>;
+#include "ThreadSafeMap.hpp"
+#include "ThreadSafeQueue.hpp"
 
-class SentryClient: public rpc::AsyncClient<sentry::Sentry> {
-  public:
-    using base_t = rpc::AsyncClient<sentry::Sentry>;
+template <typename T>
+using ConcurrentQueue = ThreadSafeQueue<T>;  // todo: use a better alternative from a known library (Intel oneTBB?)
 
-    SentryClient(std::shared_ptr<grpc::Channel> channel):
-        base_t(channel)
-    {}
+template <typename K, typename V>
+using ConcurrentMap = ThreadSafeMap<K,V>;  // todo: use a better alternative from a known library (Intel oneTBB?)
 
-    void exec_remotely(std::shared_ptr<SentryRpc> rpc) {
-        base_t::exec_remotely(rpc);
-    }
-};
-
-}
-
-#endif  // SILKWORM_SENTRYCLIENT_HPP
+#endif  // SILKWORM_CONCURRENTCONTAINERS_HPP

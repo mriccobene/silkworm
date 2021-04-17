@@ -15,3 +15,17 @@
 */
 
 #include "InboundMessage.hpp"
+#include "InboundGetBlockHeaders.hpp"
+
+namespace silkworm {
+
+std::shared_ptr<InboundMessage> InboundMessage::make(const sentry::InboundMessage& raw_message) {
+    std::shared_ptr<InboundMessage> message;
+    if (raw_message.id() == sentry::MessageId::GetBlockHeaders)
+        message = std::make_shared<InboundGetBlockHeaders>(raw_message);
+    else
+        throw std::logic_error("not implemented yet");
+    return message;
+}
+
+}

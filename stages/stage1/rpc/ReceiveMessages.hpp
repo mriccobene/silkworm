@@ -13,29 +13,24 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 */
-#ifndef SILKWORM_SENTRYCLIENT_HPP
-#define SILKWORM_SENTRYCLIENT_HPP
 
-#include <interfaces/sentry.grpc.pb.h>
-#include "gRPCAsyncClient.hpp"
+#ifndef SILKWORM_RECEIVEMESSAGES_HPP
+#define SILKWORM_RECEIVEMESSAGES_HPP
 
-namespace silkworm {
+#include "stages/stage1/SentryClient.hpp"
 
-using SentryRpc = rpc::AsyncCall<sentry::Sentry>;
+namespace silkworm::rpc {
 
-class SentryClient: public rpc::AsyncClient<sentry::Sentry> {
+class ReceiveMessages: public rpc::AsyncOutStreamingCall<sentry::Sentry, google::protobuf::Empty, sentry::InboundMessage> {
   public:
-    using base_t = rpc::AsyncClient<sentry::Sentry>;
+    ReceiveMessages();
 
-    SentryClient(std::shared_ptr<grpc::Channel> channel):
-        base_t(channel)
-    {}
+    using SentryRpc::on_receive_reply;
 
-    void exec_remotely(std::shared_ptr<SentryRpc> rpc) {
-        base_t::exec_remotely(rpc);
-    }
+    static std::shared_ptr<ReceiveMessages> make() {return std::make_shared<ReceiveMessages>();}
 };
 
 }
 
-#endif  // SILKWORM_SENTRYCLIENT_HPP
+
+#endif  // SILKWORM_RECEIVEMESSAGES_HPP
