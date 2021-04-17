@@ -19,17 +19,9 @@
 namespace silkworm {
 
 void OutboundMessage::send_via(SentryClient& sentry) {
-    call_ = create_send_call();
+    auto rpc = create_send_rpc();
 
-    std::weak_ptr<OutboundMessage> origin = weak_from_this();
-
-    call_->on_complete([origin](call_base_t& call) {
-      if (origin.expired()) return;
-      auto message = origin.lock();
-      message->receive_reply(call);
-    });
-
-    sentry.exec_remotely(call_);
+    sentry.exec_remotely(rpc);
 }
 
 }

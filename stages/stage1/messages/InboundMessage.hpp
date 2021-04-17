@@ -17,8 +17,9 @@
 #ifndef SILKWORM_INBOUNDMESSAGE_HPP
 #define SILKWORM_INBOUNDMESSAGE_HPP
 
-#include "Message.hpp"
 #include <memory>
+#include "Message.hpp"
+#include "stages/stage1/SentryClient.hpp"
 
 namespace silkworm {
 class OutboundMessage;
@@ -31,6 +32,8 @@ class InboundMessage : public Message {
     virtual reply_t execute() = 0;
 
     virtual ~InboundMessage() = default;
+
+    static std::shared_ptr<InboundMessage> make(const sentry::InboundMessage& msg);
 };
 
 }

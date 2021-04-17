@@ -38,12 +38,12 @@ if(NOT SILKWORM_CORE_ONLY)
                         SentryClient.cpp
                         messages/Message.cpp
                         messages/OutboundMessage.cpp
-                        messages/OutboundSetStatus.cpp
-                        messages/OutboundReceiveMessages.cpp
-                        messages/OutboundSendMessageByIdRequest.cpp
                         messages/InboundMessage.cpp
                         messages/InboundGetBlockHeaders.cpp
-                        messages/InStreamMessage.cpp
+                        messages/OutboundSendMessageByIdRequest.cpp
+                        rpc/SetStatus.cpp
+                        rpc/SendMessageById.cpp
+                        rpc/ReceiveMessages.cpp
                         "${CMAKE_SOURCE_DIR}/interfaces/sentry.grpc.pb.cc"
                         "${CMAKE_SOURCE_DIR}/interfaces/sentry.pb.cc")
 
@@ -56,6 +56,7 @@ if(NOT SILKWORM_CORE_ONLY)
 
   target_include_directories(stage1 PRIVATE ${CMAKE_SOURCE_DIR}
                                             "${CMAKE_SOURCE_DIR}/interfaces"
-                                            messages)
+                                            messages
+                                            rpc)
 
 endif(NOT SILKWORM_CORE_ONLY)
