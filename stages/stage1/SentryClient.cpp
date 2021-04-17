@@ -14,24 +14,9 @@
    limitations under the License.
 */
 
-#ifndef SILKWORM_INBOUNDMESSAGE_HPP
-#define SILKWORM_INBOUNDMESSAGE_HPP
-
-#include "Message.hpp"
-#include <memory>
+#include "SentryClient.hpp"
 
 namespace silkworm {
-class OutboundMessage;
 
-
-class InboundMessage : public Message {
-  public:
-    using reply_t = std::shared_ptr<OutboundMessage>;
-
-    virtual reply_t execute() = 0;
-
-    virtual ~InboundMessage() = default;
-};
 
 }
-#endif  // SILKWORM_INBOUNDMESSAGE_HPP

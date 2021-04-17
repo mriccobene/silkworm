@@ -14,24 +14,22 @@
    limitations under the License.
 */
 
-#ifndef SILKWORM_INBOUNDMESSAGE_HPP
-#define SILKWORM_INBOUNDMESSAGE_HPP
-
-#include "Message.hpp"
-#include <memory>
+#include "InStreamMessage.hpp"
 
 namespace silkworm {
-class OutboundMessage;
 
+void InStreamMessage::start_via(SentryClient& sentry) {
+    call_ = create_send_call();
 
-class InboundMessage : public Message {
-  public:
-    using reply_t = std::shared_ptr<OutboundMessage>;
+    std::weak_ptr<OutboundMessage> origin = weak_from_this();
 
-    virtual reply_t execute() = 0;
+    call_->on_complete([origin](call_base_t& call) {
+      if (origin.expired()) return;
+      auto message = origin.lock();
+      message->receive_reply(call);
+    });
 
-    virtual ~InboundMessage() = default;
-};
+    sentry.exec_remotely(call_);
+}
 
 }
-#endif  // SILKWORM_INBOUNDMESSAGE_HPP
