@@ -21,13 +21,9 @@
  * Decisions about concurrent containers
  */
 
-#include "ThreadSafeMap.hpp"
 #include "ThreadSafeQueue.hpp"
 
 template <typename T>
 using ConcurrentQueue = ThreadSafeQueue<T>;  // todo: use a better alternative from a known library (Intel oneTBB?)
-
-template <typename K, typename V>
-using ConcurrentMap = ThreadSafeMap<K,V>;  // todo: use a better alternative from a known library (Intel oneTBB?)
 
 #endif  // SILKWORM_CONCURRENTCONTAINERS_HPP

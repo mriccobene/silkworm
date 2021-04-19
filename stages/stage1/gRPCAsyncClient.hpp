@@ -56,7 +56,7 @@ class AsyncCall {
     void* tag() {return tag_;}
 
   protected:
-    friend class AsyncClient<STUB>; // only to give access to start & complete
+    friend class AsyncClient<STUB>; // only to give access to start & reply_received
 
     // Start the remote proc call sending request to the server
     virtual void start(typename STUB::Stub* stub, grpc::CompletionQueue* cq) = 0;
@@ -66,6 +66,8 @@ class AsyncCall {
 
     // See concrete implementations for a public constructor
     AsyncCall() { tag_ = static_cast<void*>(this); }
+
+    static AsyncCall<STUB>* detag(void* tag) {return static_cast<AsyncCall<STUB>*>(tag);}  // UNSAFE
 
     // Tag used by GRPCAsyncClient to identify concrete instances in the receiving loop
     void* tag_;
@@ -80,6 +82,8 @@ class AsyncCall {
     callback_t callback_;
 
     bool terminated_ = false;
+
+    std::shared_ptr<AsyncCall<STUB>> pin_;
 };
 
 // AsyncClient ----------------------------------------------------------------------------------------------------
@@ -95,7 +99,7 @@ class AsyncClient {
 
     // send an remote call asynchronously
     void exec_remotely(std::shared_ptr<call_t> call) {
-        waiting_calls_[call->tag()] = call; // save shared_ptr to extend call lifetime
+        call->pin_ = call; // trick to save shared_ptr and extend call lifetime without using a queue, not so beautiful, todo: improve
         call->start(stub_.get(), &completionQueue_);
     }
 
@@ -112,10 +116,8 @@ class AsyncClient {
             return nullptr;
 
         // The tag in this example is the memory location of the call object
-        //call_t* call = static_cast<call_t*>(got_tag);  // UNSAFE
-        std::shared_ptr<call_t> call = waiting_calls_.value_of(got_tag);
-        if (!call)
-            throw std::logic_error("AsyncClient must always have the completed call in his map");
+        call_t* raw_call = call_t::detag(got_tag); // UNSAFE
+        std::shared_ptr<call_t> call = raw_call->pin_;
 
         // Verify that the request was completed successfully. Note that "ok"
         // corresponds solely to the request for updates introduced by Finish().
@@ -125,7 +127,7 @@ class AsyncClient {
         call->reply_received(ok);
 
         if (call->terminated())
-            waiting_calls_.erase(got_tag);
+            call->pin_.reset();
 
         // Return the call for custom processing or deletion
         return call;
@@ -134,7 +136,6 @@ class AsyncClient {
   protected:
     std::unique_ptr<typename STUB::Stub> stub_; // the stub class generated from grpc proto
     grpc::CompletionQueue completionQueue_;  // receives async-call completion events from the gRPC runtime
-    ConcurrentMap<void*,std::shared_ptr<call_t>> waiting_calls_; // extend rpc lifetime
 };
 
 // AsyncUnaryCall -----------------------------------------------------------------------------------------------------
