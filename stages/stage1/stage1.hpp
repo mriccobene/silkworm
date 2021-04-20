@@ -13,13 +13,17 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 */
+#ifndef SILKWORM_STAGE1_HPP
+#define SILKWORM_STAGE1_HPP
+
 #include <atomic>
 #include <chrono>
 
-#include "Types.hpp"
+#include "ChainIdentity.hpp"
 #include "DbTx.hpp"
 #include "SentryClient.hpp"
 #include "Singleton.hpp"
+#include "Types.hpp"
 
 namespace silkworm {
 
@@ -34,16 +38,14 @@ class Stage {
 };
 
 class Stage1 : public Stage {
-    ChainConfig chain_;
-    Hash genesis_hash_;
-    std::vector<BlockNum> hard_forks_;
+    ChainIdentity chain_identity_;
     DbTx db_;
     std::shared_ptr<grpc_impl::Channel> channel_;
     SentryClient sentry_;
 
   public:
 
-    Stage1(ChainConfig chain, Hash genesis_hash, std::vector<BlockNum> hard_forks, std::string db_path, std::string sentry_addr);
+    Stage1(ChainIdentity chain_identity, std::string db_path, std::string sentry_addr);
 
     DbTx& db_tx() {return db_;}
 
@@ -56,3 +58,5 @@ class Stage1 : public Stage {
 #define STAGE1 Singleton<Stage1>::instance()
 
 }  // namespace silkworm
+
+#endif  // SILKWORM_STAGE1_HPP

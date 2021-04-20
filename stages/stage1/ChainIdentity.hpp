@@ -14,20 +14,24 @@
    limitations under the License.
 */
 
-#ifndef SILKWORM_BLOCKREQUESTLOGIC_HPP
-#define SILKWORM_BLOCKREQUESTLOGIC_HPP
+#ifndef SILKWORM_CHAINIDENTITY_HPP
+#define SILKWORM_CHAINIDENTITY_HPP
 
-#include <memory>
-#include "OutboundMessage.hpp"
+#include <silkworm/chain/config.hpp>
+#include "Types.hpp"
 
 namespace silkworm {
 
-class BlockRequestLogic {  // todo: modularize this!
-  public:
-    static std::shared_ptr<OutboundMessage> execute() {
-        return nullptr;  // todo: implements!
-    }
+// EIP-2124 based chain identity scheme (networkId + genesis + forks)
+struct ChainIdentity {
+
+    ChainConfig chain;
+    Hash genesis_hash;
+    std::vector<BlockNum> hard_forks;
+
+    static ChainIdentity mainnet;
+    //static ChainIdentification goerli;
 };
 
 }
-#endif  // SILKWORM_BLOCKREQUESTLOGIC_HPP
+#endif  // SILKWORM_CHAINIDENTITY_HPP

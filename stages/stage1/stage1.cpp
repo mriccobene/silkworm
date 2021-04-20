@@ -27,8 +27,8 @@
 
 namespace silkworm {
 
-Stage1::Stage1(ChainConfig chain, Hash genesis_hash, std::vector<BlockNum> hard_forks, std::string db_path, std::string sentry_addr):
-    chain_{chain}, genesis_hash_{genesis_hash}, hard_forks_{hard_forks},
+Stage1::Stage1(ChainIdentity chain_identity, std::string db_path, std::string sentry_addr):
+    chain_identity_(std::move(chain_identity)),
     db_{db_path},
     channel_{grpc::CreateChannel(sentry_addr, grpc::InsecureChannelCredentials())},
     sentry_{channel_}
@@ -45,7 +45,7 @@ void Stage1::execution_loop() { // no-thread version
     auto [head_hash, head_td] = HeaderLogic::head_hash_and_total_difficulty(db_);
 
     // set status
-    auto set_status = rpc::SetStatus::make(chain_, genesis_hash_, hard_forks_, head_hash, head_td);
+    auto set_status = rpc::SetStatus::make(chain_identity_.chain, chain_identity_.genesis_hash, chain_identity_.hard_forks, head_hash, head_td);
     sentry_.exec_remotely(set_status);
 
     // start message receiving
