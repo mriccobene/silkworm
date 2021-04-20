@@ -26,37 +26,36 @@ if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++20 -fcoroutines")
 endif()
 
-if(NOT SILKWORM_CORE_ONLY)
+find_package(Boost CONFIG REQUIRED COMPONENTS filesystem)
 
-  find_package(Boost CONFIG REQUIRED COMPONENTS filesystem)
+find_package(CLI11 CONFIG REQUIRED)
 
-  find_package(CLI11 CONFIG REQUIRED)
+find_package(gRPC CONFIG REQUIRED)
 
-  find_package(gRPC CONFIG REQUIRED)
+add_library(silkworm_stage1 stage1.cpp
+                            SentryClient.cpp
+                            ChainIdentity.cpp
+                            messages/Message.cpp
+                            messages/OutboundMessage.cpp
+                            messages/InboundMessage.cpp
+                            messages/InboundGetBlockHeaders.cpp
+                            messages/OutboundSendMessageByIdRequest.cpp
+                            rpc/SetStatus.cpp
+                            rpc/SendMessageById.cpp
+                            rpc/ReceiveMessages.cpp
+                            "${CMAKE_SOURCE_DIR}/interfaces/sentry.grpc.pb.cc"
+                            "${CMAKE_SOURCE_DIR}/interfaces/sentry.pb.cc")
 
-  add_executable(stage1 stage1.cpp
-                        SentryClient.cpp
-                        messages/Message.cpp
-                        messages/OutboundMessage.cpp
-                        messages/InboundMessage.cpp
-                        messages/InboundGetBlockHeaders.cpp
-                        messages/OutboundSendMessageByIdRequest.cpp
-                        rpc/SetStatus.cpp
-                        rpc/SendMessageById.cpp
-                        rpc/ReceiveMessages.cpp
-                        "${CMAKE_SOURCE_DIR}/interfaces/sentry.grpc.pb.cc"
-                        "${CMAKE_SOURCE_DIR}/interfaces/sentry.pb.cc")
+target_link_libraries(silkworm_stage1 PUBLIC silkworm_db
+                                             silkworm_tg_api
+                                             CLI11::CLI11
+                                             Boost::filesystem
+                                             gRPC::grpc++
+                                             protobuf::libprotobuf)
 
-  target_link_libraries(stage1 PRIVATE silkworm_db
-                                       silkworm_tg_api
-                                       CLI11::CLI11
-                                       Boost::filesystem
-                                       gRPC::grpc++
-                                       protobuf::libprotobuf)
+target_include_directories(silkworm_stage1 PUBLIC ${CMAKE_SOURCE_DIR}
+                                                  "${CMAKE_SOURCE_DIR}/interfaces"
+                                                  messages
+                                                  rpc)
 
-  target_include_directories(stage1 PRIVATE ${CMAKE_SOURCE_DIR}
-                                            "${CMAKE_SOURCE_DIR}/interfaces"
-                                            messages
-                                            rpc)
 
-endif(NOT SILKWORM_CORE_ONLY)

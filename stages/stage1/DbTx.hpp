@@ -63,6 +63,12 @@ class DbTx {
         return db::read_header(*txn, b, h.bytes);
     }
 
+    std::optional<BlockHeader> read_canonical_header(BlockNum b)  { // also known as read-header-by-number
+        std::optional<Hash> h = read_canonical_hash(b);
+        if (!h) return std::nullopt; // not found
+        return read_header(b, *h);
+    }
+
     std::optional<ByteView> read_rlp_encoded_header(BlockNum b, Hash h)  {
         auto header_table = txn->open(db::table::kHeaders);
         std::optional<ByteView> rlp = header_table->get(db::block_key(b, h.bytes));

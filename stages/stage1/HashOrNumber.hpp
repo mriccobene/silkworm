@@ -1,6 +1,18 @@
-//
-// Created by miche on 10/04/2021.
-//
+/*
+   Copyright 2021 The Silkworm Authors
+
+   Licensed under the Apache License, Version 2.0 (the "License");
+   you may not use this file except in compliance with the License.
+   You may obtain a copy of the License at
+
+       http://www.apache.org/licenses/LICENSE-2.0
+
+   Unless required by applicable law or agreed to in writing, software
+   distributed under the License is distributed on an "AS IS" BASIS,
+   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+   See the License for the specific language governing permissions and
+   limitations under the License.
+*/
 
 #ifndef SILKWORM_HASHORNUMBER_HPP
 #define SILKWORM_HASHORNUMBER_HPP
@@ -26,14 +38,14 @@ namespace rlp {
         rlp_error(const std::string& description) : std::runtime_error(description) {}
     };
 
-    void encode(Bytes& to, const HashOrNumber& from) {
+    inline void encode(Bytes& to, const HashOrNumber& from) {
         if (std::holds_alternative<Hash>(from))
             rlp::encode(to, std::get<Hash>(from));
         else
             rlp::encode(to, std::get<BlockNum>(from));
     }
 
-    DecodingResult decode(ByteView& from, HashOrNumber& to) noexcept {
+    inline DecodingResult decode(ByteView& from, HashOrNumber& to) noexcept {
         ByteView copy(from);  // to decode but not consume
         auto [h, err] = decode_header(copy);
         if (err != DecodingResult::kOk) {
@@ -44,7 +56,7 @@ namespace rlp {
 
         if (h.payload_length == 32) {
             Hash hash;
-            err = rlp::decode(from, hash);
+            err = rlp::decode(from, dynamic_cast<evmc::bytes32&>(hash));
             to = hash;
         } else if (h.payload_length <= 8) {
             BlockNum number;
