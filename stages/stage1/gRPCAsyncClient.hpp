@@ -35,7 +35,7 @@
 #include "Types.hpp"
 #include "ConcurrentContainers.hpp"
 
-#define UNUSED(x) (void)(x)
+//#define UNUSED(x) (void)(x) - Replaced by [[maybe_unused]]
 
 namespace silkworm::rpc {
 
@@ -181,9 +181,7 @@ class AsyncUnaryCall: public AsyncCall<STUB> {
         response_reader_->Finish(&reply_, &status_, tag_);  // communicate replay & status slots and tag
     }
 
-    void reply_received(bool ok) override {
-        UNUSED(ok);
-
+    void reply_received([[maybe_unused]] bool ok) override {
         // use status & reply
         if (call_t::callback_)
             call_t::callback_(*this);
