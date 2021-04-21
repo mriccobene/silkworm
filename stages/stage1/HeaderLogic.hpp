@@ -18,6 +18,7 @@
 #define SILKWORM_HEADERLOGIC_HPP
 
 #include <vector>
+#include <silkworm/common/log.hpp>
 #include "stage1.hpp"
 
 namespace silkworm {
@@ -30,6 +31,7 @@ class HeaderLogic {     // todo: modularize this!
 
     static std::vector<Header> recoverByHash(Hash origin, uint64_t amount, uint64_t skip, bool reverse) {
         using std::optional;
+        uint64_t max_non_canonical = 100;
 
         DbTx& db = STAGE1.db_tx();  // todo: use singleton, is there a better way? HeaderLogic singleton?
 
@@ -47,10 +49,43 @@ class HeaderLogic {     // todo: modularize this!
 
         // followings
         do {
-            // compute next hash & number - todo: implements! ##################################################
-            if (!reverse)   // wrong! implements!
-                block_num += skip + 1; // wrong! implements!
-            // end todo implements! ############################################################################
+            // compute next hash & number - todo: understand
+            if (!reverse) {
+                BlockNum current = header->number;
+                BlockNum next = current + skip + 1;
+                if (next <= current) {
+                    unknown = true;
+                    SILKWORM_LOG(LogLevels::LogWarn)
+                            << "GetBlockHeaders skip overflow attack:"
+                            << " current=" << current
+                            << ", skip=" << skip
+                            << ", next=" << next << std::endl;
+                }
+                else {
+                    header = db.read_canonical_header(next);
+                    if (!header)
+                        unknown = true;
+                    else {
+                        Hash nextHash = header->hash();
+                        auto [expOldHash, _ ] = getAncestor(db, nextHash, next, skip+1, max_non_canonical);
+                        if (expOldHash == hash) {
+                            hash = nextHash;
+                            block_num = next;
+                        }
+                        else
+                            unknown = true;
+                    }
+                }
+            }
+            else {  // reverse
+                BlockNum ancestor = skip + 1;
+                if (ancestor == 0)
+                    unknown = true;
+                else
+                    std::tie(hash, block_num) = getAncestor(db, hash, block_num, ancestor, max_non_canonical);
+            }
+
+            // end todo: understand
 
             if (unknown) break;
 
@@ -103,6 +138,40 @@ class HeaderLogic {     // todo: modularize this!
         return {*head_hash, *head_td};
     }
 
+    static std::tuple<Hash,BlockNum> getAncestor(DbTx& db, Hash hash, BlockNum blockNum, BlockNum ancestor, uint64_t& max_non_canonical) {
+        if (ancestor > blockNum)
+            return {Hash{},0};
+
+        if (ancestor == 1) {
+            auto header = db.read_header(blockNum, hash);
+            if (header)
+                return {header->parent_hash, blockNum-1};
+            else
+                return {Hash{},0};
+        }
+
+        while (ancestor != 0) {
+            auto h = db.read_canonical_hash(blockNum);
+            if (h == hash) {
+                auto ancestorHash = db.read_canonical_hash(blockNum - ancestor);
+                h = db.read_canonical_hash(blockNum);
+                if (h == hash) {
+                    blockNum -= ancestor;
+                    return {*ancestorHash, blockNum};   // ancestorHash can be empty
+                }
+            }
+            if (max_non_canonical == 0)
+                return {Hash{},0};
+            max_non_canonical--;
+            ancestor--;
+            auto header = db.read_header(blockNum, hash);
+            if (!header)
+                return {Hash{},0};
+            hash = header->parent_hash;
+            blockNum--;
+        }
+        return {hash, blockNum};
+    }
 };
 
 }
