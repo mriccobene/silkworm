@@ -107,7 +107,7 @@ class AsyncClient {
     using call_t = AsyncCall<STUB>;
 
     explicit AsyncClient(std::shared_ptr<grpc::Channel> channel)
-        : stub_(stub_t::NewStub(channel)) {}
+        : channel_(channel), stub_(stub_t::NewStub(channel)) {}
 
     // send an remote call asynchronously
     void exec_remotely(std::shared_ptr<call_t> call) {
@@ -146,6 +146,7 @@ class AsyncClient {
     }
 
   protected:
+    std::shared_ptr<grpc::Channel> channel_;
     std::unique_ptr<typename STUB::Stub> stub_; // the stub class generated from grpc proto
     grpc::CompletionQueue completionQueue_;  // receives async-call completion events from the gRPC runtime
 };
@@ -182,11 +183,11 @@ class AsyncUnaryCall: public AsyncCall<STUB> {
     }
 
     void reply_received([[maybe_unused]] bool ok) override {
+        call_t::terminated_ = true;
+
         // use status & reply
         if (call_t::callback_)
             call_t::callback_(*this);
-
-        call_t::terminated_ = true;
     }
 
     prepare_call_t prepare_call_; // Pointer to the prepare call method of the Stub
@@ -217,10 +218,11 @@ class AsyncOutStreamingCall: public AsyncCall<STUB> {
     }
 
     ~AsyncOutStreamingCall() {
-        response_reader_->Finish(&status_, tag_);  // communicate replay & status slots and tag
-
-        //if (!status_.ok())    // todo: check status here?
-        //    do some!
+        if (!call_t::terminated_) {
+            response_reader_->Finish(&status_, tag_);  // communicate replay & status slots and tag
+            call_t::terminated_ = true;
+        }
+        // no one will be able to check status_.ok(), maybe we need to have a stop method / todo: provide a stop method
     }
 
     //void on_complete(callback_t f) {callback_ = f;}
@@ -238,14 +240,16 @@ class AsyncOutStreamingCall: public AsyncCall<STUB> {
 
     void reply_received(bool ok) override {
         if (!ok) {         // todo: check if it is correct!
-            response_reader_->Finish(&status_, tag_);
+            response_reader_->Finish(&status_, tag_);   // this will populate status with the error condition
             call_t::terminated_ = true;
-            return;
         }
 
         // use status & reply
         if (call_t::callback_)
             call_t::callback_(*this);
+
+        if (call_t::terminated_)
+            return;     // exceptional path
 
         // todo: erase reply_ ?
         reply_ = {};

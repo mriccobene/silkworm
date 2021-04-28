@@ -17,6 +17,7 @@
 #define SILKWORM_SENTRYCLIENT_HPP
 
 #include <interfaces/sentry.grpc.pb.h>
+#include "TypesForGrpc.hpp"
 #include "gRPCAsyncClient.hpp"
 
 namespace silkworm {
@@ -27,13 +28,20 @@ class SentryClient: public rpc::AsyncClient<sentry::Sentry> {
   public:
     using base_t = rpc::AsyncClient<sentry::Sentry>;
 
-    SentryClient(std::shared_ptr<grpc::Channel> channel):
-        base_t(channel)
+    SentryClient(std::string sentry_addr):
+        base_t(grpc::CreateChannel(sentry_addr, grpc::InsecureChannelCredentials()))
     {}
+
+    /*
+    grpc::grpc_connectivity_state state() {
+        return channel_->GetState(true);
+    }
+    */
 
     void exec_remotely(std::shared_ptr<SentryRpc> rpc) {
         base_t::exec_remotely(rpc);
     }
+
 };
 
 }
