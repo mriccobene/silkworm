@@ -30,8 +30,7 @@ namespace silkworm {
 Stage1::Stage1(ChainIdentity chain_identity, std::string db_path, std::string sentry_addr):
     chain_identity_(std::move(chain_identity)),
     db_{db_path},
-    channel_{grpc::CreateChannel(sentry_addr, grpc::InsecureChannelCredentials())},
-    sentry_{channel_}
+    sentry_{sentry_addr}
 {
 }
 
@@ -46,19 +45,34 @@ void Stage1::execution_loop() { // no-thread version
 
     // set status
     auto set_status = rpc::SetStatus::make(chain_identity_.chain, chain_identity_.genesis_hash, chain_identity_.hard_forks, head_hash, head_td);
+    set_status->on_receive_reply([&](auto& call) {
+        if (!call.status().ok()) {
+            exiting_ = true;
+            std::cerr << "failed to set status to the remote sentry, cause:'" << call.status().error_message() << "', exiting...\n";
+        }
+    });
     sentry_.exec_remotely(set_status);
+    std::this_thread::sleep_for(3s); // wait for connection setup before submit other requests
 
     // start message receiving
+    /*
     auto receive_messages = rpc::ReceiveMessages::make();
-    receive_messages->on_receive_reply([&](auto&) { // unused parameter "call"
-      sentry::InboundMessage& raw_reply = receive_messages->reply();
-      auto reply = InboundMessage::make(raw_reply);
-      incoming_msgs.push(reply);
+    receive_messages->on_receive_reply([&](auto& call) {
+        if (!call.terminated()) {
+            sentry::InboundMessage& raw_reply = receive_messages->reply();
+            auto reply = InboundMessage::make(raw_reply);
+            incoming_msgs.push(reply);
+        }
+        else {
+            exiting_ = true;
+            std::cerr << "receiving messages stream interrupted, cause:'" << call.status().error_message() << "', exiting...\n";
+        }
     });
     sentry_.exec_remotely(receive_messages);
+    */
 
-    // receive message
-    std::thread receiving{[&]() {
+    // handling async rpc
+    std::thread rpc_handling{[&]() {    // todo: add try...catch to trap exceptions and set exiting_=true to cause other thread exiting
       while (!exiting_) {
           auto executed_rpc = sentry_.receive_one_result();
             // check executed_rpc status?
@@ -67,10 +81,11 @@ void Stage1::execution_loop() { // no-thread version
               if (status.ok())
                   std::cout << "RPC ok";
               else
-                  std::cerr << "RPC failed, error: " << status.error_message() << ", code: " << status.error_code()
+                  std::cerr << "RPC failed, error: '" << status.error_message() << "', code: " << status.error_code()
                             << ", details: " << status.error_details() << std::endl;
           }
         }
+      std::cerr << "rpc_handling thread exiting...\n";
     }};
 
     // reply to inbound requests
@@ -85,6 +100,7 @@ void Stage1::execution_loop() { // no-thread version
               }
           }
       }
+      std::cerr << "responding thread exiting...\n";
     }};
 
     // make outbound requests
@@ -102,9 +118,10 @@ void Stage1::execution_loop() { // no-thread version
           else
             std::this_thread::sleep_for(5s);
       }
+      std::cerr << "requesting thread exiting...\n";
     }};
 
-    receiving.join();
+    rpc_handling.join();
     responding.join();
     requesting.join();
 }

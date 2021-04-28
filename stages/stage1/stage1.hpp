@@ -40,7 +40,6 @@ class Stage {
 class Stage1 : public Stage {
     ChainIdentity chain_identity_;
     DbTx db_;
-    std::shared_ptr<grpc_impl::Channel> channel_;
     SentryClient sentry_;
 
   public:
