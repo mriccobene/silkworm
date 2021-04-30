@@ -92,45 +92,43 @@ void Stage1::execution_loop() { // no-thread version
     }};
 
     // reply to inbound requests
-    std::thread responding{[&]() {
+    std::thread message_processing{[&]() {
       while (!exiting_) {
-          shared_ptr<InboundMessage> msg;
-          if (incoming_msgs.timed_wait_and_pop(msg, 1000ms)) {
-              SILKWORM_LOG(LogDebug) << "Processing request\n"; // todo: log message name
-              shared_ptr<OutboundMessage> reply = msg->execute();
-              if (reply) {
-                  SILKWORM_LOG(LogInfo) << "Replying to request\n"; // todo: log message name
-                  auto reply_rpc = reply->create_send_rpc();
-                  sentry_.exec_remotely(reply_rpc);
-              }
-          }
+          shared_ptr<InboundMessage> in_msg;
+          bool present = incoming_msgs.timed_wait_and_pop(in_msg, 1000ms);
+          if (!present) continue;   // timeout
+          SILKWORM_LOG(LogDebug) << "Processing message\n"; // todo: log message name
+          shared_ptr<OutboundMessage> out_msg = in_msg->execute();
+          if (!out_msg) continue;
+          SILKWORM_LOG(LogInfo) << "Replying to request\n"; // todo: log message name
+          auto out_rpc = out_msg->create_send_rpc();
+          out_rpc->on_receive_reply([out_msg](auto& call) { // copy request and retain its lifetime (shared_ptr)
+            SILKWORM_LOG(LogInfo) << "Received reply to our request\n"; // todo: log message name
+            out_msg->receive_reply(call);    // call convey reply (SentPeers or Empty)  // pericoloso... altro thread
+          });
+          sentry_.exec_remotely(out_rpc);
+
       }
-      SILKWORM_LOG(LogInfo) << "responding thread exiting...\n";
+      SILKWORM_LOG(LogInfo) << "message_processing thread exiting...\n";
     }};
 
+
     // make outbound requests
-    std::thread requesting{[&]() {
+    std::thread triggering{[&]() {
       while (!exiting_) {
           // check if we need to do a request to the peers
-          shared_ptr<OutboundMessage> request = BlockRequestLogic::execute();
-          if (request) {
-              SILKWORM_LOG(LogInfo) << "Sending request\n"; // todo: log message name
-              auto rpc = request->create_send_rpc();
-              rpc->on_receive_reply([request](auto& call) { // copy request and retain its lifetime (shared_ptr)
-                SILKWORM_LOG(LogInfo) << "Received reply to our request\n"; // todo: log message name
-                request->receive_reply(call);    // call convey reply (SentPeers or Empty)
-              });
-              sentry_.exec_remotely(rpc);
-          }
-          else
-            std::this_thread::sleep_for(5s);
+          /* todo: implement this
+          shared_ptr<InboundMessage> special = std::make_shared<SimulateRequestMessage>();
+          incoming_msgs.push(special);  // in special->execute() will be called BlockRequestLogic::execute();
+          */
+          std::this_thread::sleep_for(5s);
       }
-      SILKWORM_LOG(LogInfo) << "requesting thread exiting...\n";
+      SILKWORM_LOG(LogInfo) << "triggering thread exiting...\n";
     }};
 
     rpc_handling.join();
-    responding.join();
-    requesting.join();
+    message_processing.join();
+    triggering.join();
 }
 
 }  // namespace silkworm
