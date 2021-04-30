@@ -20,7 +20,7 @@
 namespace silkworm {
 
 OutboundSendMessageByIdRequest::OutboundSendMessageByIdRequest(const std::string& peerId, std::unique_ptr<sentry::OutboundMessageData> message) {
-    packet_.set_peer_id(peerId);
+    packet_.set_allocated_peer_id(to_H512(peerId).release());
     packet_.set_allocated_data(message.release());  // take ownership
 }
 

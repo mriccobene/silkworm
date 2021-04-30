@@ -33,6 +33,27 @@ find_program(PROTOBUF_PROTOC protoc REQUIRED)
 find_package(gRPC CONFIG REQUIRED)
 find_program(GRPC_CPP_PLUGIN_EXECUTABLE grpc_cpp_plugin REQUIRED)
 
+# ---------------------------------------------------------------------------------------------------------------------
+# types proto file
+get_filename_component(TYPES_PROTO "types.proto" ABSOLUTE)
+get_filename_component(TYPES_PROTO_PATH "${TYPES_PROTO}" PATH)
+
+# types sources
+set(TYPES_PROTO_SOURCES "${CMAKE_CURRENT_SOURCE_DIR}/types.pb.cc")
+set(TYPES_PROTO_HEADERS "${CMAKE_CURRENT_SOURCE_DIR}/types.pb.h")
+
+add_custom_command(
+        OUTPUT "${TYPES_PROTO_SOURCES}" "${TYPES_PROTO_HEADERS}"
+        COMMAND ${PROTOBUF_PROTOC}
+        ARGS --grpc_out "${CMAKE_CURRENT_SOURCE_DIR}"
+        --cpp_out "${CMAKE_CURRENT_SOURCE_DIR}"
+        -I "${TYPES_PROTO_PATH}"
+        --plugin=protoc-gen-grpc="${GRPC_CPP_PLUGIN_EXECUTABLE}"
+        "${TYPES_PROTO}"
+        DEPENDS "${TYPES_PROTO}"
+)
+
+# ---------------------------------------------------------------------------------------------------------------------
 # gRPC proto file
 get_filename_component(SENTRY_PROTO "sentry.proto" ABSOLUTE)
 get_filename_component(SENTRY_PROTO_PATH "${SENTRY_PROTO}" PATH)
@@ -57,4 +78,5 @@ add_custom_command(
 add_custom_target(
     generate_sentry_grpc
     DEPENDS "${SENTRY_PROTO_SOURCES}" "${SENTRY_PROTO_HEADERS}" "${SENTRY_GRPC_SOURCES}" "${SENTRY_GRPC_HEADERS}"
+            "${TYPES_PROTO_SOURCES}" "${TYPES_PROTO_HEADERS}"
 )

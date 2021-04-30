@@ -14,8 +14,10 @@
 #include <google/protobuf/wire_format.h>
 // @@protoc_insertion_point(includes)
 #include <google/protobuf/port_def.inc>
-extern PROTOBUF_INTERNAL_EXPORT_sentry_2eproto ::PROTOBUF_NAMESPACE_ID::internal::SCCInfo<0> scc_info_Forks_sentry_2eproto;
+extern PROTOBUF_INTERNAL_EXPORT_sentry_2eproto ::PROTOBUF_NAMESPACE_ID::internal::SCCInfo<1> scc_info_Forks_sentry_2eproto;
 extern PROTOBUF_INTERNAL_EXPORT_sentry_2eproto ::PROTOBUF_NAMESPACE_ID::internal::SCCInfo<0> scc_info_OutboundMessageData_sentry_2eproto;
+extern PROTOBUF_INTERNAL_EXPORT_types_2eproto ::PROTOBUF_NAMESPACE_ID::internal::SCCInfo<1> scc_info_H256_types_2eproto;
+extern PROTOBUF_INTERNAL_EXPORT_types_2eproto ::PROTOBUF_NAMESPACE_ID::internal::SCCInfo<1> scc_info_H512_types_2eproto;
 namespace sentry {
 class OutboundMessageDataDefaultTypeInternal {
  public:
@@ -69,8 +71,9 @@ static void InitDefaultsscc_info_Forks_sentry_2eproto() {
   ::sentry::Forks::InitAsDefaultInstance();
 }
 
-::PROTOBUF_NAMESPACE_ID::internal::SCCInfo<0> scc_info_Forks_sentry_2eproto =
-    {{ATOMIC_VAR_INIT(::PROTOBUF_NAMESPACE_ID::internal::SCCInfoBase::kUninitialized), 0, 0, InitDefaultsscc_info_Forks_sentry_2eproto}, {}};
+::PROTOBUF_NAMESPACE_ID::internal::SCCInfo<1> scc_info_Forks_sentry_2eproto =
+    {{ATOMIC_VAR_INIT(::PROTOBUF_NAMESPACE_ID::internal::SCCInfoBase::kUninitialized), 1, 0, InitDefaultsscc_info_Forks_sentry_2eproto}, {
+      &scc_info_H256_types_2eproto.base,}};
 
 static void InitDefaultsscc_info_InboundMessage_sentry_2eproto() {
   GOOGLE_PROTOBUF_VERIFY_VERSION;
@@ -83,8 +86,9 @@ static void InitDefaultsscc_info_InboundMessage_sentry_2eproto() {
   ::sentry::InboundMessage::InitAsDefaultInstance();
 }
 
-::PROTOBUF_NAMESPACE_ID::internal::SCCInfo<0> scc_info_InboundMessage_sentry_2eproto =
-    {{ATOMIC_VAR_INIT(::PROTOBUF_NAMESPACE_ID::internal::SCCInfoBase::kUninitialized), 0, 0, InitDefaultsscc_info_InboundMessage_sentry_2eproto}, {}};
+::PROTOBUF_NAMESPACE_ID::internal::SCCInfo<1> scc_info_InboundMessage_sentry_2eproto =
+    {{ATOMIC_VAR_INIT(::PROTOBUF_NAMESPACE_ID::internal::SCCInfoBase::kUninitialized), 1, 0, InitDefaultsscc_info_InboundMessage_sentry_2eproto}, {
+      &scc_info_H512_types_2eproto.base,}};
 
 static void InitDefaultsscc_info_OutboundMessageData_sentry_2eproto() {
   GOOGLE_PROTOBUF_VERIFY_VERSION;
@@ -111,8 +115,9 @@ static void InitDefaultsscc_info_PeerMinBlockRequest_sentry_2eproto() {
   ::sentry::PeerMinBlockRequest::InitAsDefaultInstance();
 }
 
-::PROTOBUF_NAMESPACE_ID::internal::SCCInfo<0> scc_info_PeerMinBlockRequest_sentry_2eproto =
-    {{ATOMIC_VAR_INIT(::PROTOBUF_NAMESPACE_ID::internal::SCCInfoBase::kUninitialized), 0, 0, InitDefaultsscc_info_PeerMinBlockRequest_sentry_2eproto}, {}};
+::PROTOBUF_NAMESPACE_ID::internal::SCCInfo<1> scc_info_PeerMinBlockRequest_sentry_2eproto =
+    {{ATOMIC_VAR_INIT(::PROTOBUF_NAMESPACE_ID::internal::SCCInfoBase::kUninitialized), 1, 0, InitDefaultsscc_info_PeerMinBlockRequest_sentry_2eproto}, {
+      &scc_info_H512_types_2eproto.base,}};
 
 static void InitDefaultsscc_info_PenalizePeerRequest_sentry_2eproto() {
   GOOGLE_PROTOBUF_VERIFY_VERSION;
@@ -125,8 +130,9 @@ static void InitDefaultsscc_info_PenalizePeerRequest_sentry_2eproto() {
   ::sentry::PenalizePeerRequest::InitAsDefaultInstance();
 }
 
-::PROTOBUF_NAMESPACE_ID::internal::SCCInfo<0> scc_info_PenalizePeerRequest_sentry_2eproto =
-    {{ATOMIC_VAR_INIT(::PROTOBUF_NAMESPACE_ID::internal::SCCInfoBase::kUninitialized), 0, 0, InitDefaultsscc_info_PenalizePeerRequest_sentry_2eproto}, {}};
+::PROTOBUF_NAMESPACE_ID::internal::SCCInfo<1> scc_info_PenalizePeerRequest_sentry_2eproto =
+    {{ATOMIC_VAR_INIT(::PROTOBUF_NAMESPACE_ID::internal::SCCInfoBase::kUninitialized), 1, 0, InitDefaultsscc_info_PenalizePeerRequest_sentry_2eproto}, {
+      &scc_info_H512_types_2eproto.base,}};
 
 static void InitDefaultsscc_info_SendMessageByIdRequest_sentry_2eproto() {
   GOOGLE_PROTOBUF_VERIFY_VERSION;
@@ -139,9 +145,10 @@ static void InitDefaultsscc_info_SendMessageByIdRequest_sentry_2eproto() {
   ::sentry::SendMessageByIdRequest::InitAsDefaultInstance();
 }
 
-::PROTOBUF_NAMESPACE_ID::internal::SCCInfo<1> scc_info_SendMessageByIdRequest_sentry_2eproto =
-    {{ATOMIC_VAR_INIT(::PROTOBUF_NAMESPACE_ID::internal::SCCInfoBase::kUninitialized), 1, 0, InitDefaultsscc_info_SendMessageByIdRequest_sentry_2eproto}, {
-      &scc_info_OutboundMessageData_sentry_2eproto.base,}};
+::PROTOBUF_NAMESPACE_ID::internal::SCCInfo<2> scc_info_SendMessageByIdRequest_sentry_2eproto =
+    {{ATOMIC_VAR_INIT(::PROTOBUF_NAMESPACE_ID::internal::SCCInfoBase::kUninitialized), 2, 0, InitDefaultsscc_info_SendMessageByIdRequest_sentry_2eproto}, {
+      &scc_info_OutboundMessageData_sentry_2eproto.base,
+      &scc_info_H512_types_2eproto.base,}};
 
 static void InitDefaultsscc_info_SendMessageByMinBlockRequest_sentry_2eproto() {
   GOOGLE_PROTOBUF_VERIFY_VERSION;
@@ -184,8 +191,9 @@ static void InitDefaultsscc_info_SentPeers_sentry_2eproto() {
   ::sentry::SentPeers::InitAsDefaultInstance();
 }
 
-::PROTOBUF_NAMESPACE_ID::internal::SCCInfo<0> scc_info_SentPeers_sentry_2eproto =
-    {{ATOMIC_VAR_INIT(::PROTOBUF_NAMESPACE_ID::internal::SCCInfoBase::kUninitialized), 0, 0, InitDefaultsscc_info_SentPeers_sentry_2eproto}, {}};
+::PROTOBUF_NAMESPACE_ID::internal::SCCInfo<1> scc_info_SentPeers_sentry_2eproto =
+    {{ATOMIC_VAR_INIT(::PROTOBUF_NAMESPACE_ID::internal::SCCInfoBase::kUninitialized), 1, 0, InitDefaultsscc_info_SentPeers_sentry_2eproto}, {
+      &scc_info_H512_types_2eproto.base,}};
 
 static void InitDefaultsscc_info_StatusData_sentry_2eproto() {
   GOOGLE_PROTOBUF_VERIFY_VERSION;
@@ -198,8 +206,9 @@ static void InitDefaultsscc_info_StatusData_sentry_2eproto() {
   ::sentry::StatusData::InitAsDefaultInstance();
 }
 
-::PROTOBUF_NAMESPACE_ID::internal::SCCInfo<1> scc_info_StatusData_sentry_2eproto =
-    {{ATOMIC_VAR_INIT(::PROTOBUF_NAMESPACE_ID::internal::SCCInfoBase::kUninitialized), 1, 0, InitDefaultsscc_info_StatusData_sentry_2eproto}, {
+::PROTOBUF_NAMESPACE_ID::internal::SCCInfo<2> scc_info_StatusData_sentry_2eproto =
+    {{ATOMIC_VAR_INIT(::PROTOBUF_NAMESPACE_ID::internal::SCCInfoBase::kUninitialized), 2, 0, InitDefaultsscc_info_StatusData_sentry_2eproto}, {
+      &scc_info_H256_types_2eproto.base,
       &scc_info_Forks_sentry_2eproto.base,}};
 
 static ::PROTOBUF_NAMESPACE_ID::Metadata file_level_metadata_sentry_2eproto[10];
@@ -279,6 +288,7 @@ const ::PROTOBUF_NAMESPACE_ID::uint32 TableStruct_sentry_2eproto::offsets[] PROT
   PROTOBUF_FIELD_OFFSET(::sentry::StatusData, total_difficulty_),
   PROTOBUF_FIELD_OFFSET(::sentry::StatusData, best_hash_),
   PROTOBUF_FIELD_OFFSET(::sentry::StatusData, fork_data_),
+  PROTOBUF_FIELD_OFFSET(::sentry::StatusData, max_block_),
 };
 static const ::PROTOBUF_NAMESPACE_ID::internal::MigrationSchema schemas[] PROTOBUF_SECTION_VARIABLE(protodesc_cold) = {
   { 0, -1, sizeof(::sentry::OutboundMessageData)},
@@ -308,52 +318,59 @@ static ::PROTOBUF_NAMESPACE_ID::Message const * const file_default_instances[] =
 
 const char descriptor_table_protodef_sentry_2eproto[] PROTOBUF_SECTION_VARIABLE(protodesc_cold) =
   "\n\014sentry.proto\022\006sentry\032\033google/protobuf/"
-  "empty.proto\"B\n\023OutboundMessageData\022\035\n\002id"
-  "\030\001 \001(\0162\021.sentry.MessageId\022\014\n\004data\030\002 \001(\014\""
-  "\\\n\034SendMessageByMinBlockRequest\022)\n\004data\030"
-  "\001 \001(\0132\033.sentry.OutboundMessageData\022\021\n\tmi"
-  "n_block\030\002 \001(\004\"T\n\026SendMessageByIdRequest\022"
-  ")\n\004data\030\001 \001(\0132\033.sentry.OutboundMessageDa"
-  "ta\022\017\n\007peer_id\030\002 \001(\014\"_\n\037SendMessageToRand"
-  "omPeersRequest\022)\n\004data\030\001 \001(\0132\033.sentry.Ou"
-  "tboundMessageData\022\021\n\tmax_peers\030\002 \001(\004\"\032\n\t"
-  "SentPeers\022\r\n\005peers\030\001 \003(\014\"L\n\023PenalizePeer"
-  "Request\022\017\n\007peer_id\030\001 \001(\014\022$\n\007penalty\030\002 \001("
-  "\0162\023.sentry.PenaltyKind\"9\n\023PeerMinBlockRe"
-  "quest\022\017\n\007peer_id\030\001 \001(\014\022\021\n\tmin_block\030\002 \001("
-  "\004\"N\n\016InboundMessage\022\035\n\002id\030\001 \001(\0162\021.sentry"
-  ".MessageId\022\014\n\004data\030\002 \001(\014\022\017\n\007peer_id\030\003 \001("
-  "\014\"\'\n\005Forks\022\017\n\007genesis\030\001 \001(\014\022\r\n\005forks\030\002 \003"
-  "(\004\"o\n\nStatusData\022\022\n\nnetwork_id\030\001 \001(\004\022\030\n\020"
-  "total_difficulty\030\002 \001(\014\022\021\n\tbest_hash\030\003 \001("
-  "\014\022 \n\tfork_data\030\004 \001(\0132\r.sentry.Forks*\230\001\n\t"
-  "MessageId\022\023\n\017GetBlockHeaders\020\000\022\022\n\016GetBlo"
-  "ckBodies\020\001\022\017\n\013GetNodeData\020\002\022\022\n\016NewBlockH"
-  "ashes\020\003\022\020\n\014BlockHeaders\020\004\022\017\n\013BlockBodies"
-  "\020\005\022\014\n\010NewBlock\020\006\022\014\n\010NodeData\020\007*\027\n\013Penalt"
-  "yKind\022\010\n\004Kick\020\0002\326\005\n\006Sentry\022C\n\014PenalizePe"
-  "er\022\033.sentry.PenalizePeerRequest\032\026.google"
-  ".protobuf.Empty\022C\n\014PeerMinBlock\022\033.sentry"
-  ".PeerMinBlockRequest\032\026.google.protobuf.E"
-  "mpty\022P\n\025SendMessageByMinBlock\022$.sentry.S"
-  "endMessageByMinBlockRequest\032\021.sentry.Sen"
-  "tPeers\022D\n\017SendMessageById\022\036.sentry.SendM"
-  "essageByIdRequest\032\021.sentry.SentPeers\022V\n\030"
-  "SendMessageToRandomPeers\022\'.sentry.SendMe"
-  "ssageToRandomPeersRequest\032\021.sentry.SentP"
-  "eers\022B\n\020SendMessageToAll\022\033.sentry.Outbou"
-  "ndMessageData\032\021.sentry.SentPeers\0227\n\tSetS"
-  "tatus\022\022.sentry.StatusData\032\026.google.proto"
-  "buf.Empty\022C\n\017ReceiveMessages\022\026.google.pr"
-  "otobuf.Empty\032\026.sentry.InboundMessage0\001\022I"
-  "\n\025ReceiveUploadMessages\022\026.google.protobu"
-  "f.Empty\032\026.sentry.InboundMessage0\001\022E\n\021Rec"
-  "eiveTxMessages\022\026.google.protobuf.Empty\032\026"
-  ".sentry.InboundMessage0\001B\021Z\017./sentry;sen"
-  "tryb\006proto3"
+  "empty.proto\032\013types.proto\"B\n\023OutboundMess"
+  "ageData\022\035\n\002id\030\001 \001(\0162\021.sentry.MessageId\022\014"
+  "\n\004data\030\002 \001(\014\"\\\n\034SendMessageByMinBlockReq"
+  "uest\022)\n\004data\030\001 \001(\0132\033.sentry.OutboundMess"
+  "ageData\022\021\n\tmin_block\030\002 \001(\004\"a\n\026SendMessag"
+  "eByIdRequest\022)\n\004data\030\001 \001(\0132\033.sentry.Outb"
+  "oundMessageData\022\034\n\007peer_id\030\002 \001(\0132\013.types"
+  ".H512\"_\n\037SendMessageToRandomPeersRequest"
+  "\022)\n\004data\030\001 \001(\0132\033.sentry.OutboundMessageD"
+  "ata\022\021\n\tmax_peers\030\002 \001(\004\"\'\n\tSentPeers\022\032\n\005p"
+  "eers\030\001 \003(\0132\013.types.H512\"Y\n\023PenalizePeerR"
+  "equest\022\034\n\007peer_id\030\001 \001(\0132\013.types.H512\022$\n\007"
+  "penalty\030\002 \001(\0162\023.sentry.PenaltyKind\"F\n\023Pe"
+  "erMinBlockRequest\022\034\n\007peer_id\030\001 \001(\0132\013.typ"
+  "es.H512\022\021\n\tmin_block\030\002 \001(\004\"[\n\016InboundMes"
+  "sage\022\035\n\002id\030\001 \001(\0162\021.sentry.MessageId\022\014\n\004d"
+  "ata\030\002 \001(\014\022\034\n\007peer_id\030\003 \001(\0132\013.types.H512\""
+  "4\n\005Forks\022\034\n\007genesis\030\001 \001(\0132\013.types.H256\022\r"
+  "\n\005forks\030\002 \003(\004\"\234\001\n\nStatusData\022\022\n\nnetwork_"
+  "id\030\001 \001(\004\022%\n\020total_difficulty\030\002 \001(\0132\013.typ"
+  "es.H256\022\036\n\tbest_hash\030\003 \001(\0132\013.types.H256\022"
+  " \n\tfork_data\030\004 \001(\0132\r.sentry.Forks\022\021\n\tmax"
+  "_block\030\005 \001(\004*\234\002\n\tMessageId\022\022\n\016NewBlockHa"
+  "shes\020\000\022\014\n\010NewBlock\020\001\022\020\n\014Transactions\020\002\022\036"
+  "\n\032NewPooledTransactionHashes\020\003\022\023\n\017GetBlo"
+  "ckHeaders\020\004\022\022\n\016GetBlockBodies\020\005\022\017\n\013GetNo"
+  "deData\020\006\022\017\n\013GetReceipts\020\007\022\031\n\025GetPooledTr"
+  "ansactions\020\010\022\020\n\014BlockHeaders\020\t\022\017\n\013BlockB"
+  "odies\020\n\022\014\n\010NodeData\020\013\022\014\n\010Receipts\020\014\022\026\n\022P"
+  "ooledTransactions\020\r*\027\n\013PenaltyKind\022\010\n\004Ki"
+  "ck\020\0002\326\005\n\006Sentry\022C\n\014PenalizePeer\022\033.sentry"
+  ".PenalizePeerRequest\032\026.google.protobuf.E"
+  "mpty\022C\n\014PeerMinBlock\022\033.sentry.PeerMinBlo"
+  "ckRequest\032\026.google.protobuf.Empty\022P\n\025Sen"
+  "dMessageByMinBlock\022$.sentry.SendMessageB"
+  "yMinBlockRequest\032\021.sentry.SentPeers\022D\n\017S"
+  "endMessageById\022\036.sentry.SendMessageByIdR"
+  "equest\032\021.sentry.SentPeers\022V\n\030SendMessage"
+  "ToRandomPeers\022\'.sentry.SendMessageToRand"
+  "omPeersRequest\032\021.sentry.SentPeers\022B\n\020Sen"
+  "dMessageToAll\022\033.sentry.OutboundMessageDa"
+  "ta\032\021.sentry.SentPeers\0227\n\tSetStatus\022\022.sen"
+  "try.StatusData\032\026.google.protobuf.Empty\022C"
+  "\n\017ReceiveMessages\022\026.google.protobuf.Empt"
+  "y\032\026.sentry.InboundMessage0\001\022I\n\025ReceiveUp"
+  "loadMessages\022\026.google.protobuf.Empty\032\026.s"
+  "entry.InboundMessage0\001\022E\n\021ReceiveTxMessa"
+  "ges\022\026.google.protobuf.Empty\032\026.sentry.Inb"
+  "oundMessage0\001B\021Z\017./sentry;sentryb\006proto3"
   ;
-static const ::PROTOBUF_NAMESPACE_ID::internal::DescriptorTable*const descriptor_table_sentry_2eproto_deps[1] = {
+static const ::PROTOBUF_NAMESPACE_ID::internal::DescriptorTable*const descriptor_table_sentry_2eproto_deps[2] = {
   &::descriptor_table_google_2fprotobuf_2fempty_2eproto,
+  &::descriptor_table_types_2eproto,
 };
 static ::PROTOBUF_NAMESPACE_ID::internal::SCCInfoBase*const descriptor_table_sentry_2eproto_sccs[10] = {
   &scc_info_Forks_sentry_2eproto.base,
@@ -369,8 +386,8 @@ static ::PROTOBUF_NAMESPACE_ID::internal::SCCInfoBase*const descriptor_table_sen
 };
 static ::PROTOBUF_NAMESPACE_ID::internal::once_flag descriptor_table_sentry_2eproto_once;
 const ::PROTOBUF_NAMESPACE_ID::internal::DescriptorTable descriptor_table_sentry_2eproto = {
-  false, false, descriptor_table_protodef_sentry_2eproto, "sentry.proto", 1731,
-  &descriptor_table_sentry_2eproto_once, descriptor_table_sentry_2eproto_sccs, descriptor_table_sentry_2eproto_deps, 10, 1,
+  false, false, descriptor_table_protodef_sentry_2eproto, "sentry.proto", 2000,
+  &descriptor_table_sentry_2eproto_once, descriptor_table_sentry_2eproto_sccs, descriptor_table_sentry_2eproto_deps, 10, 2,
   schemas, file_default_instances, TableStruct_sentry_2eproto::offsets,
   file_level_metadata_sentry_2eproto, 10, file_level_enum_descriptors_sentry_2eproto, file_level_service_descriptors_sentry_2eproto,
 };
@@ -392,6 +409,12 @@ bool MessageId_IsValid(int value) {
     case 5:
     case 6:
     case 7:
+    case 8:
+    case 9:
+    case 10:
+    case 11:
+    case 12:
+    case 13:
       return true;
     default:
       return false;
@@ -896,15 +919,28 @@ void SendMessageByMinBlockRequest::InternalSwap(SendMessageByMinBlockRequest* ot
 void SendMessageByIdRequest::InitAsDefaultInstance() {
   ::sentry::_SendMessageByIdRequest_default_instance_._instance.get_mutable()->data_ = const_cast< ::sentry::OutboundMessageData*>(
       ::sentry::OutboundMessageData::internal_default_instance());
+  ::sentry::_SendMessageByIdRequest_default_instance_._instance.get_mutable()->peer_id_ = const_cast< ::types::H512*>(
+      ::types::H512::internal_default_instance());
 }
 class SendMessageByIdRequest::_Internal {
  public:
   static const ::sentry::OutboundMessageData& data(const SendMessageByIdRequest* msg);
+  static const ::types::H512& peer_id(const SendMessageByIdRequest* msg);
 };
 
 const ::sentry::OutboundMessageData&
 SendMessageByIdRequest::_Internal::data(const SendMessageByIdRequest* msg) {
   return *msg->data_;
+}
+const ::types::H512&
+SendMessageByIdRequest::_Internal::peer_id(const SendMessageByIdRequest* msg) {
+  return *msg->peer_id_;
+}
+void SendMessageByIdRequest::clear_peer_id() {
+  if (GetArena() == nullptr && peer_id_ != nullptr) {
+    delete peer_id_;
+  }
+  peer_id_ = nullptr;
 }
 SendMessageByIdRequest::SendMessageByIdRequest(::PROTOBUF_NAMESPACE_ID::Arena* arena)
   : ::PROTOBUF_NAMESPACE_ID::Message(arena) {
@@ -915,23 +951,24 @@ SendMessageByIdRequest::SendMessageByIdRequest(::PROTOBUF_NAMESPACE_ID::Arena* a
 SendMessageByIdRequest::SendMessageByIdRequest(const SendMessageByIdRequest& from)
   : ::PROTOBUF_NAMESPACE_ID::Message() {
   _internal_metadata_.MergeFrom<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(from._internal_metadata_);
-  peer_id_.UnsafeSetDefault(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
-  if (!from._internal_peer_id().empty()) {
-    peer_id_.Set(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), from._internal_peer_id(),
-      GetArena());
-  }
   if (from._internal_has_data()) {
     data_ = new ::sentry::OutboundMessageData(*from.data_);
   } else {
     data_ = nullptr;
+  }
+  if (from._internal_has_peer_id()) {
+    peer_id_ = new ::types::H512(*from.peer_id_);
+  } else {
+    peer_id_ = nullptr;
   }
   // @@protoc_insertion_point(copy_constructor:sentry.SendMessageByIdRequest)
 }
 
 void SendMessageByIdRequest::SharedCtor() {
   ::PROTOBUF_NAMESPACE_ID::internal::InitSCC(&scc_info_SendMessageByIdRequest_sentry_2eproto.base);
-  peer_id_.UnsafeSetDefault(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
-  data_ = nullptr;
+  ::memset(&data_, 0, static_cast<size_t>(
+      reinterpret_cast<char*>(&peer_id_) -
+      reinterpret_cast<char*>(&data_)) + sizeof(peer_id_));
 }
 
 SendMessageByIdRequest::~SendMessageByIdRequest() {
@@ -942,8 +979,8 @@ SendMessageByIdRequest::~SendMessageByIdRequest() {
 
 void SendMessageByIdRequest::SharedDtor() {
   GOOGLE_DCHECK(GetArena() == nullptr);
-  peer_id_.DestroyNoArena(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
   if (this != internal_default_instance()) delete data_;
+  if (this != internal_default_instance()) delete peer_id_;
 }
 
 void SendMessageByIdRequest::ArenaDtor(void* object) {
@@ -967,11 +1004,14 @@ void SendMessageByIdRequest::Clear() {
   // Prevent compiler warnings about cached_has_bits being unused
   (void) cached_has_bits;
 
-  peer_id_.ClearToEmpty(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), GetArena());
   if (GetArena() == nullptr && data_ != nullptr) {
     delete data_;
   }
   data_ = nullptr;
+  if (GetArena() == nullptr && peer_id_ != nullptr) {
+    delete peer_id_;
+  }
+  peer_id_ = nullptr;
   _internal_metadata_.Clear<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>();
 }
 
@@ -990,11 +1030,10 @@ const char* SendMessageByIdRequest::_InternalParse(const char* ptr, ::PROTOBUF_N
           CHK_(ptr);
         } else goto handle_unusual;
         continue;
-      // bytes peer_id = 2;
+      // .types.H512 peer_id = 2;
       case 2:
         if (PROTOBUF_PREDICT_TRUE(static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) == 18)) {
-          auto str = _internal_mutable_peer_id();
-          ptr = ::PROTOBUF_NAMESPACE_ID::internal::InlineGreedyStringParser(str, ptr, ctx);
+          ptr = ctx->ParseMessage(_internal_mutable_peer_id(), ptr);
           CHK_(ptr);
         } else goto handle_unusual;
         continue;
@@ -1034,10 +1073,12 @@ failure:
         1, _Internal::data(this), target, stream);
   }
 
-  // bytes peer_id = 2;
-  if (this->peer_id().size() > 0) {
-    target = stream->WriteBytesMaybeAliased(
-        2, this->_internal_peer_id(), target);
+  // .types.H512 peer_id = 2;
+  if (this->has_peer_id()) {
+    target = stream->EnsureSpace(target);
+    target = ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::
+      InternalWriteMessage(
+        2, _Internal::peer_id(this), target, stream);
   }
 
   if (PROTOBUF_PREDICT_FALSE(_internal_metadata_.have_unknown_fields())) {
@@ -1056,18 +1097,18 @@ size_t SendMessageByIdRequest::ByteSizeLong() const {
   // Prevent compiler warnings about cached_has_bits being unused
   (void) cached_has_bits;
 
-  // bytes peer_id = 2;
-  if (this->peer_id().size() > 0) {
-    total_size += 1 +
-      ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::BytesSize(
-        this->_internal_peer_id());
-  }
-
   // .sentry.OutboundMessageData data = 1;
   if (this->has_data()) {
     total_size += 1 +
       ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::MessageSize(
         *data_);
+  }
+
+  // .types.H512 peer_id = 2;
+  if (this->has_peer_id()) {
+    total_size += 1 +
+      ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::MessageSize(
+        *peer_id_);
   }
 
   if (PROTOBUF_PREDICT_FALSE(_internal_metadata_.have_unknown_fields())) {
@@ -1101,11 +1142,11 @@ void SendMessageByIdRequest::MergeFrom(const SendMessageByIdRequest& from) {
   ::PROTOBUF_NAMESPACE_ID::uint32 cached_has_bits = 0;
   (void) cached_has_bits;
 
-  if (from.peer_id().size() > 0) {
-    _internal_set_peer_id(from._internal_peer_id());
-  }
   if (from.has_data()) {
     _internal_mutable_data()->::sentry::OutboundMessageData::MergeFrom(from._internal_data());
+  }
+  if (from.has_peer_id()) {
+    _internal_mutable_peer_id()->::types::H512::MergeFrom(from._internal_peer_id());
   }
 }
 
@@ -1130,8 +1171,12 @@ bool SendMessageByIdRequest::IsInitialized() const {
 void SendMessageByIdRequest::InternalSwap(SendMessageByIdRequest* other) {
   using std::swap;
   _internal_metadata_.Swap<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(&other->_internal_metadata_);
-  peer_id_.Swap(&other->peer_id_, &::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), GetArena());
-  swap(data_, other->data_);
+  ::PROTOBUF_NAMESPACE_ID::internal::memswap<
+      PROTOBUF_FIELD_OFFSET(SendMessageByIdRequest, peer_id_)
+      + sizeof(SendMessageByIdRequest::peer_id_)
+      - PROTOBUF_FIELD_OFFSET(SendMessageByIdRequest, data_)>(
+          reinterpret_cast<char*>(&data_),
+          reinterpret_cast<char*>(&other->data_));
 }
 
 ::PROTOBUF_NAMESPACE_ID::Metadata SendMessageByIdRequest::GetMetadata() const {
@@ -1394,6 +1439,9 @@ class SentPeers::_Internal {
  public:
 };
 
+void SentPeers::clear_peers() {
+  peers_.Clear();
+}
 SentPeers::SentPeers(::PROTOBUF_NAMESPACE_ID::Arena* arena)
   : ::PROTOBUF_NAMESPACE_ID::Message(arena),
   peers_(arena) {
@@ -1455,14 +1503,13 @@ const char* SentPeers::_InternalParse(const char* ptr, ::PROTOBUF_NAMESPACE_ID::
     ptr = ::PROTOBUF_NAMESPACE_ID::internal::ReadTag(ptr, &tag);
     CHK_(ptr);
     switch (tag >> 3) {
-      // repeated bytes peers = 1;
+      // repeated .types.H512 peers = 1;
       case 1:
         if (PROTOBUF_PREDICT_TRUE(static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) == 10)) {
           ptr -= 1;
           do {
             ptr += 1;
-            auto str = _internal_add_peers();
-            ptr = ::PROTOBUF_NAMESPACE_ID::internal::InlineGreedyStringParser(str, ptr, ctx);
+            ptr = ctx->ParseMessage(_internal_add_peers(), ptr);
             CHK_(ptr);
             if (!ctx->DataAvailable(ptr)) break;
           } while (::PROTOBUF_NAMESPACE_ID::internal::ExpectTag<10>(ptr));
@@ -1496,10 +1543,12 @@ failure:
   ::PROTOBUF_NAMESPACE_ID::uint32 cached_has_bits = 0;
   (void) cached_has_bits;
 
-  // repeated bytes peers = 1;
-  for (int i = 0, n = this->_internal_peers_size(); i < n; i++) {
-    const auto& s = this->_internal_peers(i);
-    target = stream->WriteBytes(1, s, target);
+  // repeated .types.H512 peers = 1;
+  for (unsigned int i = 0,
+      n = static_cast<unsigned int>(this->_internal_peers_size()); i < n; i++) {
+    target = stream->EnsureSpace(target);
+    target = ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::
+      InternalWriteMessage(1, this->_internal_peers(i), target, stream);
   }
 
   if (PROTOBUF_PREDICT_FALSE(_internal_metadata_.have_unknown_fields())) {
@@ -1518,12 +1567,11 @@ size_t SentPeers::ByteSizeLong() const {
   // Prevent compiler warnings about cached_has_bits being unused
   (void) cached_has_bits;
 
-  // repeated bytes peers = 1;
-  total_size += 1 *
-      ::PROTOBUF_NAMESPACE_ID::internal::FromIntSize(peers_.size());
-  for (int i = 0, n = peers_.size(); i < n; i++) {
-    total_size += ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::BytesSize(
-      peers_.Get(i));
+  // repeated .types.H512 peers = 1;
+  total_size += 1UL * this->_internal_peers_size();
+  for (const auto& msg : this->peers_) {
+    total_size +=
+      ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::MessageSize(msg);
   }
 
   if (PROTOBUF_PREDICT_FALSE(_internal_metadata_.have_unknown_fields())) {
@@ -1592,11 +1640,24 @@ void SentPeers::InternalSwap(SentPeers* other) {
 // ===================================================================
 
 void PenalizePeerRequest::InitAsDefaultInstance() {
+  ::sentry::_PenalizePeerRequest_default_instance_._instance.get_mutable()->peer_id_ = const_cast< ::types::H512*>(
+      ::types::H512::internal_default_instance());
 }
 class PenalizePeerRequest::_Internal {
  public:
+  static const ::types::H512& peer_id(const PenalizePeerRequest* msg);
 };
 
+const ::types::H512&
+PenalizePeerRequest::_Internal::peer_id(const PenalizePeerRequest* msg) {
+  return *msg->peer_id_;
+}
+void PenalizePeerRequest::clear_peer_id() {
+  if (GetArena() == nullptr && peer_id_ != nullptr) {
+    delete peer_id_;
+  }
+  peer_id_ = nullptr;
+}
 PenalizePeerRequest::PenalizePeerRequest(::PROTOBUF_NAMESPACE_ID::Arena* arena)
   : ::PROTOBUF_NAMESPACE_ID::Message(arena) {
   SharedCtor();
@@ -1606,10 +1667,10 @@ PenalizePeerRequest::PenalizePeerRequest(::PROTOBUF_NAMESPACE_ID::Arena* arena)
 PenalizePeerRequest::PenalizePeerRequest(const PenalizePeerRequest& from)
   : ::PROTOBUF_NAMESPACE_ID::Message() {
   _internal_metadata_.MergeFrom<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(from._internal_metadata_);
-  peer_id_.UnsafeSetDefault(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
-  if (!from._internal_peer_id().empty()) {
-    peer_id_.Set(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), from._internal_peer_id(),
-      GetArena());
+  if (from._internal_has_peer_id()) {
+    peer_id_ = new ::types::H512(*from.peer_id_);
+  } else {
+    peer_id_ = nullptr;
   }
   penalty_ = from.penalty_;
   // @@protoc_insertion_point(copy_constructor:sentry.PenalizePeerRequest)
@@ -1617,8 +1678,9 @@ PenalizePeerRequest::PenalizePeerRequest(const PenalizePeerRequest& from)
 
 void PenalizePeerRequest::SharedCtor() {
   ::PROTOBUF_NAMESPACE_ID::internal::InitSCC(&scc_info_PenalizePeerRequest_sentry_2eproto.base);
-  peer_id_.UnsafeSetDefault(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
-  penalty_ = 0;
+  ::memset(&peer_id_, 0, static_cast<size_t>(
+      reinterpret_cast<char*>(&penalty_) -
+      reinterpret_cast<char*>(&peer_id_)) + sizeof(penalty_));
 }
 
 PenalizePeerRequest::~PenalizePeerRequest() {
@@ -1629,7 +1691,7 @@ PenalizePeerRequest::~PenalizePeerRequest() {
 
 void PenalizePeerRequest::SharedDtor() {
   GOOGLE_DCHECK(GetArena() == nullptr);
-  peer_id_.DestroyNoArena(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
+  if (this != internal_default_instance()) delete peer_id_;
 }
 
 void PenalizePeerRequest::ArenaDtor(void* object) {
@@ -1653,7 +1715,10 @@ void PenalizePeerRequest::Clear() {
   // Prevent compiler warnings about cached_has_bits being unused
   (void) cached_has_bits;
 
-  peer_id_.ClearToEmpty(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), GetArena());
+  if (GetArena() == nullptr && peer_id_ != nullptr) {
+    delete peer_id_;
+  }
+  peer_id_ = nullptr;
   penalty_ = 0;
   _internal_metadata_.Clear<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>();
 }
@@ -1666,11 +1731,10 @@ const char* PenalizePeerRequest::_InternalParse(const char* ptr, ::PROTOBUF_NAME
     ptr = ::PROTOBUF_NAMESPACE_ID::internal::ReadTag(ptr, &tag);
     CHK_(ptr);
     switch (tag >> 3) {
-      // bytes peer_id = 1;
+      // .types.H512 peer_id = 1;
       case 1:
         if (PROTOBUF_PREDICT_TRUE(static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) == 10)) {
-          auto str = _internal_mutable_peer_id();
-          ptr = ::PROTOBUF_NAMESPACE_ID::internal::InlineGreedyStringParser(str, ptr, ctx);
+          ptr = ctx->ParseMessage(_internal_mutable_peer_id(), ptr);
           CHK_(ptr);
         } else goto handle_unusual;
         continue;
@@ -1710,10 +1774,12 @@ failure:
   ::PROTOBUF_NAMESPACE_ID::uint32 cached_has_bits = 0;
   (void) cached_has_bits;
 
-  // bytes peer_id = 1;
-  if (this->peer_id().size() > 0) {
-    target = stream->WriteBytesMaybeAliased(
-        1, this->_internal_peer_id(), target);
+  // .types.H512 peer_id = 1;
+  if (this->has_peer_id()) {
+    target = stream->EnsureSpace(target);
+    target = ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::
+      InternalWriteMessage(
+        1, _Internal::peer_id(this), target, stream);
   }
 
   // .sentry.PenaltyKind penalty = 2;
@@ -1739,11 +1805,11 @@ size_t PenalizePeerRequest::ByteSizeLong() const {
   // Prevent compiler warnings about cached_has_bits being unused
   (void) cached_has_bits;
 
-  // bytes peer_id = 1;
-  if (this->peer_id().size() > 0) {
+  // .types.H512 peer_id = 1;
+  if (this->has_peer_id()) {
     total_size += 1 +
-      ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::BytesSize(
-        this->_internal_peer_id());
+      ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::MessageSize(
+        *peer_id_);
   }
 
   // .sentry.PenaltyKind penalty = 2;
@@ -1783,8 +1849,8 @@ void PenalizePeerRequest::MergeFrom(const PenalizePeerRequest& from) {
   ::PROTOBUF_NAMESPACE_ID::uint32 cached_has_bits = 0;
   (void) cached_has_bits;
 
-  if (from.peer_id().size() > 0) {
-    _internal_set_peer_id(from._internal_peer_id());
+  if (from.has_peer_id()) {
+    _internal_mutable_peer_id()->::types::H512::MergeFrom(from._internal_peer_id());
   }
   if (from.penalty() != 0) {
     _internal_set_penalty(from._internal_penalty());
@@ -1812,8 +1878,12 @@ bool PenalizePeerRequest::IsInitialized() const {
 void PenalizePeerRequest::InternalSwap(PenalizePeerRequest* other) {
   using std::swap;
   _internal_metadata_.Swap<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(&other->_internal_metadata_);
-  peer_id_.Swap(&other->peer_id_, &::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), GetArena());
-  swap(penalty_, other->penalty_);
+  ::PROTOBUF_NAMESPACE_ID::internal::memswap<
+      PROTOBUF_FIELD_OFFSET(PenalizePeerRequest, penalty_)
+      + sizeof(PenalizePeerRequest::penalty_)
+      - PROTOBUF_FIELD_OFFSET(PenalizePeerRequest, peer_id_)>(
+          reinterpret_cast<char*>(&peer_id_),
+          reinterpret_cast<char*>(&other->peer_id_));
 }
 
 ::PROTOBUF_NAMESPACE_ID::Metadata PenalizePeerRequest::GetMetadata() const {
@@ -1824,11 +1894,24 @@ void PenalizePeerRequest::InternalSwap(PenalizePeerRequest* other) {
 // ===================================================================
 
 void PeerMinBlockRequest::InitAsDefaultInstance() {
+  ::sentry::_PeerMinBlockRequest_default_instance_._instance.get_mutable()->peer_id_ = const_cast< ::types::H512*>(
+      ::types::H512::internal_default_instance());
 }
 class PeerMinBlockRequest::_Internal {
  public:
+  static const ::types::H512& peer_id(const PeerMinBlockRequest* msg);
 };
 
+const ::types::H512&
+PeerMinBlockRequest::_Internal::peer_id(const PeerMinBlockRequest* msg) {
+  return *msg->peer_id_;
+}
+void PeerMinBlockRequest::clear_peer_id() {
+  if (GetArena() == nullptr && peer_id_ != nullptr) {
+    delete peer_id_;
+  }
+  peer_id_ = nullptr;
+}
 PeerMinBlockRequest::PeerMinBlockRequest(::PROTOBUF_NAMESPACE_ID::Arena* arena)
   : ::PROTOBUF_NAMESPACE_ID::Message(arena) {
   SharedCtor();
@@ -1838,10 +1921,10 @@ PeerMinBlockRequest::PeerMinBlockRequest(::PROTOBUF_NAMESPACE_ID::Arena* arena)
 PeerMinBlockRequest::PeerMinBlockRequest(const PeerMinBlockRequest& from)
   : ::PROTOBUF_NAMESPACE_ID::Message() {
   _internal_metadata_.MergeFrom<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(from._internal_metadata_);
-  peer_id_.UnsafeSetDefault(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
-  if (!from._internal_peer_id().empty()) {
-    peer_id_.Set(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), from._internal_peer_id(),
-      GetArena());
+  if (from._internal_has_peer_id()) {
+    peer_id_ = new ::types::H512(*from.peer_id_);
+  } else {
+    peer_id_ = nullptr;
   }
   min_block_ = from.min_block_;
   // @@protoc_insertion_point(copy_constructor:sentry.PeerMinBlockRequest)
@@ -1849,8 +1932,9 @@ PeerMinBlockRequest::PeerMinBlockRequest(const PeerMinBlockRequest& from)
 
 void PeerMinBlockRequest::SharedCtor() {
   ::PROTOBUF_NAMESPACE_ID::internal::InitSCC(&scc_info_PeerMinBlockRequest_sentry_2eproto.base);
-  peer_id_.UnsafeSetDefault(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
-  min_block_ = PROTOBUF_ULONGLONG(0);
+  ::memset(&peer_id_, 0, static_cast<size_t>(
+      reinterpret_cast<char*>(&min_block_) -
+      reinterpret_cast<char*>(&peer_id_)) + sizeof(min_block_));
 }
 
 PeerMinBlockRequest::~PeerMinBlockRequest() {
@@ -1861,7 +1945,7 @@ PeerMinBlockRequest::~PeerMinBlockRequest() {
 
 void PeerMinBlockRequest::SharedDtor() {
   GOOGLE_DCHECK(GetArena() == nullptr);
-  peer_id_.DestroyNoArena(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
+  if (this != internal_default_instance()) delete peer_id_;
 }
 
 void PeerMinBlockRequest::ArenaDtor(void* object) {
@@ -1885,7 +1969,10 @@ void PeerMinBlockRequest::Clear() {
   // Prevent compiler warnings about cached_has_bits being unused
   (void) cached_has_bits;
 
-  peer_id_.ClearToEmpty(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), GetArena());
+  if (GetArena() == nullptr && peer_id_ != nullptr) {
+    delete peer_id_;
+  }
+  peer_id_ = nullptr;
   min_block_ = PROTOBUF_ULONGLONG(0);
   _internal_metadata_.Clear<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>();
 }
@@ -1898,11 +1985,10 @@ const char* PeerMinBlockRequest::_InternalParse(const char* ptr, ::PROTOBUF_NAME
     ptr = ::PROTOBUF_NAMESPACE_ID::internal::ReadTag(ptr, &tag);
     CHK_(ptr);
     switch (tag >> 3) {
-      // bytes peer_id = 1;
+      // .types.H512 peer_id = 1;
       case 1:
         if (PROTOBUF_PREDICT_TRUE(static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) == 10)) {
-          auto str = _internal_mutable_peer_id();
-          ptr = ::PROTOBUF_NAMESPACE_ID::internal::InlineGreedyStringParser(str, ptr, ctx);
+          ptr = ctx->ParseMessage(_internal_mutable_peer_id(), ptr);
           CHK_(ptr);
         } else goto handle_unusual;
         continue;
@@ -1941,10 +2027,12 @@ failure:
   ::PROTOBUF_NAMESPACE_ID::uint32 cached_has_bits = 0;
   (void) cached_has_bits;
 
-  // bytes peer_id = 1;
-  if (this->peer_id().size() > 0) {
-    target = stream->WriteBytesMaybeAliased(
-        1, this->_internal_peer_id(), target);
+  // .types.H512 peer_id = 1;
+  if (this->has_peer_id()) {
+    target = stream->EnsureSpace(target);
+    target = ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::
+      InternalWriteMessage(
+        1, _Internal::peer_id(this), target, stream);
   }
 
   // uint64 min_block = 2;
@@ -1969,11 +2057,11 @@ size_t PeerMinBlockRequest::ByteSizeLong() const {
   // Prevent compiler warnings about cached_has_bits being unused
   (void) cached_has_bits;
 
-  // bytes peer_id = 1;
-  if (this->peer_id().size() > 0) {
+  // .types.H512 peer_id = 1;
+  if (this->has_peer_id()) {
     total_size += 1 +
-      ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::BytesSize(
-        this->_internal_peer_id());
+      ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::MessageSize(
+        *peer_id_);
   }
 
   // uint64 min_block = 2;
@@ -2014,8 +2102,8 @@ void PeerMinBlockRequest::MergeFrom(const PeerMinBlockRequest& from) {
   ::PROTOBUF_NAMESPACE_ID::uint32 cached_has_bits = 0;
   (void) cached_has_bits;
 
-  if (from.peer_id().size() > 0) {
-    _internal_set_peer_id(from._internal_peer_id());
+  if (from.has_peer_id()) {
+    _internal_mutable_peer_id()->::types::H512::MergeFrom(from._internal_peer_id());
   }
   if (from.min_block() != 0) {
     _internal_set_min_block(from._internal_min_block());
@@ -2043,8 +2131,12 @@ bool PeerMinBlockRequest::IsInitialized() const {
 void PeerMinBlockRequest::InternalSwap(PeerMinBlockRequest* other) {
   using std::swap;
   _internal_metadata_.Swap<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(&other->_internal_metadata_);
-  peer_id_.Swap(&other->peer_id_, &::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), GetArena());
-  swap(min_block_, other->min_block_);
+  ::PROTOBUF_NAMESPACE_ID::internal::memswap<
+      PROTOBUF_FIELD_OFFSET(PeerMinBlockRequest, min_block_)
+      + sizeof(PeerMinBlockRequest::min_block_)
+      - PROTOBUF_FIELD_OFFSET(PeerMinBlockRequest, peer_id_)>(
+          reinterpret_cast<char*>(&peer_id_),
+          reinterpret_cast<char*>(&other->peer_id_));
 }
 
 ::PROTOBUF_NAMESPACE_ID::Metadata PeerMinBlockRequest::GetMetadata() const {
@@ -2055,11 +2147,24 @@ void PeerMinBlockRequest::InternalSwap(PeerMinBlockRequest* other) {
 // ===================================================================
 
 void InboundMessage::InitAsDefaultInstance() {
+  ::sentry::_InboundMessage_default_instance_._instance.get_mutable()->peer_id_ = const_cast< ::types::H512*>(
+      ::types::H512::internal_default_instance());
 }
 class InboundMessage::_Internal {
  public:
+  static const ::types::H512& peer_id(const InboundMessage* msg);
 };
 
+const ::types::H512&
+InboundMessage::_Internal::peer_id(const InboundMessage* msg) {
+  return *msg->peer_id_;
+}
+void InboundMessage::clear_peer_id() {
+  if (GetArena() == nullptr && peer_id_ != nullptr) {
+    delete peer_id_;
+  }
+  peer_id_ = nullptr;
+}
 InboundMessage::InboundMessage(::PROTOBUF_NAMESPACE_ID::Arena* arena)
   : ::PROTOBUF_NAMESPACE_ID::Message(arena) {
   SharedCtor();
@@ -2074,10 +2179,10 @@ InboundMessage::InboundMessage(const InboundMessage& from)
     data_.Set(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), from._internal_data(),
       GetArena());
   }
-  peer_id_.UnsafeSetDefault(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
-  if (!from._internal_peer_id().empty()) {
-    peer_id_.Set(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), from._internal_peer_id(),
-      GetArena());
+  if (from._internal_has_peer_id()) {
+    peer_id_ = new ::types::H512(*from.peer_id_);
+  } else {
+    peer_id_ = nullptr;
   }
   id_ = from.id_;
   // @@protoc_insertion_point(copy_constructor:sentry.InboundMessage)
@@ -2086,8 +2191,9 @@ InboundMessage::InboundMessage(const InboundMessage& from)
 void InboundMessage::SharedCtor() {
   ::PROTOBUF_NAMESPACE_ID::internal::InitSCC(&scc_info_InboundMessage_sentry_2eproto.base);
   data_.UnsafeSetDefault(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
-  peer_id_.UnsafeSetDefault(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
-  id_ = 0;
+  ::memset(&peer_id_, 0, static_cast<size_t>(
+      reinterpret_cast<char*>(&id_) -
+      reinterpret_cast<char*>(&peer_id_)) + sizeof(id_));
 }
 
 InboundMessage::~InboundMessage() {
@@ -2099,7 +2205,7 @@ InboundMessage::~InboundMessage() {
 void InboundMessage::SharedDtor() {
   GOOGLE_DCHECK(GetArena() == nullptr);
   data_.DestroyNoArena(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
-  peer_id_.DestroyNoArena(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
+  if (this != internal_default_instance()) delete peer_id_;
 }
 
 void InboundMessage::ArenaDtor(void* object) {
@@ -2124,7 +2230,10 @@ void InboundMessage::Clear() {
   (void) cached_has_bits;
 
   data_.ClearToEmpty(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), GetArena());
-  peer_id_.ClearToEmpty(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), GetArena());
+  if (GetArena() == nullptr && peer_id_ != nullptr) {
+    delete peer_id_;
+  }
+  peer_id_ = nullptr;
   id_ = 0;
   _internal_metadata_.Clear<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>();
 }
@@ -2153,11 +2262,10 @@ const char* InboundMessage::_InternalParse(const char* ptr, ::PROTOBUF_NAMESPACE
           CHK_(ptr);
         } else goto handle_unusual;
         continue;
-      // bytes peer_id = 3;
+      // .types.H512 peer_id = 3;
       case 3:
         if (PROTOBUF_PREDICT_TRUE(static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) == 26)) {
-          auto str = _internal_mutable_peer_id();
-          ptr = ::PROTOBUF_NAMESPACE_ID::internal::InlineGreedyStringParser(str, ptr, ctx);
+          ptr = ctx->ParseMessage(_internal_mutable_peer_id(), ptr);
           CHK_(ptr);
         } else goto handle_unusual;
         continue;
@@ -2202,10 +2310,12 @@ failure:
         2, this->_internal_data(), target);
   }
 
-  // bytes peer_id = 3;
-  if (this->peer_id().size() > 0) {
-    target = stream->WriteBytesMaybeAliased(
-        3, this->_internal_peer_id(), target);
+  // .types.H512 peer_id = 3;
+  if (this->has_peer_id()) {
+    target = stream->EnsureSpace(target);
+    target = ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::
+      InternalWriteMessage(
+        3, _Internal::peer_id(this), target, stream);
   }
 
   if (PROTOBUF_PREDICT_FALSE(_internal_metadata_.have_unknown_fields())) {
@@ -2231,11 +2341,11 @@ size_t InboundMessage::ByteSizeLong() const {
         this->_internal_data());
   }
 
-  // bytes peer_id = 3;
-  if (this->peer_id().size() > 0) {
+  // .types.H512 peer_id = 3;
+  if (this->has_peer_id()) {
     total_size += 1 +
-      ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::BytesSize(
-        this->_internal_peer_id());
+      ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::MessageSize(
+        *peer_id_);
   }
 
   // .sentry.MessageId id = 1;
@@ -2278,8 +2388,8 @@ void InboundMessage::MergeFrom(const InboundMessage& from) {
   if (from.data().size() > 0) {
     _internal_set_data(from._internal_data());
   }
-  if (from.peer_id().size() > 0) {
-    _internal_set_peer_id(from._internal_peer_id());
+  if (from.has_peer_id()) {
+    _internal_mutable_peer_id()->::types::H512::MergeFrom(from._internal_peer_id());
   }
   if (from.id() != 0) {
     _internal_set_id(from._internal_id());
@@ -2308,8 +2418,12 @@ void InboundMessage::InternalSwap(InboundMessage* other) {
   using std::swap;
   _internal_metadata_.Swap<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(&other->_internal_metadata_);
   data_.Swap(&other->data_, &::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), GetArena());
-  peer_id_.Swap(&other->peer_id_, &::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), GetArena());
-  swap(id_, other->id_);
+  ::PROTOBUF_NAMESPACE_ID::internal::memswap<
+      PROTOBUF_FIELD_OFFSET(InboundMessage, id_)
+      + sizeof(InboundMessage::id_)
+      - PROTOBUF_FIELD_OFFSET(InboundMessage, peer_id_)>(
+          reinterpret_cast<char*>(&peer_id_),
+          reinterpret_cast<char*>(&other->peer_id_));
 }
 
 ::PROTOBUF_NAMESPACE_ID::Metadata InboundMessage::GetMetadata() const {
@@ -2320,11 +2434,24 @@ void InboundMessage::InternalSwap(InboundMessage* other) {
 // ===================================================================
 
 void Forks::InitAsDefaultInstance() {
+  ::sentry::_Forks_default_instance_._instance.get_mutable()->genesis_ = const_cast< ::types::H256*>(
+      ::types::H256::internal_default_instance());
 }
 class Forks::_Internal {
  public:
+  static const ::types::H256& genesis(const Forks* msg);
 };
 
+const ::types::H256&
+Forks::_Internal::genesis(const Forks* msg) {
+  return *msg->genesis_;
+}
+void Forks::clear_genesis() {
+  if (GetArena() == nullptr && genesis_ != nullptr) {
+    delete genesis_;
+  }
+  genesis_ = nullptr;
+}
 Forks::Forks(::PROTOBUF_NAMESPACE_ID::Arena* arena)
   : ::PROTOBUF_NAMESPACE_ID::Message(arena),
   forks_(arena) {
@@ -2336,17 +2463,17 @@ Forks::Forks(const Forks& from)
   : ::PROTOBUF_NAMESPACE_ID::Message(),
       forks_(from.forks_) {
   _internal_metadata_.MergeFrom<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(from._internal_metadata_);
-  genesis_.UnsafeSetDefault(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
-  if (!from._internal_genesis().empty()) {
-    genesis_.Set(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), from._internal_genesis(),
-      GetArena());
+  if (from._internal_has_genesis()) {
+    genesis_ = new ::types::H256(*from.genesis_);
+  } else {
+    genesis_ = nullptr;
   }
   // @@protoc_insertion_point(copy_constructor:sentry.Forks)
 }
 
 void Forks::SharedCtor() {
   ::PROTOBUF_NAMESPACE_ID::internal::InitSCC(&scc_info_Forks_sentry_2eproto.base);
-  genesis_.UnsafeSetDefault(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
+  genesis_ = nullptr;
 }
 
 Forks::~Forks() {
@@ -2357,7 +2484,7 @@ Forks::~Forks() {
 
 void Forks::SharedDtor() {
   GOOGLE_DCHECK(GetArena() == nullptr);
-  genesis_.DestroyNoArena(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
+  if (this != internal_default_instance()) delete genesis_;
 }
 
 void Forks::ArenaDtor(void* object) {
@@ -2382,7 +2509,10 @@ void Forks::Clear() {
   (void) cached_has_bits;
 
   forks_.Clear();
-  genesis_.ClearToEmpty(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), GetArena());
+  if (GetArena() == nullptr && genesis_ != nullptr) {
+    delete genesis_;
+  }
+  genesis_ = nullptr;
   _internal_metadata_.Clear<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>();
 }
 
@@ -2394,11 +2524,10 @@ const char* Forks::_InternalParse(const char* ptr, ::PROTOBUF_NAMESPACE_ID::inte
     ptr = ::PROTOBUF_NAMESPACE_ID::internal::ReadTag(ptr, &tag);
     CHK_(ptr);
     switch (tag >> 3) {
-      // bytes genesis = 1;
+      // .types.H256 genesis = 1;
       case 1:
         if (PROTOBUF_PREDICT_TRUE(static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) == 10)) {
-          auto str = _internal_mutable_genesis();
-          ptr = ::PROTOBUF_NAMESPACE_ID::internal::InlineGreedyStringParser(str, ptr, ctx);
+          ptr = ctx->ParseMessage(_internal_mutable_genesis(), ptr);
           CHK_(ptr);
         } else goto handle_unusual;
         continue;
@@ -2440,10 +2569,12 @@ failure:
   ::PROTOBUF_NAMESPACE_ID::uint32 cached_has_bits = 0;
   (void) cached_has_bits;
 
-  // bytes genesis = 1;
-  if (this->genesis().size() > 0) {
-    target = stream->WriteBytesMaybeAliased(
-        1, this->_internal_genesis(), target);
+  // .types.H256 genesis = 1;
+  if (this->has_genesis()) {
+    target = stream->EnsureSpace(target);
+    target = ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::
+      InternalWriteMessage(
+        1, _Internal::genesis(this), target, stream);
   }
 
   // repeated uint64 forks = 2;
@@ -2486,11 +2617,11 @@ size_t Forks::ByteSizeLong() const {
     total_size += data_size;
   }
 
-  // bytes genesis = 1;
-  if (this->genesis().size() > 0) {
+  // .types.H256 genesis = 1;
+  if (this->has_genesis()) {
     total_size += 1 +
-      ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::BytesSize(
-        this->_internal_genesis());
+      ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::MessageSize(
+        *genesis_);
   }
 
   if (PROTOBUF_PREDICT_FALSE(_internal_metadata_.have_unknown_fields())) {
@@ -2525,8 +2656,8 @@ void Forks::MergeFrom(const Forks& from) {
   (void) cached_has_bits;
 
   forks_.MergeFrom(from.forks_);
-  if (from.genesis().size() > 0) {
-    _internal_set_genesis(from._internal_genesis());
+  if (from.has_genesis()) {
+    _internal_mutable_genesis()->::types::H256::MergeFrom(from._internal_genesis());
   }
 }
 
@@ -2552,7 +2683,7 @@ void Forks::InternalSwap(Forks* other) {
   using std::swap;
   _internal_metadata_.Swap<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(&other->_internal_metadata_);
   forks_.InternalSwap(&other->forks_);
-  genesis_.Swap(&other->genesis_, &::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), GetArena());
+  swap(genesis_, other->genesis_);
 }
 
 ::PROTOBUF_NAMESPACE_ID::Metadata Forks::GetMetadata() const {
@@ -2563,17 +2694,43 @@ void Forks::InternalSwap(Forks* other) {
 // ===================================================================
 
 void StatusData::InitAsDefaultInstance() {
+  ::sentry::_StatusData_default_instance_._instance.get_mutable()->total_difficulty_ = const_cast< ::types::H256*>(
+      ::types::H256::internal_default_instance());
+  ::sentry::_StatusData_default_instance_._instance.get_mutable()->best_hash_ = const_cast< ::types::H256*>(
+      ::types::H256::internal_default_instance());
   ::sentry::_StatusData_default_instance_._instance.get_mutable()->fork_data_ = const_cast< ::sentry::Forks*>(
       ::sentry::Forks::internal_default_instance());
 }
 class StatusData::_Internal {
  public:
+  static const ::types::H256& total_difficulty(const StatusData* msg);
+  static const ::types::H256& best_hash(const StatusData* msg);
   static const ::sentry::Forks& fork_data(const StatusData* msg);
 };
 
+const ::types::H256&
+StatusData::_Internal::total_difficulty(const StatusData* msg) {
+  return *msg->total_difficulty_;
+}
+const ::types::H256&
+StatusData::_Internal::best_hash(const StatusData* msg) {
+  return *msg->best_hash_;
+}
 const ::sentry::Forks&
 StatusData::_Internal::fork_data(const StatusData* msg) {
   return *msg->fork_data_;
+}
+void StatusData::clear_total_difficulty() {
+  if (GetArena() == nullptr && total_difficulty_ != nullptr) {
+    delete total_difficulty_;
+  }
+  total_difficulty_ = nullptr;
+}
+void StatusData::clear_best_hash() {
+  if (GetArena() == nullptr && best_hash_ != nullptr) {
+    delete best_hash_;
+  }
+  best_hash_ = nullptr;
 }
 StatusData::StatusData(::PROTOBUF_NAMESPACE_ID::Arena* arena)
   : ::PROTOBUF_NAMESPACE_ID::Message(arena) {
@@ -2584,32 +2741,32 @@ StatusData::StatusData(::PROTOBUF_NAMESPACE_ID::Arena* arena)
 StatusData::StatusData(const StatusData& from)
   : ::PROTOBUF_NAMESPACE_ID::Message() {
   _internal_metadata_.MergeFrom<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(from._internal_metadata_);
-  total_difficulty_.UnsafeSetDefault(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
-  if (!from._internal_total_difficulty().empty()) {
-    total_difficulty_.Set(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), from._internal_total_difficulty(),
-      GetArena());
+  if (from._internal_has_total_difficulty()) {
+    total_difficulty_ = new ::types::H256(*from.total_difficulty_);
+  } else {
+    total_difficulty_ = nullptr;
   }
-  best_hash_.UnsafeSetDefault(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
-  if (!from._internal_best_hash().empty()) {
-    best_hash_.Set(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), from._internal_best_hash(),
-      GetArena());
+  if (from._internal_has_best_hash()) {
+    best_hash_ = new ::types::H256(*from.best_hash_);
+  } else {
+    best_hash_ = nullptr;
   }
   if (from._internal_has_fork_data()) {
     fork_data_ = new ::sentry::Forks(*from.fork_data_);
   } else {
     fork_data_ = nullptr;
   }
-  network_id_ = from.network_id_;
+  ::memcpy(&network_id_, &from.network_id_,
+    static_cast<size_t>(reinterpret_cast<char*>(&max_block_) -
+    reinterpret_cast<char*>(&network_id_)) + sizeof(max_block_));
   // @@protoc_insertion_point(copy_constructor:sentry.StatusData)
 }
 
 void StatusData::SharedCtor() {
   ::PROTOBUF_NAMESPACE_ID::internal::InitSCC(&scc_info_StatusData_sentry_2eproto.base);
-  total_difficulty_.UnsafeSetDefault(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
-  best_hash_.UnsafeSetDefault(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
-  ::memset(&fork_data_, 0, static_cast<size_t>(
-      reinterpret_cast<char*>(&network_id_) -
-      reinterpret_cast<char*>(&fork_data_)) + sizeof(network_id_));
+  ::memset(&total_difficulty_, 0, static_cast<size_t>(
+      reinterpret_cast<char*>(&max_block_) -
+      reinterpret_cast<char*>(&total_difficulty_)) + sizeof(max_block_));
 }
 
 StatusData::~StatusData() {
@@ -2620,8 +2777,8 @@ StatusData::~StatusData() {
 
 void StatusData::SharedDtor() {
   GOOGLE_DCHECK(GetArena() == nullptr);
-  total_difficulty_.DestroyNoArena(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
-  best_hash_.DestroyNoArena(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
+  if (this != internal_default_instance()) delete total_difficulty_;
+  if (this != internal_default_instance()) delete best_hash_;
   if (this != internal_default_instance()) delete fork_data_;
 }
 
@@ -2646,13 +2803,21 @@ void StatusData::Clear() {
   // Prevent compiler warnings about cached_has_bits being unused
   (void) cached_has_bits;
 
-  total_difficulty_.ClearToEmpty(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), GetArena());
-  best_hash_.ClearToEmpty(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), GetArena());
+  if (GetArena() == nullptr && total_difficulty_ != nullptr) {
+    delete total_difficulty_;
+  }
+  total_difficulty_ = nullptr;
+  if (GetArena() == nullptr && best_hash_ != nullptr) {
+    delete best_hash_;
+  }
+  best_hash_ = nullptr;
   if (GetArena() == nullptr && fork_data_ != nullptr) {
     delete fork_data_;
   }
   fork_data_ = nullptr;
-  network_id_ = PROTOBUF_ULONGLONG(0);
+  ::memset(&network_id_, 0, static_cast<size_t>(
+      reinterpret_cast<char*>(&max_block_) -
+      reinterpret_cast<char*>(&network_id_)) + sizeof(max_block_));
   _internal_metadata_.Clear<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>();
 }
 
@@ -2671,19 +2836,17 @@ const char* StatusData::_InternalParse(const char* ptr, ::PROTOBUF_NAMESPACE_ID:
           CHK_(ptr);
         } else goto handle_unusual;
         continue;
-      // bytes total_difficulty = 2;
+      // .types.H256 total_difficulty = 2;
       case 2:
         if (PROTOBUF_PREDICT_TRUE(static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) == 18)) {
-          auto str = _internal_mutable_total_difficulty();
-          ptr = ::PROTOBUF_NAMESPACE_ID::internal::InlineGreedyStringParser(str, ptr, ctx);
+          ptr = ctx->ParseMessage(_internal_mutable_total_difficulty(), ptr);
           CHK_(ptr);
         } else goto handle_unusual;
         continue;
-      // bytes best_hash = 3;
+      // .types.H256 best_hash = 3;
       case 3:
         if (PROTOBUF_PREDICT_TRUE(static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) == 26)) {
-          auto str = _internal_mutable_best_hash();
-          ptr = ::PROTOBUF_NAMESPACE_ID::internal::InlineGreedyStringParser(str, ptr, ctx);
+          ptr = ctx->ParseMessage(_internal_mutable_best_hash(), ptr);
           CHK_(ptr);
         } else goto handle_unusual;
         continue;
@@ -2691,6 +2854,13 @@ const char* StatusData::_InternalParse(const char* ptr, ::PROTOBUF_NAMESPACE_ID:
       case 4:
         if (PROTOBUF_PREDICT_TRUE(static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) == 34)) {
           ptr = ctx->ParseMessage(_internal_mutable_fork_data(), ptr);
+          CHK_(ptr);
+        } else goto handle_unusual;
+        continue;
+      // uint64 max_block = 5;
+      case 5:
+        if (PROTOBUF_PREDICT_TRUE(static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) == 40)) {
+          max_block_ = ::PROTOBUF_NAMESPACE_ID::internal::ReadVarint64(&ptr);
           CHK_(ptr);
         } else goto handle_unusual;
         continue;
@@ -2728,16 +2898,20 @@ failure:
     target = ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::WriteUInt64ToArray(1, this->_internal_network_id(), target);
   }
 
-  // bytes total_difficulty = 2;
-  if (this->total_difficulty().size() > 0) {
-    target = stream->WriteBytesMaybeAliased(
-        2, this->_internal_total_difficulty(), target);
+  // .types.H256 total_difficulty = 2;
+  if (this->has_total_difficulty()) {
+    target = stream->EnsureSpace(target);
+    target = ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::
+      InternalWriteMessage(
+        2, _Internal::total_difficulty(this), target, stream);
   }
 
-  // bytes best_hash = 3;
-  if (this->best_hash().size() > 0) {
-    target = stream->WriteBytesMaybeAliased(
-        3, this->_internal_best_hash(), target);
+  // .types.H256 best_hash = 3;
+  if (this->has_best_hash()) {
+    target = stream->EnsureSpace(target);
+    target = ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::
+      InternalWriteMessage(
+        3, _Internal::best_hash(this), target, stream);
   }
 
   // .sentry.Forks fork_data = 4;
@@ -2746,6 +2920,12 @@ failure:
     target = ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::
       InternalWriteMessage(
         4, _Internal::fork_data(this), target, stream);
+  }
+
+  // uint64 max_block = 5;
+  if (this->max_block() != 0) {
+    target = stream->EnsureSpace(target);
+    target = ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::WriteUInt64ToArray(5, this->_internal_max_block(), target);
   }
 
   if (PROTOBUF_PREDICT_FALSE(_internal_metadata_.have_unknown_fields())) {
@@ -2764,18 +2944,18 @@ size_t StatusData::ByteSizeLong() const {
   // Prevent compiler warnings about cached_has_bits being unused
   (void) cached_has_bits;
 
-  // bytes total_difficulty = 2;
-  if (this->total_difficulty().size() > 0) {
+  // .types.H256 total_difficulty = 2;
+  if (this->has_total_difficulty()) {
     total_size += 1 +
-      ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::BytesSize(
-        this->_internal_total_difficulty());
+      ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::MessageSize(
+        *total_difficulty_);
   }
 
-  // bytes best_hash = 3;
-  if (this->best_hash().size() > 0) {
+  // .types.H256 best_hash = 3;
+  if (this->has_best_hash()) {
     total_size += 1 +
-      ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::BytesSize(
-        this->_internal_best_hash());
+      ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::MessageSize(
+        *best_hash_);
   }
 
   // .sentry.Forks fork_data = 4;
@@ -2790,6 +2970,13 @@ size_t StatusData::ByteSizeLong() const {
     total_size += 1 +
       ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::UInt64Size(
         this->_internal_network_id());
+  }
+
+  // uint64 max_block = 5;
+  if (this->max_block() != 0) {
+    total_size += 1 +
+      ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::UInt64Size(
+        this->_internal_max_block());
   }
 
   if (PROTOBUF_PREDICT_FALSE(_internal_metadata_.have_unknown_fields())) {
@@ -2823,17 +3010,20 @@ void StatusData::MergeFrom(const StatusData& from) {
   ::PROTOBUF_NAMESPACE_ID::uint32 cached_has_bits = 0;
   (void) cached_has_bits;
 
-  if (from.total_difficulty().size() > 0) {
-    _internal_set_total_difficulty(from._internal_total_difficulty());
+  if (from.has_total_difficulty()) {
+    _internal_mutable_total_difficulty()->::types::H256::MergeFrom(from._internal_total_difficulty());
   }
-  if (from.best_hash().size() > 0) {
-    _internal_set_best_hash(from._internal_best_hash());
+  if (from.has_best_hash()) {
+    _internal_mutable_best_hash()->::types::H256::MergeFrom(from._internal_best_hash());
   }
   if (from.has_fork_data()) {
     _internal_mutable_fork_data()->::sentry::Forks::MergeFrom(from._internal_fork_data());
   }
   if (from.network_id() != 0) {
     _internal_set_network_id(from._internal_network_id());
+  }
+  if (from.max_block() != 0) {
+    _internal_set_max_block(from._internal_max_block());
   }
 }
 
@@ -2858,14 +3048,12 @@ bool StatusData::IsInitialized() const {
 void StatusData::InternalSwap(StatusData* other) {
   using std::swap;
   _internal_metadata_.Swap<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(&other->_internal_metadata_);
-  total_difficulty_.Swap(&other->total_difficulty_, &::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), GetArena());
-  best_hash_.Swap(&other->best_hash_, &::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), GetArena());
   ::PROTOBUF_NAMESPACE_ID::internal::memswap<
-      PROTOBUF_FIELD_OFFSET(StatusData, network_id_)
-      + sizeof(StatusData::network_id_)
-      - PROTOBUF_FIELD_OFFSET(StatusData, fork_data_)>(
-          reinterpret_cast<char*>(&fork_data_),
-          reinterpret_cast<char*>(&other->fork_data_));
+      PROTOBUF_FIELD_OFFSET(StatusData, max_block_)
+      + sizeof(StatusData::max_block_)
+      - PROTOBUF_FIELD_OFFSET(StatusData, total_difficulty_)>(
+          reinterpret_cast<char*>(&total_difficulty_),
+          reinterpret_cast<char*>(&other->total_difficulty_));
 }
 
 ::PROTOBUF_NAMESPACE_ID::Metadata StatusData::GetMetadata() const {

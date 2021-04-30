@@ -26,7 +26,7 @@ InboundGetBlockHeaders::InboundGetBlockHeaders(const sentry::InboundMessage& msg
     if (msg.id() != sentry::MessageId::GetBlockHeaders)
         throw std::logic_error("InboundGetBlockHeaders received wrong InboundMessage");
 
-    peerId_ = msg.peer_id();
+    peerId_ = string_from_H512(msg.peer_id());
 
     ByteView data = byte_view_of_string(msg.data()); // copy for consumption
     rlp::DecodingResult err = decode(data, packet_);

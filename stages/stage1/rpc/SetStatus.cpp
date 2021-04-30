@@ -23,13 +23,12 @@ SetStatus::SetStatus(ChainConfig chain, Hash genesis, std::vector<BlockNum> hard
 {
     request_.set_network_id(chain.chain_id);
 
-    ByteView td = rlp::big_endian(total_difficulty);    // remove trailing zeros - WARNING it uses thread_local var
-    request_.set_total_difficulty(td.data(), td.length());
+    request_.set_allocated_total_difficulty(to_H256(total_difficulty).release()); // remove trailing zeros???
 
-    request_.set_best_hash(best_hash.raw_bytes(), best_hash.length());
+    request_.set_allocated_best_hash(to_H256(best_hash).release());
 
     auto* forks = new sentry::Forks{};
-    forks->set_genesis(genesis.raw_bytes(), genesis.length());
+    forks->set_allocated_genesis(to_H256(genesis).release());
     for(uint64_t block: hard_forks)
         forks->add_forks(block);
     request_.set_allocated_fork_data(forks); // take ownership
