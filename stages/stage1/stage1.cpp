@@ -17,6 +17,8 @@
 
 #include <chrono>
 
+#include <silkworm/common/log.hpp>
+
 #include "BlockRequestLogic.hpp"
 #include "HeaderLogic.hpp"
 #include "messages/InboundGetBlockHeaders.hpp"
@@ -48,28 +50,29 @@ void Stage1::execution_loop() { // no-thread version
     set_status->on_receive_reply([&](auto& call) {
         if (!call.status().ok()) {
             exiting_ = true;
-            std::cerr << "failed to set status to the remote sentry, cause:'" << call.status().error_message() << "', exiting...\n";
+            SILKWORM_LOG(LogCritical) << "failed to set status to the remote sentry, cause:'" << call.status().error_message() << "', exiting...\n";
         }
     });
     sentry_.exec_remotely(set_status);
     std::this_thread::sleep_for(3s); // wait for connection setup before submit other requests
 
     // start message receiving
-    /*
     auto receive_messages = rpc::ReceiveMessages::make();
     receive_messages->on_receive_reply([&](auto& call) {
         if (!call.terminated()) {
             sentry::InboundMessage& raw_reply = receive_messages->reply();
             auto reply = InboundMessage::make(raw_reply);
-            incoming_msgs.push(reply);
+            if (reply) {
+                SILKWORM_LOG(LogInfo) << "Request received from remote peer\n";  // todo: log name of message
+                incoming_msgs.push(reply);
+            }
         }
         else {
             exiting_ = true;
-            std::cerr << "receiving messages stream interrupted, cause:'" << call.status().error_message() << "', exiting...\n";
+            SILKWORM_LOG(LogCritical) << "Receiving messages stream interrupted, cause:'" << call.status().error_message() << "', exiting...\n";
         }
     });
     sentry_.exec_remotely(receive_messages);
-    */
 
     // handling async rpc
     std::thread rpc_handling{[&]() {    // todo: add try...catch to trap exceptions and set exiting_=true to cause other thread exiting
@@ -79,13 +82,13 @@ void Stage1::execution_loop() { // no-thread version
           if (executed_rpc && executed_rpc->terminated()) {
               auto status = executed_rpc->status();
               if (status.ok())
-                  std::cout << "RPC ok";
+                  SILKWORM_LOG(LogDebug) << "RPC ok, " << executed_rpc->name() << "\n";
               else
-                  std::cerr << "RPC failed, error: '" << status.error_message() << "', code: " << status.error_code()
-                            << ", details: " << status.error_details() << std::endl;
+                  SILKWORM_LOG(LogWarn) << "RPC failed, " << executed_rpc->name() << ", error: '" << status.error_message() << "', code: " << status.error_code()
+                                        << ", details: " << status.error_details() << std::endl;
           }
         }
-      std::cerr << "rpc_handling thread exiting...\n";
+      SILKWORM_LOG(LogInfo) << "rpc_handling thread exiting...\n";
     }};
 
     // reply to inbound requests
@@ -93,14 +96,16 @@ void Stage1::execution_loop() { // no-thread version
       while (!exiting_) {
           shared_ptr<InboundMessage> msg;
           if (incoming_msgs.timed_wait_and_pop(msg, 1000ms)) {
+              SILKWORM_LOG(LogDebug) << "Processing request\n"; // todo: log message name
               shared_ptr<OutboundMessage> reply = msg->execute();
               if (reply) {
+                  SILKWORM_LOG(LogInfo) << "Replying to request\n"; // todo: log message name
                   auto reply_rpc = reply->create_send_rpc();
                   sentry_.exec_remotely(reply_rpc);
               }
           }
       }
-      std::cerr << "responding thread exiting...\n";
+      SILKWORM_LOG(LogInfo) << "responding thread exiting...\n";
     }};
 
     // make outbound requests
@@ -109,8 +114,10 @@ void Stage1::execution_loop() { // no-thread version
           // check if we need to do a request to the peers
           shared_ptr<OutboundMessage> request = BlockRequestLogic::execute();
           if (request) {
+              SILKWORM_LOG(LogInfo) << "Sending request\n"; // todo: log message name
               auto rpc = request->create_send_rpc();
               rpc->on_receive_reply([request](auto& call) { // copy request and retain its lifetime (shared_ptr)
+                SILKWORM_LOG(LogInfo) << "Received reply to our request\n"; // todo: log message name
                 request->receive_reply(call);    // call convey reply (SentPeers or Empty)
               });
               sentry_.exec_remotely(rpc);
@@ -118,7 +125,7 @@ void Stage1::execution_loop() { // no-thread version
           else
             std::this_thread::sleep_for(5s);
       }
-      std::cerr << "requesting thread exiting...\n";
+      SILKWORM_LOG(LogInfo) << "requesting thread exiting...\n";
     }};
 
     rpc_handling.join();

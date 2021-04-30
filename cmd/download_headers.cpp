@@ -19,6 +19,7 @@
 
 #include <CLI/CLI.hpp>
 
+#include <silkworm/common/log.hpp>
 #include <stages/stage1/stage1.hpp>
 #include <stages/stage1/HeaderLogic.hpp>
 
@@ -46,6 +47,8 @@ int main(int argc, char* argv[]) {
 
     CLI11_PARSE(app, argc, argv);
 
+    SILKWORM_LOG_VERBOSITY(LogTrace);
+
     try {
         // EIP-2124 based chain identity scheme (networkId + genesis + forks)
         ChainIdentity chain_identity{ChainIdentity::mainnet};   // todo: parameterize
@@ -53,7 +56,7 @@ int main(int argc, char* argv[]) {
         cout << "Download Headers - Silkworm\n"
              << "   chain-id: " << chain_identity.chain.chain_id << "\n"
              << "   genesis-hash: " << chain_identity.genesis_hash << "\n"
-             << "   hard-forks: " << chain_identity.hard_forks.size() << "\n\n";
+             << "   hard-forks: " << chain_identity.hard_forks.size() << "\n";
 
         // Stage1
         Stage1 stage1{chain_identity, db_path, sentry_addr};
@@ -61,7 +64,7 @@ int main(int argc, char* argv[]) {
         // Node current status
         auto [head_hash, head_td] = HeaderLogic::head_hash_and_total_difficulty(stage1.db_tx());
         cout << "   head_hash = " << head_hash.to_hex() << "\n";
-        cout << "   head_td   = " << intx::to_string(head_td) << "\n";
+        cout << "   head_td   = " << intx::to_string(head_td) << "\n\n" << std::flush;
 
         // Stage1 main loop
         stage1.execution_loop();    // blocking

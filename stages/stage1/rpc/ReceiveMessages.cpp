@@ -19,7 +19,7 @@
 namespace silkworm::rpc {
 
 ReceiveMessages::ReceiveMessages():
-    AsyncOutStreamingCall(&sentry::Sentry::Stub::PrepareAsyncReceiveMessages, {}) {
+    AsyncOutStreamingCall("ReceiveMessages", &sentry::Sentry::Stub::PrepareAsyncReceiveMessages, {}) {
 
 }
 }
