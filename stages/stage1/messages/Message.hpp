@@ -17,10 +17,21 @@
 #ifndef SILKWORM_MESSAGE_HPP
 #define SILKWORM_MESSAGE_HPP
 
+#include "stages/stage1/SentryClient.hpp"
+#include "stages/stage1/Types.hpp"
+
 namespace silkworm {
 
 class Message {
   public:
+    using rpc_t = std::shared_ptr<SentryRpc>;
+
+    virtual std::string name() = 0;
+
+    virtual rpc_t execute() = 0;    // inbound message does a reply, outbound message does a request
+
+    virtual void handle_completion(SentryRpc&) {}
+
     virtual ~Message() = default;
 };
 

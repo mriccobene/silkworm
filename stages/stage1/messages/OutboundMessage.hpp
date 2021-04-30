@@ -18,18 +18,15 @@
 
 #include <memory>
 #include "Message.hpp"
-#include "stages/stage1/SentryClient.hpp"
-#include "stages/stage1/Types.hpp"
+
 
 namespace silkworm {
 
 class OutboundMessage : public Message {
   public:
-    virtual std::shared_ptr<SentryRpc> create_send_rpc() =0;
+    using request_call_t = std::shared_ptr<SentryRpc>;
 
-    void send_via(SentryClient& sentry);
-
-    virtual void receive_reply(SentryRpc&) {}
+    request_call_t execute() override = 0;
 };
 
 }

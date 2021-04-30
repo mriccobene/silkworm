@@ -14,48 +14,36 @@
    limitations under the License.
 */
 
-#ifndef SILKWORM_INBOUNDGETBLOCKHEADERS_HPP
-#define SILKWORM_INBOUNDGETBLOCKHEADERS_HPP
+#ifndef SILKWORM_OUTBOUNDGETBLOCKHEADERS_HPP
+#define SILKWORM_OUTBOUNDGETBLOCKHEADERS_HPP
 
-#include <variant>
+#include <stages/stage1/HashOrNumber.hpp>
+#include "OutboundMessage.hpp"
 
-#include <grpcpp/grpcpp.h>
-#include <interfaces/sentry.grpc.pb.h>
-
-#include <silkworm/rlp/decode.hpp>
-#include <silkworm/rlp/encode.hpp>
-
-#include "stages/stage1/Types.hpp"
-#include "stages/stage1/HashOrNumber.hpp"
-
-#include "InboundMessage.hpp"
 
 namespace silkworm {
 
-class InboundGetBlockHeaders: public InboundMessage {
+class OutboundGetBlockHeaders : public OutboundMessage {
   public:
-    InboundGetBlockHeaders(const sentry::InboundMessage& msg);
+    OutboundGetBlockHeaders();
 
-    std::string name() override {return "InboundGetBlockHeaders";}
+    std::string name() override {return "OutboundGetBlockHeaders";}
 
-    reply_call_t execute() override;
+    request_call_t execute() override;
 
     void handle_completion(SentryRpc&) override;
 
   private:
-    struct GetBlockHeadersPacket {
-        //uint64_t requestId; // eth/66 version
+    struct GetBlockHeadersPacket {  // todo: duplicate in InboundGetBlockHeaders, fix it!
+        // uint64_t requestId; // eth/66 version
         HashOrNumber origin;  // Block hash or block number from which to retrieve headers
         uint64_t amount;      // Maximum number of headers to retrieve
         uint64_t skip;        // Blocks to skip between consecutive headers
         bool reverse;         // Query direction (false = rising towards latest, true = falling towards genesis)
     };
 
-    static rlp::DecodingResult decode(ByteView& from, GetBlockHeadersPacket& to) noexcept;
-
-    std::string peerId_;
     GetBlockHeadersPacket packet_;
 };
 
 }
-#endif  // SILKWORM_INBOUNDGETBLOCKHEADERS_HPP
+#endif  // SILKWORM_OUTBOUNDGETBLOCKHEADERS_HPP
