@@ -60,8 +60,8 @@ int main(int argc, char* argv[]) {
 
         // Node current status
         auto [head_hash, head_td] = HeaderLogic::head_hash_and_total_difficulty(stage1.db_tx());
-        cout << "head_hash = " << head_hash.to_hex() << "\n";
-        cout << "head_td   = " << intx::to_string(head_td) << "\n";
+        cout << "   head_hash = " << head_hash.to_hex() << "\n";
+        cout << "   head_td   = " << intx::to_string(head_td) << "\n";
 
         // Stage1 main loop
         stage1.execution_loop();    // blocking

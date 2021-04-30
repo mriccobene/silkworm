@@ -32,19 +32,15 @@ find_package(CLI11 CONFIG REQUIRED)
 
 find_package(gRPC CONFIG REQUIRED)
 
-add_library(silkworm_stage1 stage1.cpp
-                            SentryClient.cpp
-                            ChainIdentity.cpp
-                            messages/Message.cpp
-                            messages/OutboundMessage.cpp
-                            messages/InboundMessage.cpp
-                            messages/InboundGetBlockHeaders.cpp
-                            messages/OutboundSendMessageByIdRequest.cpp
-                            rpc/SetStatus.cpp
-                            rpc/SendMessageById.cpp
-                            rpc/ReceiveMessages.cpp
-                            "${CMAKE_SOURCE_DIR}/interfaces/sentry.grpc.pb.cc"
-                            "${CMAKE_SOURCE_DIR}/interfaces/sentry.pb.cc")
+file(GLOB_RECURSE STAGE1_SRC CONFIGURE_DEPENDS "*.cpp" "*.cc" "*.hpp" "*.c" "*.h")
+list(FILTER STAGE1_SRC EXCLUDE REGEX "main\.cpp$|_test\.cpp$")
+
+
+add_library(silkworm_stage1 ${STAGE1_SRC}
+                           "${CMAKE_SOURCE_DIR}/interfaces/sentry.grpc.pb.cc"
+                           "${CMAKE_SOURCE_DIR}/interfaces/sentry.pb.cc"
+                           "${CMAKE_SOURCE_DIR}/interfaces/types.pb.cc")
+
 
 target_link_libraries(silkworm_stage1 PUBLIC silkworm_db
                                              silkworm_tg_api
@@ -59,3 +55,17 @@ target_include_directories(silkworm_stage1 PUBLIC ${CMAKE_SOURCE_DIR}
                                                   rpc)
 
 
+# test
+find_package(Catch2 CONFIG REQUIRED)
+
+file(GLOB_RECURSE STAGE1_TESTS CONFIGURE_DEPENDS "*_test.cpp")
+
+add_executable(stage1_test "${CMAKE_SOURCE_DIR}/cmd/unit_test.cpp"
+                            ${STAGE1_TESTS})
+target_link_libraries(stage1_test silkworm_stage1 Catch2::Catch2)
+
+if(MSVC)
+  target_compile_options(stage1_test PRIVATE /EHsc)
+else()
+  target_compile_options(stage1_test PRIVATE -fno-exceptions)
+endif()

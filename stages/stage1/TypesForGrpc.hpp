@@ -13,24 +13,23 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 */
-#ifndef SILKWORM_OUTBOUNDSENDMESSAGEBYIDREQUEST_HPP
-#define SILKWORM_OUTBOUNDSENDMESSAGEBYIDREQUEST_HPP
 
-#include "OutboundMessage.hpp"
+#ifndef SILKWORM_TYPESFORGRPC_HPP
+#define SILKWORM_TYPESFORGRPC_HPP
+
+#include "Types.hpp"
+#include <interfaces/types.pb.h>
+#include <memory>
 
 namespace silkworm {
 
-class OutboundSendMessageByIdRequest: public OutboundMessage {
-  public:
-    OutboundSendMessageByIdRequest(const std::string& peerId, std::unique_ptr<sentry::OutboundMessageData> message);
+std::unique_ptr<types::H256> to_H256(const intx::uint256& orig);
+std::unique_ptr<types::H256> to_H256(const Hash& orig);
+std::unique_ptr<types::H512> to_H512(const std::string& orig);
 
-    virtual std::shared_ptr<SentryRpc> create_send_rpc() override;
+intx::uint256 uint256_from_H256(const types::H256& orig);
+Hash          hash_from_H256(const types::H256& orig);
+std::string   string_from_H512(const types::H512& orig);
 
-    virtual void receive_reply(SentryRpc&) override;
-
-  private:
-    sentry::SendMessageByIdRequest packet_;
-};
-
-}
-#endif  // SILKWORM_OUTBOUNDSENDMESSAGEBYIDREQUEST_HPP
+}   // namespace
+#endif  // SILKWORM_TYPESFORGRPC_HPP
