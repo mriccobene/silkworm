@@ -54,10 +54,10 @@ std::unique_ptr<types::H256> to_H256(const Hash& orig) {
     H128* hi = new H128{};
     H128* lo = new H128{};
 
-    hi->set_hi(load64be(&orig.bytes[0]));
-    hi->set_lo(load64be(&orig.bytes[8]));
-    lo->set_hi(load64be(&orig.bytes[16]));
-    lo->set_lo(load64be(&orig.bytes[24]));
+    hi->set_hi(load64be(orig.bytes + 0));
+    hi->set_lo(load64be(orig.bytes + 8));
+    lo->set_hi(load64be(orig.bytes + 16));
+    lo->set_lo(load64be(orig.bytes + 24));
 
     auto dest = std::make_unique<H256>();
     dest->set_allocated_hi(hi);  // take ownership
@@ -73,8 +73,14 @@ Hash hash_from_H256(const types::H256& orig) {
     uint64_t lo_hi = orig.lo().hi();
     uint64_t lo_lo = orig.lo().lo();
 
-    Hash dest = evmc::bytes32{evmc_bytes32{     // todo: check!
-        static_cast<uint8_t>(hi_hi >> 56),  // boost::endian::store_big_u64
+    Hash dest;
+    boost::endian::store_big_u64(dest.bytes + 0, hi_hi);
+    boost::endian::store_big_u64(dest.bytes + 8, hi_lo);
+    boost::endian::store_big_u64(dest.bytes + 16, lo_hi);
+    boost::endian::store_big_u64(dest.bytes + 24, lo_lo);
+    /*
+    Hash dest = evmc::bytes32{evmc_bytes32{
+        static_cast<uint8_t>(hi_hi >> 56),
         static_cast<uint8_t>(hi_hi >> 48),
         static_cast<uint8_t>(hi_hi >> 40),
         static_cast<uint8_t>(hi_hi >> 32),
@@ -110,6 +116,7 @@ Hash hash_from_H256(const types::H256& orig) {
         static_cast<uint8_t>(lo_lo >> 8),
         static_cast<uint8_t>(lo_lo >> 0)
     }};
+    */
 
     return dest;
 }
@@ -126,8 +133,8 @@ std::unique_ptr<types::H512> to_H512(const std::string& orig) {
     H128* lo_hi = new H128{};
     H128* lo_lo = new H128{};
 
-    hi_hi->set_hi(load64be(data + 0));
-    hi_hi->set_lo(load64be(data + 8));
+    hi_hi->set_hi(load64be(data +  0));
+    hi_hi->set_lo(load64be(data +  8));
     hi_lo->set_hi(load64be(data + 16));
     hi_lo->set_lo(load64be(data + 24));
     lo_hi->set_hi(load64be(data + 32));
@@ -151,8 +158,6 @@ std::unique_ptr<types::H512> to_H512(const std::string& orig) {
 
 std::string string_from_H512(const types::H512& orig) {
 
-    // todo: check this implementation!
-
     uint64_t hi_hi_hi = orig.hi().hi().hi();
     uint64_t hi_hi_lo = orig.hi().hi().lo();
     uint64_t hi_lo_hi = orig.hi().lo().hi();
@@ -162,6 +167,17 @@ std::string string_from_H512(const types::H512& orig) {
     uint64_t lo_lo_hi = orig.lo().lo().hi();
     uint64_t lo_lo_lo = orig.lo().lo().lo();
 
+    std::string dest(64,0);
+    auto data = reinterpret_cast<uint8_t*>(dest.data());
+    boost::endian::store_big_u64(data +  0, hi_hi_hi);
+    boost::endian::store_big_u64(data +  8, hi_hi_lo);
+    boost::endian::store_big_u64(data + 16, hi_lo_hi);
+    boost::endian::store_big_u64(data + 24, hi_lo_lo);
+    boost::endian::store_big_u64(data + 32, lo_hi_hi);
+    boost::endian::store_big_u64(data + 40, lo_hi_lo);
+    boost::endian::store_big_u64(data + 48, lo_lo_hi);
+    boost::endian::store_big_u64(data + 56, lo_lo_lo);
+    /*
     std::string dest = {
         static_cast<char>(hi_hi_hi >> 56),
         static_cast<char>(hi_hi_hi >> 48),
@@ -235,7 +251,7 @@ std::string string_from_H512(const types::H512& orig) {
         static_cast<char>(lo_lo_lo >> 8),
         static_cast<char>(lo_lo_lo >> 0)
     };
-
+    */
     return dest;
 }
 
