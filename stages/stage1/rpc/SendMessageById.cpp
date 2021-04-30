@@ -19,7 +19,7 @@
 namespace silkworm::rpc {
 
 SendMessageById::SendMessageById(const sentry::SendMessageByIdRequest message):
-    AsyncUnaryCall(&sentry::Sentry::Stub::PrepareAsyncSendMessageById, std::move(message))
+    AsyncUnaryCall("SendMessageById", &sentry::Sentry::Stub::PrepareAsyncSendMessageById, std::move(message))
 {
 }
 

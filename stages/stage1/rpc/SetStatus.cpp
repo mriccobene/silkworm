@@ -19,7 +19,7 @@
 namespace silkworm::rpc {
 
 SetStatus::SetStatus(ChainConfig chain, Hash genesis, std::vector<BlockNum> hard_forks, Hash best_hash, BigInt total_difficulty):
-    AsyncUnaryCall(&sentry::Sentry::Stub::PrepareAsyncSetStatus, {})
+    AsyncUnaryCall("SetStatus", &sentry::Sentry::Stub::PrepareAsyncSetStatus, {})
 {
     request_.set_network_id(chain.chain_id);
 

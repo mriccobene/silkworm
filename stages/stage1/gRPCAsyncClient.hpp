@@ -57,7 +57,7 @@ class AsyncCall {
 
     void on_receive_reply(callback_t f) {callback_ = f;}
 
-    virtual bool terminated(){ return terminated_; };
+    virtual bool terminated() { return terminated_; };
 
     grpc::Status status() {
         if (!terminated_)
@@ -66,6 +66,8 @@ class AsyncCall {
     }
 
     void* tag() {return tag_;}
+
+    std::string name() {return name_;}
 
   protected:
     friend class AsyncClient<STUB>; // only to give access to start & reply_received
@@ -77,9 +79,12 @@ class AsyncCall {
     virtual void reply_received(bool ok) = 0;
 
     // See concrete implementations for a public constructor
-    AsyncCall() { tag_ = static_cast<void*>(this); }
+    AsyncCall(std::string name): name_(std::move(name)) { tag_ = static_cast<void*>(this); }
 
     static AsyncCall<STUB>* detag(void* tag) {return static_cast<AsyncCall<STUB>*>(tag);}  // UNSAFE
+
+    // Name, used for logging purposes
+    std::string name_;
 
     // Tag used by GRPCAsyncClient to identify concrete instances in the receiving loop
     void* tag_;
@@ -163,7 +168,7 @@ class AsyncUnaryCall: public AsyncCall<STUB> {
     //using callback_t = std::function<void(AsyncUnaryCall&)>;
     using call_t::context_, call_t::status_, call_t::tag_;
 
-    AsyncUnaryCall(prepare_call_t pc, request_t request) : call_t{}, prepare_call_{pc}, request_{std::move(request)} {
+    AsyncUnaryCall(std::string name, prepare_call_t pc, request_t request) : call_t{std::move(name)}, prepare_call_{pc}, request_{std::move(request)} {
     }
 
     virtual ~AsyncUnaryCall() = default;
@@ -214,7 +219,7 @@ class AsyncOutStreamingCall: public AsyncCall<STUB> {
     //using callback_t = std::function<void(AsyncOutStreamingCall&)>;
     using call_t::context_, call_t::status_, call_t::tag_;
 
-    AsyncOutStreamingCall(prepare_call_t pc, const request_t& request) : call_t{}, prepare_call_{pc}, request_{std::move(request)} {
+    AsyncOutStreamingCall(std::string name, prepare_call_t pc, const request_t& request): call_t{std::move(name)}, prepare_call_{pc}, request_{std::move(request)} {
     }
 
     ~AsyncOutStreamingCall() {
@@ -255,7 +260,7 @@ class AsyncOutStreamingCall: public AsyncCall<STUB> {
         reply_ = {};
 
         // request next message
-        response_reader_->Read(&reply_, tag_);
+        //response_reader_->Read(&reply_, tag_); // it is not necessary and it is wrong
     }
 
     prepare_call_t prepare_call_; // Pointer to the prepare call method of the Stub

@@ -16,6 +16,8 @@
 
 #include "InboundMessage.hpp"
 #include "InboundGetBlockHeaders.hpp"
+#include <silkworm/common/log.hpp>
+#include <iostream>
 
 namespace silkworm {
 
@@ -24,7 +26,7 @@ std::shared_ptr<InboundMessage> InboundMessage::make(const sentry::InboundMessag
     if (raw_message.id() == sentry::MessageId::GetBlockHeaders)
         message = std::make_shared<InboundGetBlockHeaders>(raw_message);
     else
-        throw std::logic_error("not implemented yet");
+        SILKWORM_LOG(LogWarn) << "InboundMessage " << sentry::MessageId_Name(raw_message.id()) << " received but not implemented yet\n";
     return message;
 }
 
