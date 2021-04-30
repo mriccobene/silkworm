@@ -13,24 +13,5 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 */
-#ifndef SILKWORM_OUTBOUNDSENDMESSAGEBYIDREQUEST_HPP
-#define SILKWORM_OUTBOUNDSENDMESSAGEBYIDREQUEST_HPP
 
-#include "OutboundMessage.hpp"
-
-namespace silkworm {
-
-class OutboundSendMessageByIdRequest: public OutboundMessage {
-  public:
-    OutboundSendMessageByIdRequest(const std::string& peerId, std::unique_ptr<sentry::OutboundMessageData> message);
-
-    virtual std::shared_ptr<SentryRpc> create_send_rpc() override;
-
-    virtual void receive_reply(SentryRpc&) override;
-
-  private:
-    sentry::SendMessageByIdRequest packet_;
-};
-
-}
-#endif  // SILKWORM_OUTBOUNDSENDMESSAGEBYIDREQUEST_HPP
+#include "CompletionMessage.hpp"

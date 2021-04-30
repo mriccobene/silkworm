@@ -18,9 +18,11 @@
 
 namespace silkworm::rpc {
 
-SendMessageById::SendMessageById(const sentry::SendMessageByIdRequest message):
-    AsyncUnaryCall("SendMessageById", &sentry::Sentry::Stub::PrepareAsyncSendMessageById, std::move(message))
+SendMessageById::SendMessageById(const std::string& peerId, std::unique_ptr<sentry::OutboundMessageData> message):
+    AsyncUnaryCall("SendMessageById", &sentry::Sentry::Stub::PrepareAsyncSendMessageById, {})
 {
+    request_.set_allocated_peer_id(to_H512(peerId).release());
+    request_.set_allocated_data(message.release());  // take ownership
 }
 
 }

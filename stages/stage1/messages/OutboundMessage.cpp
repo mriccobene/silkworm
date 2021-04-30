@@ -18,10 +18,6 @@
 
 namespace silkworm {
 
-void OutboundMessage::send_via(SentryClient& sentry) {
-    auto rpc = create_send_rpc();
 
-    sentry.exec_remotely(rpc);
-}
 
 }

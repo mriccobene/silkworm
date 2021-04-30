@@ -15,7 +15,7 @@
 */
 
 #include "InboundGetBlockHeaders.hpp"
-#include "OutboundSendMessageByIdRequest.hpp"
+#include "stages/stage1/rpc/SendMessageById.hpp"
 #include "stages/stage1/HeaderLogic.hpp"
 
 
@@ -34,7 +34,7 @@ InboundGetBlockHeaders::InboundGetBlockHeaders(const sentry::InboundMessage& msg
         throw rlp::rlp_error("rlp decoding error decoding GetBlockHeaders");
 }
 
-InboundMessage::reply_t InboundGetBlockHeaders::execute() {
+InboundMessage::reply_call_t InboundGetBlockHeaders::execute() {
     using namespace std;
     vector<Header> headers;
     if (holds_alternative<Hash>(packet_.origin))
@@ -50,7 +50,12 @@ InboundMessage::reply_t InboundGetBlockHeaders::execute() {
     msg_reply->set_id(sentry::MessageId::BlockHeaders);
     msg_reply->set_data(rlp_encoding.data(), rlp_encoding.length()); // copy
 
-    return std::make_shared<OutboundSendMessageByIdRequest>(peerId_, std::move(msg_reply));
+    return std::make_shared<rpc::SendMessageById>(peerId_, std::move(msg_reply));
+}
+
+void InboundGetBlockHeaders::handle_completion(SentryRpc& reply) {
+    [[maybe_unused]] auto& specific_reply = dynamic_cast<rpc::SendMessageById&>(reply);
+    // use specific_reply...
 }
 
 rlp::DecodingResult InboundGetBlockHeaders::decode(ByteView& from, GetBlockHeadersPacket& to) noexcept {

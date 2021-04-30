@@ -27,11 +27,9 @@ class OutboundMessage;
 
 class InboundMessage : public Message {
   public:
-    using reply_t = std::shared_ptr<OutboundMessage>;
+    using reply_call_t = std::shared_ptr<SentryRpc>;
 
-    virtual reply_t execute() = 0;
-
-    virtual ~InboundMessage() = default;
+    reply_call_t execute() override = 0;
 
     static std::shared_ptr<InboundMessage> make(const sentry::InboundMessage& msg);
 };
