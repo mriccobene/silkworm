@@ -239,14 +239,18 @@ class AsyncOutStreamingCall: public AsyncCall<STUB> {
         response_reader_ = (stub->*prepare_call_)(&context_, request_, cq);  // creates an RPC object
 
         response_reader_->StartCall(tag_);  // initiates the RPC call
-
-        response_reader_->Read(&reply_, tag_); // we have an output stream so we need call Read many times, see complete()
     }
 
     void reply_received(bool ok) override {
         if (!ok) {         // todo: check if it is correct!
             response_reader_->Finish(&status_, tag_);   // this will populate status with the error condition
             call_t::terminated_ = true;
+        }
+
+        if (!started_) {
+            started_ = true;
+            response_reader_->Read(&reply_, tag_); // we have an output stream so we need call Read
+            return;
         }
 
         // use status & reply
@@ -258,9 +262,6 @@ class AsyncOutStreamingCall: public AsyncCall<STUB> {
 
         // todo: erase reply_ ?
         reply_ = {};
-
-        // request next message
-        //response_reader_->Read(&reply_, tag_); // it is not necessary and it is wrong
     }
 
     prepare_call_t prepare_call_; // Pointer to the prepare call method of the Stub
@@ -271,6 +272,7 @@ class AsyncOutStreamingCall: public AsyncCall<STUB> {
 
     reply_t reply_; // Container for the data we expect from the server
 
+    bool started_ = false;
     //callback_t callback_; // Callback that will be called on completion (i.e. response arrival)
 };
 
