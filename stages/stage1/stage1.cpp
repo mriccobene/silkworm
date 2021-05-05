@@ -43,37 +43,6 @@ void Stage1::execution_loop() { // no-thread version
 
     ConcurrentQueue<shared_ptr<Message>> messages{};
 
-    auto [head_hash, head_td] = HeaderLogic::head_hash_and_total_difficulty(db_);
-
-    // set status
-    auto set_status = rpc::SetStatus::make(chain_identity_.chain, chain_identity_.genesis_hash, chain_identity_.hard_forks, head_hash, head_td);
-    set_status->on_receive_reply([&](auto& call) {
-      if (!call.status().ok()) {
-          exiting_ = true;
-          SILKWORM_LOG(LogCritical) << "failed to set status to the remote sentry, cause:'" << call.status().error_message() << "', exiting...\n";
-      }
-    });
-    sentry_.exec_remotely(set_status);
-    std::this_thread::sleep_for(3s); // wait for connection setup before submit other requests
-
-    // start message receiving
-    auto receive_messages = rpc::ReceiveMessages::make();
-    receive_messages->on_receive_reply([&](auto& call) {
-      if (!call.terminated()) {
-          sentry::InboundMessage& reply = receive_messages->reply();
-          auto message = InboundMessage::make(reply);
-          if (message) {
-              SILKWORM_LOG(LogInfo) << "Message received from remote peer: " << message->name() << "\n";
-              messages.push(message);
-          }
-      }
-      else {
-          exiting_ = true;
-          SILKWORM_LOG(LogCritical) << "receiving messages stream interrupted, cause:'" << call.status().error_message() << "', exiting...\n";
-      }
-    });
-    sentry_.exec_remotely(receive_messages);
-
     // handling async rpc
     std::thread rpc_handling{[&]() {    // todo: add try...catch to trap exceptions and set exiting_=true to cause other thread exiting
       while (!exiting_) {
@@ -90,6 +59,42 @@ void Stage1::execution_loop() { // no-thread version
       }
       SILKWORM_LOG(LogInfo) << "rpc_handling thread exiting...\n";
     }};
+
+
+    // set status
+    auto [head_hash, head_td] = HeaderLogic::head_hash_and_total_difficulty(db_);
+    auto set_status = rpc::SetStatus::make(chain_identity_.chain, chain_identity_.genesis_hash, chain_identity_.hard_forks, head_hash, head_td);
+    set_status->on_receive_reply([&](auto& call) {
+      if (!call.status().ok()) {
+          exiting_ = true;
+          SILKWORM_LOG(LogCritical) << "failed to set status to the remote sentry, cause:'" << call.status().error_message() << "', exiting...\n";
+      }
+      else
+          SILKWORM_LOG(LogDebug) << "set-status reply arrived\n";
+    });
+    sentry_.exec_remotely(set_status);
+    std::this_thread::sleep_for(3s); // wait for connection setup before submit other requests
+
+
+    // start message receiving
+    auto receive_messages = rpc::ReceiveMessages::make();
+    receive_messages->on_receive_reply([&](auto& call) {
+      SILKWORM_LOG(LogDebug) << "receive-messages reply arrived\n";
+      if (!call.terminated()) {
+          sentry::InboundMessage& reply = receive_messages->reply();
+          auto message = InboundMessage::make(reply);
+          if (message) {
+              SILKWORM_LOG(LogInfo) << "Message received from remote peer: " << message->name() << "\n";
+              messages.push(message);
+          }
+      }
+      else {
+          exiting_ = true;
+          SILKWORM_LOG(LogCritical) << "receiving messages stream interrupted, cause:'" << call.status().error_message() << "', exiting...\n";
+      }
+    });
+    sentry_.exec_remotely(receive_messages);
+
 
     // reply to inbound requests
     std::thread message_processing{[&]() {

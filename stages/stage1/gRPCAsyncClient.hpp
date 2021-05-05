@@ -262,6 +262,9 @@ class AsyncOutStreamingCall: public AsyncCall<STUB> {
 
         // todo: erase reply_ ?
         reply_ = {};
+
+        // request next message
+        response_reader_->Read(&reply_, tag_); // we have an output stream so we need call Read
     }
 
     prepare_call_t prepare_call_; // Pointer to the prepare call method of the Stub
