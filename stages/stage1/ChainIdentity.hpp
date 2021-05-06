@@ -25,12 +25,13 @@ namespace silkworm {
 // EIP-2124 based chain identity scheme (networkId + genesis + forks)
 struct ChainIdentity {
 
+    std::string name;
     ChainConfig chain;
     Hash genesis_hash;
     std::vector<BlockNum> hard_forks;
 
     static ChainIdentity mainnet;
-    //static ChainIdentification goerli;
+    static ChainIdentity goerli;
 };
 
 }

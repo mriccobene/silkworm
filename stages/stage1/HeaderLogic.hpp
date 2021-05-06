@@ -17,11 +17,67 @@
 #ifndef SILKWORM_HEADERLOGIC_HPP
 #define SILKWORM_HEADERLOGIC_HPP
 
-#include <vector>
-#include <silkworm/common/log.hpp>
+#include "Types.hpp"
 #include "stage1.hpp"
 
+#include <silkworm/common/log.hpp>
+
+#include <vector>
+#include <queue>
+
+
 namespace silkworm {
+
+struct Link {
+    std::shared_ptr<Header> header;             // Header to which this link point to
+    BlockNum blockHeight;                       // Block height of the header, repeated here for convenience (remove?)
+    Hash hash;                                  // Hash of the header
+    std::vector<std::shared_ptr<Link>> next;    // Reverse of parentHash / Allows iteration over links in ascending block height order
+    bool persisted;                             // Whether this link comes from the database record
+    bool preverified;                           // Ancestor of pre-verified header
+    int idx;                                    // Index in the heap (used by Go binary heap impl, remove?)
+};
+
+struct Anchor {
+    Hash parentHash;                            // Hash of the header this anchor can be connected to (to disappear)
+    BlockNum blockHeight;                       // block height of the anchor
+    uint64_t timestamp;                         // Zero when anchor has just been created, otherwise timestamps when timeout on this anchor request expires
+    int timeouts;                               // Number of timeout that this anchor has experiences - after certain threshold, it gets invalidated
+    std::vector<std::shared_ptr<Link>> links;   // Links attached immediately to this anchor
+};
+
+struct Link_Older_Than: public std::binary_function<std::shared_ptr<Link>, std::shared_ptr<Link>, bool>
+{
+    bool operator()(const std::shared_ptr<Link>& x, const std::shared_ptr<Link>& y) const
+    { return x->blockHeight < y->blockHeight; }
+};
+
+struct Link_Younger_Than: public std::binary_function<std::shared_ptr<Link>, std::shared_ptr<Link>, bool>
+{
+    bool operator()(const std::shared_ptr<Link>& x, const std::shared_ptr<Link>& y) const
+    { return x->blockHeight > y->blockHeight; }
+};
+
+struct Anchor_Older_Than: public std::binary_function<std::shared_ptr<Anchor>, std::shared_ptr<Anchor>, bool>
+{
+    bool operator()(const std::shared_ptr<Anchor>& x, const std::shared_ptr<Anchor>& y) const
+    { return x->timestamp < y->timestamp; }
+};
+
+using Oldest_First_Link_Queue  = std::priority_queue<std::shared_ptr<Link>,
+                                                     std::vector<std::shared_ptr<Link>>,
+                                                     Link_Older_Than>;
+
+using Youngest_First_Link_Queue = std::priority_queue<std::shared_ptr<Link>,
+                                                      std::vector<std::shared_ptr<Link>>,
+                                                      Link_Younger_Than>;
+
+using Oldest_First_Anchor_Queue = std::priority_queue<std::shared_ptr<Anchor>,
+                                                      std::vector<std::shared_ptr<Link>>,
+                                                      Anchor_Older_Than>;
+
+using Link_Map = std::multimap<Hash,std::shared_ptr<Link>>;     // hash = link hash
+using Anchor_Map = std::multimap<Hash,std::shared_ptr<Anchor>>; // hash = anchor *parent* hash
 
 class HeaderLogic {     // todo: modularize this!
   public:

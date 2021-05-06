@@ -96,7 +96,7 @@ void Stage1::execution_loop() { // no-thread version
     sentry_.exec_remotely(receive_messages);
 
 
-    // reply to inbound requests
+    // message processing
     std::thread message_processing{[&]() {
       while (!exiting_) {
           shared_ptr<Message> message;
