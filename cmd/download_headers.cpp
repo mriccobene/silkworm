@@ -34,12 +34,15 @@ int main(int argc, char* argv[]) {
     // Command line parsing
     CLI::App app{"Download Headers. Connect to p2p sentry and start header downloading process (stage 1)"};
 
-    string db_path = db::default_path();
+    string chain_name = ChainIdentity::mainnet.name;
+    string db_path = db::default_path(); // mainnet db
     string temporary_file_path = ".";
     string sentry_addr = "127.0.0.1:9091";
 
     app.add_option("--chaindata", db_path, "Path to the chain database", true)
         ->check(CLI::ExistingDirectory);
+    app.add_option("--chain", chain_name, "Network name", true)
+        ->needs("--chaindata");
     app.add_option("-s,--sentryaddr", sentry_addr, "address:port of sentry", true);
     //  todo ->check?
     app.add_option("-f,--filesdir", temporary_file_path, "Path to a temp files dir", true)
@@ -51,7 +54,13 @@ int main(int argc, char* argv[]) {
 
     try {
         // EIP-2124 based chain identity scheme (networkId + genesis + forks)
-        ChainIdentity chain_identity{ChainIdentity::mainnet};   // todo: parameterize
+        ChainIdentity chain_identity;
+        if (chain_name == ChainIdentity::mainnet.name)
+            chain_identity = ChainIdentity::mainnet;
+        else if (chain_name == ChainIdentity::goerli.name)
+            chain_identity = ChainIdentity::goerli;
+        else
+            throw std::logic_error(chain_name + " not supported");
 
         cout << "Download Headers - Silkworm\n"
              << "   chain-id: " << chain_identity.chain.chain_id << "\n"

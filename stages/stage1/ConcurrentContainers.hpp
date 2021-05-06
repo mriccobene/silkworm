@@ -24,6 +24,6 @@
 #include "ThreadSafeQueue.hpp"
 
 template <typename T>
-using ConcurrentQueue = ThreadSafeQueue<T>;  // todo: use a better alternative from a known library (Intel oneTBB?)
+using ConcurrentQueue = ThreadSafeQueue<T>;  // todo: use a better alternative from a known library (Intel oneTBB concurrent_queue<T>?)
 
 #endif  // SILKWORM_CONCURRENTCONTAINERS_HPP

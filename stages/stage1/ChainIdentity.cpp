@@ -20,6 +20,8 @@ namespace silkworm {
 static ChainIdentity mainnet_identity() {
     ChainIdentity id;
 
+    id.name = "mainnet";
+
     id.chain = kMainnetConfig;
     id.genesis_hash = Hash::from_hex("d4e56740f876aef8c010b86a40d5f56745a118d0906a34e69aec8c0db1cb8fa3"); // mainnet genesis hash in hex
 
@@ -29,7 +31,7 @@ static ChainIdentity mainnet_identity() {
     id.hard_forks.push_back(*id.chain.spurious_dragon_block);
     id.hard_forks.push_back(*id.chain.byzantium_block);
     id.hard_forks.push_back(*id.chain.constantinople_block);
-    //id.hard_forks.push_back(*chain.petersburg_block);     // todo: uses all the forks but erase block numbers with the same value
+    //id.hard_forks.push_back(*chain.petersburg_block);     // todo: uses all the forks but erase block numbers with the same value or zero
     id.hard_forks.push_back(*id.chain.istanbul_block);
     id.hard_forks.push_back(*id.chain.muir_glacier_block);
     id.hard_forks.push_back(*id.chain.berlin_block);
@@ -37,6 +39,21 @@ static ChainIdentity mainnet_identity() {
     return id;
 }
 
+static ChainIdentity goerli_identity() {
+    ChainIdentity id;
+
+    id.name = "goerli";
+
+    id.chain = kGoerliConfig;
+    id.genesis_hash = Hash::from_hex("bf7e331f7f7c1dd2e05159666b3bf8bc7a8a3a9eb1d518969eab529dd9b88c1a"); // goerli genesis hash in hex
+
+    id.hard_forks.push_back(*id.chain.istanbul_block); // todo: uses all the forks but erase block numbers with the same value or zero
+    id.hard_forks.push_back(*id.chain.berlin_block);
+
+    return id;
+}
+
 ChainIdentity ChainIdentity::mainnet = mainnet_identity();
+ChainIdentity ChainIdentity::goerli = goerli_identity();
 
 }
