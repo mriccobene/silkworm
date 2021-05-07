@@ -20,6 +20,7 @@
 #include "stages/stage1/SentryClient.hpp"
 #include "stages/stage1/Types.hpp"
 
+
 namespace silkworm {
 
 class Message {

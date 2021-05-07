@@ -29,7 +29,7 @@ InboundGetBlockHeaders::InboundGetBlockHeaders(const sentry::InboundMessage& msg
     peerId_ = string_from_H512(msg.peer_id());
 
     ByteView data = byte_view_of_string(msg.data()); // copy for consumption
-    rlp::DecodingResult err = decode(data, packet_);
+    rlp::DecodingResult err = rlp::decode(data, packet_);
     if (err != rlp::DecodingResult::kOk)
         throw rlp::rlp_error("rlp decoding error decoding GetBlockHeaders");
 }
@@ -58,38 +58,6 @@ void InboundGetBlockHeaders::handle_completion(SentryRpc& reply) {
     // use specific_reply...
 }
 
-rlp::DecodingResult InboundGetBlockHeaders::decode(ByteView& from, GetBlockHeadersPacket& to) noexcept {
-    using namespace rlp;
 
-    auto [rlp_head, err]{decode_header(from)};
-    if (err != DecodingResult::kOk) {
-        return err;
-    }
-    if (!rlp_head.list) {
-        return DecodingResult::kUnexpectedString;
-    }
-
-    uint64_t leftover{from.length() - rlp_head.payload_length};
-
-    /* eth/66
-    if (DecodingResult err{rlp::decode(from, to.requestId)}; err != DecodingResult::kOk) {
-        return err;
-    }
-    */
-    if (DecodingResult err{rlp::decode(from, to.origin)}; err != DecodingResult::kOk) {
-        return err;
-    }
-    if (DecodingResult err{rlp::decode(from, to.amount)}; err != DecodingResult::kOk) {
-        return err;
-    }
-    if (DecodingResult err{rlp::decode(from, to.skip)}; err != DecodingResult::kOk) {
-        return err;
-    }
-    if (DecodingResult err{rlp::decode(from, to.reverse)}; err != DecodingResult::kOk) {
-        return err;
-    }
-
-    return from.length() == leftover ? DecodingResult::kOk : DecodingResult::kListLengthMismatch;
-}
 
 }

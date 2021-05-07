@@ -33,8 +33,13 @@ namespace silkworm {
 Stage1::Stage1(ChainIdentity chain_identity, std::string db_path, std::string sentry_addr):
     chain_identity_(std::move(chain_identity)),
     db_{db_path},
-    sentry_{sentry_addr}
+    sentry_{sentry_addr},
+    working_chain_{0,1000000} // todo: write correct start and end block (and update them!) - end=topSeenHeight, start=highestInDb
 {
+}
+
+Stage1::~Stage1() {
+    SILKWORM_LOG(LogError) << "stage1 destroyed\n";
 }
 
 void Stage1::execution_loop() { // no-thread version
@@ -42,6 +47,11 @@ void Stage1::execution_loop() { // no-thread version
     using namespace std::chrono_literals;
 
     ConcurrentQueue<shared_ptr<Message>> messages{};
+
+    // set chain limits
+    BlockNum head_height = HeaderLogic::head_height(db_);
+    working_chain_.limits(head_height, head_height);    // the second limit will be set at the each block announcements
+
 
     // handling async rpc
     std::thread rpc_handling{[&]() {    // todo: add try...catch to trap exceptions and set exiting_=true to cause other thread exiting

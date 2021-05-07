@@ -45,6 +45,13 @@ namespace rlp {
             rlp::encode(to, std::get<BlockNum>(from));
     }
 
+    inline size_t length(const HashOrNumber& from) {
+        if (std::holds_alternative<Hash>(from))
+            return rlp::length(std::get<Hash>(from));
+        else
+            return rlp::length(std::get<BlockNum>(from));
+    }
+
     inline DecodingResult decode(ByteView& from, HashOrNumber& to) noexcept {
         ByteView copy(from);  // to decode but not consume
         auto [h, err] = decode_header(copy);

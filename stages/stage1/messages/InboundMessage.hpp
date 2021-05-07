@@ -19,7 +19,9 @@
 
 #include <memory>
 #include "Message.hpp"
-#include "stages/stage1/SentryClient.hpp"
+#include <silkworm/rlp/decode.hpp>
+#include <silkworm/rlp/encode.hpp>
+
 
 namespace silkworm {
 class OutboundMessage;
