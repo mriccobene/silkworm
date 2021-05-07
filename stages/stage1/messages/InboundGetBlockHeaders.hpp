@@ -17,18 +17,9 @@
 #ifndef SILKWORM_INBOUNDGETBLOCKHEADERS_HPP
 #define SILKWORM_INBOUNDGETBLOCKHEADERS_HPP
 
-#include <variant>
-
-#include <grpcpp/grpcpp.h>
-#include <interfaces/sentry.grpc.pb.h>
-
-#include <silkworm/rlp/decode.hpp>
-#include <silkworm/rlp/encode.hpp>
-
-#include "stages/stage1/Types.hpp"
-#include "stages/stage1/HashOrNumber.hpp"
-
 #include "InboundMessage.hpp"
+#include "stages/stage1/packets/GetBlockHeadersPacket.hpp"
+
 
 namespace silkworm {
 
@@ -43,16 +34,6 @@ class InboundGetBlockHeaders: public InboundMessage {
     void handle_completion(SentryRpc&) override;
 
   private:
-    struct GetBlockHeadersPacket {
-        //uint64_t requestId; // eth/66 version
-        HashOrNumber origin;  // Block hash or block number from which to retrieve headers
-        uint64_t amount;      // Maximum number of headers to retrieve
-        uint64_t skip;        // Blocks to skip between consecutive headers
-        bool reverse;         // Query direction (false = rising towards latest, true = falling towards genesis)
-    };
-
-    static rlp::DecodingResult decode(ByteView& from, GetBlockHeadersPacket& to) noexcept;
-
     std::string peerId_;
     GetBlockHeadersPacket packet_;
 };

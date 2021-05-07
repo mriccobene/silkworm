@@ -21,6 +21,7 @@
 #include <boost/endian/conversion.hpp>
 using namespace silkworm;
 
+#include <chrono>
 
 class Hash: public evmc::bytes32 {
   public:
@@ -45,6 +46,9 @@ using Header = BlockHeader;
 using BlockNum = uint64_t;
 using BigInt = intx::uint256; // use intx::to_string, from_string, ...
 //using Bytes = std::basic_string<uint8_t>; already defined elsewhere
+
+using time_point_t = std::chrono::time_point<std::chrono::system_clock>;
+using time_dur_t = std::chrono::duration<std::chrono::system_clock>;
 
 #include <iomanip>
 

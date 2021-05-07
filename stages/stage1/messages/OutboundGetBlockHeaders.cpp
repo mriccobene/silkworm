@@ -16,23 +16,28 @@
 
 #include "OutboundGetBlockHeaders.hpp"
 #include "stages/stage1/rpc/SendMessageById.hpp"
+#include "stages/stage1/stage1.hpp"
 
 namespace silkworm {
 
 OutboundGetBlockHeaders::OutboundGetBlockHeaders() {}
 
 OutboundGetBlockHeaders::request_call_t OutboundGetBlockHeaders::execute() {
-    // todo: implement logic to fill GetBlockHeadersPacket using BlockRequestLogic
+    auto packet = STAGE1.working_chain().headers_forward();
+    if (!packet) return nullptr;
 
-    /*
     auto msg_reply = std::make_unique<sentry::OutboundMessageData>();
+
     msg_reply->set_id(sentry::MessageId::GetBlockHeaders);
-    //msg_reply->set_data(rlp_encoding.data(), rlp_encoding.length()); // copy
+
+    auto rlp_encoding_len = rlp::length(packet_);
+    Bytes rlp_encoding(rlp_encoding_len, 0);
+    rlp::encode(rlp_encoding, packet_);
+    msg_reply->set_data(rlp_encoding.data(), rlp_encoding.length()); // copy
+
     std::string peerId; // todo: fill!
 
     return std::make_shared<rpc::SendMessageById>(peerId, std::move(msg_reply));
-    */
-    return nullptr;
 }
 
 void OutboundGetBlockHeaders::handle_completion(SentryRpc& /*reply*/) {

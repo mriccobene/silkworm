@@ -25,10 +25,16 @@ std::unique_ptr<types::H256> to_H256(const intx::uint256& orig) {
 
     H128* hi = new H128{};
     H128* lo = new H128{};
+    /*
     hi->set_hi(orig.hi.hi);
     hi->set_lo(orig.hi.lo);
     lo->set_hi(orig.lo.hi);
     lo->set_lo(orig.lo.lo);
+    */
+    hi->set_hi(orig.lo.lo); // Wrong! necessary to adapt to the tg bug until it is fixed. todo: remove
+    hi->set_lo(orig.lo.hi); // Wrong! necessary to adapt to the tg bug until it is fixed. todo: remove
+    lo->set_hi(orig.hi.lo); // Wrong! necessary to adapt to the tg bug until it is fixed. todo: remove
+    lo->set_lo(orig.hi.hi); // Wrong! necessary to adapt to the tg bug until it is fixed. todo: remove
 
     dest->set_allocated_hi(hi);  // take ownership
     dest->set_allocated_lo(lo);  // take ownership
