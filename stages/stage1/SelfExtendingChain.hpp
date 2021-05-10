@@ -26,9 +26,10 @@ class SelfExtendingChain {  // tentative name - todo: improve!
   public:
     SelfExtendingChain(BlockNum highestInDb, BlockNum topSeenHeight);
 
-    void limits(BlockNum highestInDb, BlockNum topSeenHeight);
-    void top_seen_height(BlockNum n);
-    BlockNum top_seen_height();
+    void highest_block_in_db(BlockNum n);
+    BlockNum highest_block_in_db();
+    void top_seen_block_height(BlockNum n);
+    BlockNum top_seen_block_height();
 
     std::optional<GetBlockHeadersPacket> headers_forward(); // progresses Headers stage in the forward direction
     void request_ack(GetBlockHeadersPacket packet, time_point_t tp, time_dur_t timeout);

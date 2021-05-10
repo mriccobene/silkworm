@@ -35,12 +35,12 @@ InboundNewBlockHashes::InboundNewBlockHashes(const sentry::InboundMessage& msg):
 InboundMessage::reply_call_t InboundNewBlockHashes::execute() {
     using namespace std;
 
-    BlockNum max = STAGE1.working_chain().top_seen_height();
+    BlockNum max = STAGE1.working_chain().top_seen_block_height();
     for(int i = 0; i < packet_.num_of_elements; i++) {
         BlockNum current = packet_.elements[i].number;
         max = std::max(max, current);
     }
-    STAGE1.working_chain().top_seen_height(max);
+    STAGE1.working_chain().top_seen_block_height(max);
 
     // todo: implements rest of processing if any! (see TG)
 

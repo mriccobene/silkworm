@@ -18,20 +18,19 @@
 
 namespace silkworm {
 
-SelfExtendingChain::SelfExtendingChain(BlockNum highestInDb, BlockNum topSeenHeight) {
-    limits(highestInDb, topSeenHeight);
+SelfExtendingChain::SelfExtendingChain(BlockNum highestInDb, BlockNum topSeenHeight): highestInDb_(highestInDb), topSeenHeight_(topSeenHeight) {
 }
 
-void SelfExtendingChain::limits(BlockNum highestInDb, BlockNum topSeenHeight) {
-    highestInDb_ = highestInDb;
-    topSeenHeight_ = topSeenHeight;
+void SelfExtendingChain::highest_block_in_db(BlockNum n) {
+    highestInDb_ = n;
 }
-
-void SelfExtendingChain::top_seen_height(BlockNum n) {
+BlockNum SelfExtendingChain::highest_block_in_db() {
+    return highestInDb_;
+}
+void SelfExtendingChain::top_seen_block_height(BlockNum n) {
     topSeenHeight_ = n;
 }
-
-BlockNum SelfExtendingChain::top_seen_height() {
+BlockNum SelfExtendingChain::top_seen_block_height() {
     return topSeenHeight_;
 }
 

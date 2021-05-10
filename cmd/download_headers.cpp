@@ -69,6 +69,7 @@ int main(int argc, char* argv[]) {
 
         // Stage1
         Stage1 stage1{chain_identity, db_path, sentry_addr};
+        non_owning::Singleton<Stage1>::instance(&stage1);
 
         // Node current status
         auto [head_hash, head_td] = HeaderLogic::head_hash_and_total_difficulty(stage1.db_tx());

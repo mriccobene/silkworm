@@ -19,6 +19,7 @@
 
 #include <memory>
 
+namespace owning {
 template <class T>
 class Singleton {
     static inline std::unique_ptr<T> instance_;
@@ -26,5 +27,15 @@ class Singleton {
     static void instance(std::unique_ptr<T> instance) {instance_ = instance;}
     static T& instance() {return *instance_;}
 };
+}
 
+namespace non_owning {
+template <class T>
+class Singleton {
+    static inline T* instance_;
+  public:
+    static void instance(T* instance) {instance_ = instance;}
+    static T& instance() {return *instance_;}
+};
+}
 #endif  // SILKWORM_SINGLETON_HPP

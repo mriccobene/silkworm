@@ -15,3 +15,9 @@
 */
 
 #include "Message.hpp"
+#include <silkworm/common/log.hpp>
+/*
+Message::~Message() {
+    SILKWORM_LOG(LogDebug) << "Message destroyed\n";
+}
+*/
