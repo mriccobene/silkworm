@@ -47,6 +47,8 @@ class Stage1 : public Stage {
   public:
 
     Stage1(ChainIdentity chain_identity, std::string db_path, std::string sentry_addr);
+    Stage1(const Stage1&) = delete;
+    Stage1(Stage1&&) = delete;
     ~Stage1();
 
     DbTx& db_tx() {return db_;}
@@ -59,7 +61,7 @@ class Stage1 : public Stage {
 
 };
 
-#define STAGE1 Singleton<Stage1>::instance()
+#define STAGE1 non_owning::Singleton<Stage1>::instance()
 
 }  // namespace silkworm
 
