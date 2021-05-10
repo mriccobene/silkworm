@@ -25,16 +25,11 @@ std::unique_ptr<types::H256> to_H256(const intx::uint256& orig) {
 
     H128* hi = new H128{};
     H128* lo = new H128{};
-    /*
+
     hi->set_hi(orig.hi.hi);
     hi->set_lo(orig.hi.lo);
     lo->set_hi(orig.lo.hi);
     lo->set_lo(orig.lo.lo);
-    */
-    hi->set_hi(orig.lo.lo); // Wrong! necessary to adapt to the tg bug until it is fixed. todo: remove
-    hi->set_lo(orig.lo.hi); // Wrong! necessary to adapt to the tg bug until it is fixed. todo: remove
-    lo->set_hi(orig.hi.lo); // Wrong! necessary to adapt to the tg bug until it is fixed. todo: remove
-    lo->set_lo(orig.hi.hi); // Wrong! necessary to adapt to the tg bug until it is fixed. todo: remove
 
     dest->set_allocated_hi(hi);  // take ownership
     dest->set_allocated_lo(lo);  // take ownership
@@ -84,45 +79,6 @@ Hash hash_from_H256(const types::H256& orig) {
     boost::endian::store_big_u64(dest.bytes + 8, hi_lo);
     boost::endian::store_big_u64(dest.bytes + 16, lo_hi);
     boost::endian::store_big_u64(dest.bytes + 24, lo_lo);
-    /*
-    Hash dest = evmc::bytes32{evmc_bytes32{
-        static_cast<uint8_t>(hi_hi >> 56),
-        static_cast<uint8_t>(hi_hi >> 48),
-        static_cast<uint8_t>(hi_hi >> 40),
-        static_cast<uint8_t>(hi_hi >> 32),
-        static_cast<uint8_t>(hi_hi >> 24),
-        static_cast<uint8_t>(hi_hi >> 16),
-        static_cast<uint8_t>(hi_hi >> 8),
-        static_cast<uint8_t>(hi_hi >> 0),
-
-        static_cast<uint8_t>(hi_lo >> 56),
-        static_cast<uint8_t>(hi_lo >> 48),
-        static_cast<uint8_t>(hi_lo >> 40),
-        static_cast<uint8_t>(hi_lo >> 32),
-        static_cast<uint8_t>(hi_lo >> 24),
-        static_cast<uint8_t>(hi_lo >> 16),
-        static_cast<uint8_t>(hi_lo >> 8),
-        static_cast<uint8_t>(hi_lo >> 0),
-
-        static_cast<uint8_t>(lo_hi >> 56),
-        static_cast<uint8_t>(lo_hi >> 48),
-        static_cast<uint8_t>(lo_hi >> 40),
-        static_cast<uint8_t>(lo_hi >> 32),
-        static_cast<uint8_t>(lo_hi >> 24),
-        static_cast<uint8_t>(lo_hi >> 16),
-        static_cast<uint8_t>(lo_hi >> 8),
-        static_cast<uint8_t>(lo_hi >> 0),
-
-        static_cast<uint8_t>(lo_lo >> 56),
-        static_cast<uint8_t>(lo_lo >> 48),
-        static_cast<uint8_t>(lo_lo >> 40),
-        static_cast<uint8_t>(lo_lo >> 32),
-        static_cast<uint8_t>(lo_lo >> 24),
-        static_cast<uint8_t>(lo_lo >> 16),
-        static_cast<uint8_t>(lo_lo >> 8),
-        static_cast<uint8_t>(lo_lo >> 0)
-    }};
-    */
 
     return dest;
 }
@@ -183,81 +139,7 @@ std::string string_from_H512(const types::H512& orig) {
     boost::endian::store_big_u64(data + 40, lo_hi_lo);
     boost::endian::store_big_u64(data + 48, lo_lo_hi);
     boost::endian::store_big_u64(data + 56, lo_lo_lo);
-    /*
-    std::string dest = {
-        static_cast<char>(hi_hi_hi >> 56),
-        static_cast<char>(hi_hi_hi >> 48),
-        static_cast<char>(hi_hi_hi >> 40),
-        static_cast<char>(hi_hi_hi >> 32),
-        static_cast<char>(hi_hi_hi >> 24),
-        static_cast<char>(hi_hi_hi >> 16),
-        static_cast<char>(hi_hi_hi >> 8),
-        static_cast<char>(hi_hi_hi >> 0),
 
-        static_cast<char>(hi_hi_lo >> 56),
-        static_cast<char>(hi_hi_lo >> 48),
-        static_cast<char>(hi_hi_lo >> 40),
-        static_cast<char>(hi_hi_lo >> 32),
-        static_cast<char>(hi_hi_lo >> 24),
-        static_cast<char>(hi_hi_lo >> 16),
-        static_cast<char>(hi_hi_lo >> 8),
-        static_cast<char>(hi_hi_lo >> 0),
-
-        static_cast<char>(hi_lo_hi >> 56),
-        static_cast<char>(hi_lo_hi >> 48),
-        static_cast<char>(hi_lo_hi >> 40),
-        static_cast<char>(hi_lo_hi >> 32),
-        static_cast<char>(hi_lo_hi >> 24),
-        static_cast<char>(hi_lo_hi >> 16),
-        static_cast<char>(hi_lo_hi >> 8),
-        static_cast<char>(hi_lo_hi >> 0),
-
-        static_cast<char>(hi_lo_lo >> 56),
-        static_cast<char>(hi_lo_lo >> 48),
-        static_cast<char>(hi_lo_lo >> 40),
-        static_cast<char>(hi_lo_lo >> 32),
-        static_cast<char>(hi_lo_lo >> 24),
-        static_cast<char>(hi_lo_lo >> 16),
-        static_cast<char>(hi_lo_lo >> 8),
-        static_cast<char>(hi_lo_lo >> 0),
-
-        static_cast<char>(lo_hi_hi >> 56),
-        static_cast<char>(lo_hi_hi >> 48),
-        static_cast<char>(lo_hi_hi >> 40),
-        static_cast<char>(lo_hi_hi >> 32),
-        static_cast<char>(lo_hi_hi >> 24),
-        static_cast<char>(lo_hi_hi >> 16),
-        static_cast<char>(lo_hi_hi >> 8),
-        static_cast<char>(lo_hi_hi >> 0),
-
-        static_cast<char>(lo_hi_lo >> 56),
-        static_cast<char>(lo_hi_lo >> 48),
-        static_cast<char>(lo_hi_lo >> 40),
-        static_cast<char>(lo_hi_lo >> 32),
-        static_cast<char>(lo_hi_lo >> 24),
-        static_cast<char>(lo_hi_lo >> 16),
-        static_cast<char>(lo_hi_lo >> 8),
-        static_cast<char>(lo_hi_lo >> 0),
-
-        static_cast<char>(lo_lo_hi >> 56),
-        static_cast<char>(lo_lo_hi >> 48),
-        static_cast<char>(lo_lo_hi >> 40),
-        static_cast<char>(lo_lo_hi >> 32),
-        static_cast<char>(lo_lo_hi >> 24),
-        static_cast<char>(lo_lo_hi >> 16),
-        static_cast<char>(lo_lo_hi >> 8),
-        static_cast<char>(lo_lo_hi >> 0),
-
-        static_cast<char>(lo_lo_lo >> 56),
-        static_cast<char>(lo_lo_lo >> 48),
-        static_cast<char>(lo_lo_lo >> 40),
-        static_cast<char>(lo_lo_lo >> 32),
-        static_cast<char>(lo_lo_lo >> 24),
-        static_cast<char>(lo_lo_lo >> 16),
-        static_cast<char>(lo_lo_lo >> 8),
-        static_cast<char>(lo_lo_lo >> 0)
-    };
-    */
     return dest;
 }
 
