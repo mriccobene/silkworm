@@ -36,8 +36,8 @@ InboundMessage::reply_call_t InboundNewBlockHashes::execute() {
     using namespace std;
 
     BlockNum max = STAGE1.working_chain().top_seen_block_height();
-    for(int i = 0; i < packet_.num_of_elements; i++) {
-        BlockNum current = packet_.elements[i].number;
+    for(size_t i = 0; i < packet_.size(); i++) {
+        BlockNum current = packet_[i].number;
         max = std::max(max, current);
     }
     STAGE1.working_chain().top_seen_block_height(max);

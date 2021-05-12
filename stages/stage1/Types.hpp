@@ -18,6 +18,8 @@
 
 #include <silkworm/common/util.hpp>
 #include <silkworm/types/transaction.hpp>
+#include <silkworm/rlp/decode.hpp>
+#include <silkworm/rlp/encode.hpp>
 #include <boost/endian/conversion.hpp>
 using namespace silkworm;
 
@@ -45,7 +47,11 @@ class Hash: public evmc::bytes32 {
 using Header = BlockHeader;
 using BlockNum = uint64_t;
 using BigInt = intx::uint256; // use intx::to_string, from_string, ...
+
 //using Bytes = std::basic_string<uint8_t>; already defined elsewhere
+//using std::string to_hex(ByteView bytes);
+//using std::optional<Bytes> from_hex(std::string_view hex) noexcept;
+
 
 using time_point_t = std::chrono::time_point<std::chrono::system_clock>;
 using time_dur_t = std::chrono::duration<std::chrono::system_clock>;
@@ -78,5 +84,12 @@ inline std::ostream& operator<<(std::ostream& out, const evmc::bytes32& b32) {
     return out;
 }
 
+inline void rlp_encode(Bytes& to, const Hash& h) {
+    rlp::encode(to, dynamic_cast<const evmc::bytes32&>(h));
+}
+
+inline rlp::DecodingResult rlp_decode(ByteView& from, Hash& to) noexcept {
+    return rlp::decode(from, dynamic_cast<evmc::bytes32&>(to));
+}
 
 #endif  // SILKWORM_TYPES_HPP

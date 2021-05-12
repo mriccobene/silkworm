@@ -46,7 +46,6 @@ void Stage1::execution_loop() { // no-thread version
     using std::shared_ptr;
     using namespace std::chrono_literals;
 
-    bool exiting_ = false;  // ############# todo: only for debug, remove!
     ConcurrentQueue<shared_ptr<Message>> messages{};
 
     // set chain limits
@@ -54,7 +53,7 @@ void Stage1::execution_loop() { // no-thread version
     working_chain_.highest_block_in_db(head_height); // the second limit will be set at the each block announcements
 
     // handling async rpc
-    std::thread rpc_handling{[&exiting_, this]() {    // todo: add try...catch to trap exceptions and set exiting_=true to cause other thread exiting
+    std::thread rpc_handling{[&]() {    // todo: add try...catch to trap exceptions and set exiting_=true to cause other thread exiting
       while (!exiting_) {
           auto executed_rpc = sentry_.receive_one_result();
           // check executed_rpc status?
@@ -74,7 +73,7 @@ void Stage1::execution_loop() { // no-thread version
     // set status
     auto [head_hash, head_td] = HeaderLogic::head_hash_and_total_difficulty(db_);
     auto set_status = rpc::SetStatus::make(chain_identity_.chain, chain_identity_.genesis_hash, chain_identity_.hard_forks, head_hash, head_td);
-    set_status->on_receive_reply([&exiting_](auto& call) {
+    set_status->on_receive_reply([&](auto& call) {
       if (!call.status().ok()) {
           exiting_ = true;
           SILKWORM_LOG(LogCritical) << "failed to set status to the remote sentry, cause:'" << call.status().error_message() << "', exiting...\n";
@@ -88,7 +87,7 @@ void Stage1::execution_loop() { // no-thread version
 
     // start message receiving
     auto receive_messages = rpc::ReceiveMessages::make();
-    receive_messages->on_receive_reply([&exiting_, receive_messages, &messages](auto& call) {
+    receive_messages->on_receive_reply([&, receive_messages](auto& call) {
       SILKWORM_LOG(LogDebug) << "receive-messages reply arrived\n";
       if (!call.terminated()) {
           sentry::InboundMessage& reply = receive_messages->reply();
@@ -107,7 +106,7 @@ void Stage1::execution_loop() { // no-thread version
 
 
     // message processing
-    std::thread message_processing{[&exiting_, &messages, &sentry = this->sentry_]() {
+    std::thread message_processing{[&]() {
       while (!exiting_) {
           shared_ptr<Message> message;
           bool present = messages.timed_wait_and_pop(message, 1000ms);
@@ -129,14 +128,14 @@ void Stage1::execution_loop() { // no-thread version
             messages.push(completion); // coroutines would avoid this
           });
 
-          sentry.exec_remotely(rpc);
+          sentry_.exec_remotely(rpc);
       }
       SILKWORM_LOG(LogInfo) << "message_processing thread exiting...\n";
     }};
 
 
     // make outbound requests
-    std::thread request_generation{[&exiting_, &messages]() {
+    std::thread request_generation{[&]() {
       while (!exiting_) {
           shared_ptr<Message> message = std::make_shared<OutboundGetBlockHeaders>();
           messages.push(message);
