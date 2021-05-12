@@ -30,8 +30,6 @@ class InboundNewBlockHashes: public InboundMessage {
 
     reply_call_t execute() override;
 
-    void handle_completion(SentryRpc&) override;
-
   private:
     std::string peerId_;
     NewBlockHashesPacket packet_;

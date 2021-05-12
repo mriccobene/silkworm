@@ -15,6 +15,7 @@
 */
 
 #include "InboundMessage.hpp"
+#include "InboundNewBlockHashes.hpp"
 #include "InboundGetBlockHeaders.hpp"
 #include <silkworm/common/log.hpp>
 #include <iostream>
@@ -23,7 +24,9 @@ namespace silkworm {
 
 std::shared_ptr<InboundMessage> InboundMessage::make(const sentry::InboundMessage& raw_message) {
     std::shared_ptr<InboundMessage> message;
-    if (raw_message.id() == sentry::MessageId::GetBlockHeaders)
+    if (raw_message.id() == sentry::MessageId::NewBlockHashes)
+        message = std::make_shared<InboundNewBlockHashes>(raw_message);
+    else if (raw_message.id() == sentry::MessageId::GetBlockHeaders)
         message = std::make_shared<InboundGetBlockHeaders>(raw_message);
     else
         SILKWORM_LOG(LogWarn) << "InboundMessage " << sentry::MessageId_Name(raw_message.id()) << " received but not implemented yet\n";
