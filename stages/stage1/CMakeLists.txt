@@ -35,12 +35,18 @@ find_package(gRPC CONFIG REQUIRED)
 file(GLOB_RECURSE STAGE1_SRC CONFIGURE_DEPENDS "*.cpp" "*.cc" "*.hpp" "*.c" "*.h")
 list(FILTER STAGE1_SRC EXCLUDE REGEX "main\.cpp$|_test\.cpp$")
 
-
 add_library(silkworm_stage1 ${STAGE1_SRC}
                            "${CMAKE_SOURCE_DIR}/interfaces/sentry.grpc.pb.cc"
                            "${CMAKE_SOURCE_DIR}/interfaces/sentry.pb.cc"
                            "${CMAKE_SOURCE_DIR}/interfaces/types.pb.cc")
 
+add_dependencies(silkworm_stage1 generate_sentry_grpc)
+
+set_source_files_properties("${CMAKE_SOURCE_DIR}/interfaces/sentry.grpc.pb.cc" PROPERTIES GENERATED TRUE)
+set_source_files_properties("${CMAKE_SOURCE_DIR}/interfaces/sentry.pb.cc" PROPERTIES GENERATED TRUE)
+set_source_files_properties("${CMAKE_SOURCE_DIR}/interfaces/types.pb.cc" PROPERTIES GENERATED TRUE)
+
+# see https://samthursfield.wordpress.com/2015/11/21/cmake-dependencies-between-targets-and-files-and-custom-commands/
 
 target_link_libraries(silkworm_stage1 PUBLIC silkworm_db
                                              silkworm_tg_api

@@ -19,6 +19,8 @@
 
 namespace silkworm {
 
+// TESTs related to NewBlockHashesPacket encoding/decoding
+
 /*
 input:  e6e5a0eb2c33963824bf97d01cff8a65f00dc402fbf64f473cb4778a547ac08cebc35483bd8410
 decoded:
@@ -61,43 +63,5 @@ TEST_CASE("NewBlockHashesPacket encoding") {
 
     REQUIRE(to_hex(encoded) == "e6e5a0eb2c33963824bf97d01cff8a65f00dc402fbf64f473cb4778a547ac08cebc35483bd8410");
 }
-/*
-TEST_CASE("NewBlockHashesPacket decoding") {
-    using namespace std;
 
-    optional<Bytes> encoded = from_hex("e6e5a0eb2c33963824bf97d01cff8a65f00dc402fbf64f473cb4778a547ac08cebc35483bd8410");
-    REQUIRE(encoded.has_value());
-
-    char* buffer = new char[2048];  // todo: calculate exact len
-    auto* packet = reinterpret_cast<NewBlockHashesPacket*>(buffer);
-
-    ByteView encoded_view = encoded.value();
-    rlp::DecodingResult result = rlp::decode(encoded_view, *packet);
-
-    REQUIRE(result == rlp::DecodingResult::kOk);
-    REQUIRE(packet->num_of_elements == 1);
-    REQUIRE(packet->elements[0].hash == Hash::from_hex("eb2c33963824bf97d01cff8a65f00dc402fbf64f473cb4778a547ac08cebc354"));
-    REQUIRE(packet->elements[0].number == 12'420'112);
-
-    delete[] buffer;
-}
-
-TEST_CASE("NewBlockHashesPacket encoding") {
-    using namespace std;
-
-    char* buffer = new char[2048];  // todo: calculate exact len
-    auto* packet = reinterpret_cast<NewBlockHashesPacket*>(buffer);
-
-    packet->num_of_elements = 1;
-    packet->elements[0].hash = Hash::from_hex("eb2c33963824bf97d01cff8a65f00dc402fbf64f473cb4778a547ac08cebc354");
-    packet->elements[0].number = 12'420'112;
-
-    Bytes encoded;
-    rlp::encode(encoded, *packet);
-
-    REQUIRE(to_hex(encoded) == "e6e5a0eb2c33963824bf97d01cff8a65f00dc402fbf64f473cb4778a547ac08cebc35483bd8410");
-
-    delete[] buffer;
-}
-*/
 }
