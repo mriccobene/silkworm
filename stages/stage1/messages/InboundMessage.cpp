@@ -33,4 +33,12 @@ std::shared_ptr<InboundMessage> InboundMessage::make(const sentry::InboundMessag
     return message;
 }
 
+std::ostream& operator<<(std::ostream& os, const silkworm::InboundMessage& msg) {
+    os << msg.name() << " content: " << msg.content();
+    return os;
 }
+
+}
+
+
+

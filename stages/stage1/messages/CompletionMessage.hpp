@@ -29,7 +29,8 @@ class CompletionMessage: public Message {
     CompletionMessage(std::shared_ptr<Message> waiting_completion, rpc_t completed_rpc):
         msg_waiting_completion_(waiting_completion), completed_rpc_(completed_rpc) {}
 
-    std::string name() override {return "CompletionMessage";}
+    std::string name() const override {return "CompletionMessage";}
+    std::string content() const override {return "-";}
 
     rpc_t execute() override {msg_waiting_completion_->handle_completion(*completed_rpc_); return nullptr;}
 

@@ -27,7 +27,8 @@ class InboundGetBlockHeaders: public InboundMessage {
   public:
     InboundGetBlockHeaders(const sentry::InboundMessage& msg);
 
-    std::string name() override {return "InboundGetBlockHeaders";}
+    std::string name() const override {return "InboundGetBlockHeaders";}
+    std::string content() const override;
 
     reply_call_t execute() override;
 

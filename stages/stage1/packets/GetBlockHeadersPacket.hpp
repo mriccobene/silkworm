@@ -113,6 +113,15 @@ namespace rlp {
 
 } // rlp namespace
 
+    inline std::ostream& operator<<(std::ostream& os, const GetBlockHeadersPacket& packet)
+    {
+        os <<  "origin=" << packet.origin
+           << " amount=" << packet.amount
+           << " skip="   << packet.skip
+           << " reverse="<< packet.reverse;
+        return os;
+    }
+
 } // silkworm namespace
 
 #endif  // SILKWORM_GETBLOCKHEADERSPACKET_HPP

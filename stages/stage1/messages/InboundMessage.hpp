@@ -22,7 +22,6 @@
 #include <silkworm/rlp/decode.hpp>
 #include <silkworm/rlp/encode.hpp>
 
-
 namespace silkworm {
 class OutboundMessage;
 
@@ -36,5 +35,9 @@ class InboundMessage : public Message {
     static std::shared_ptr<InboundMessage> make(const sentry::InboundMessage& msg);
 };
 
+
+std::ostream& operator<<(std::ostream&, const silkworm::InboundMessage&);
+
 }
+
 #endif  // SILKWORM_INBOUNDMESSAGE_HPP

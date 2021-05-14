@@ -15,16 +15,28 @@
 */
 
 #include "OutboundGetBlockHeaders.hpp"
-#include "stages/stage1/rpc/SendMessageById.hpp"
+#include "stages/stage1/rpc/SendMessageByMinBlock.hpp"
 #include "stages/stage1/stage1.hpp"
+#include <silkworm/common/log.hpp>
+#include <sstream>
 
 namespace silkworm {
 
 OutboundGetBlockHeaders::OutboundGetBlockHeaders() {}
 
 OutboundGetBlockHeaders::request_call_t OutboundGetBlockHeaders::execute() {
+    // see TG sendHeaderRequest
+
     auto packet = STAGE1.working_chain().headers_forward();
     if (!packet) return nullptr;
+    packet_ = *packet;
+
+    if (std::holds_alternative<Hash>(packet_.origin))
+        throw std::logic_error("OutboundGetBlockHeaders expects block number not hash");    // todo: check!
+
+    BlockNum min_block = std::get<BlockNum>(packet_.origin);
+    if (!packet_.reverse)
+        min_block += packet_.amount * packet_.skip;
 
     auto msg_reply = std::make_unique<sentry::OutboundMessageData>();
 
@@ -35,14 +47,18 @@ OutboundGetBlockHeaders::request_call_t OutboundGetBlockHeaders::execute() {
     rlp::encode(rlp_encoding, packet_);
     msg_reply->set_data(rlp_encoding.data(), rlp_encoding.length()); // copy
 
-    std::string peerId; // todo: fill!
-
-    return std::make_shared<rpc::SendMessageById>(peerId, std::move(msg_reply));
+    return rpc::SendMessageByMinBlock::make(min_block, std::move(msg_reply));
 }
 
 void OutboundGetBlockHeaders::handle_completion(SentryRpc& /*reply*/) {
     // auto& specific_reply = dynamic_cast<rpc::SendMessageById&>(reply);
     //  use specific_reply...
+}
+
+std::string OutboundGetBlockHeaders::content() const {
+    std::stringstream content;
+    content << packet_;
+    return content.str();
 }
 
 }

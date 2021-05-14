@@ -58,6 +58,10 @@ void InboundGetBlockHeaders::handle_completion(SentryRpc& reply) {
     // use specific_reply...
 }
 
-
+std::string InboundGetBlockHeaders::content() const {
+    std::stringstream content;
+    content << packet_;
+    return content.str();
+}
 
 }
