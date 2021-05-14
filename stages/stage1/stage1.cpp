@@ -93,7 +93,7 @@ void Stage1::execution_loop() { // no-thread version
           sentry::InboundMessage& reply = receive_messages->reply();
           auto message = InboundMessage::make(reply);
           if (message) {
-              SILKWORM_LOG(LogInfo) << "Message received from remote peer: " << message->name() << "\n";
+              SILKWORM_LOG(LogInfo) << "Message received from remote peer: " << *message << "\n";
               messages.push(message);
           }
       }
@@ -112,19 +112,21 @@ void Stage1::execution_loop() { // no-thread version
           bool present = messages.timed_wait_and_pop(message, 1000ms);
           if (!present) continue;   // timeout
 
-          SILKWORM_LOG(LogDebug) << "Processing message " << message->name() << "\n";
+          if (std::dynamic_pointer_cast<InboundMessage>(message)) {
+              SILKWORM_LOG(LogInfo) << "Processing message " << *message << "\n";
+          }
+
           shared_ptr<SentryRpc> rpc = message->execute();
           if (!rpc) continue;
 
           if (std::dynamic_pointer_cast<InboundMessage>(message))
               SILKWORM_LOG(LogInfo) << "Replying to incoming request " << message->name() << "\n";
           else // OutboundMessage
-              SILKWORM_LOG(LogInfo) << "Sending outgoing request " << message->name() << "\n";
+              SILKWORM_LOG(LogInfo) << "Sending outgoing request " << *message << "\n";
 
           rpc->on_receive_reply([message, rpc, &messages](auto&) { // copy message and rpc to retain their lifetime (shared_ptr) [avoid rpc passing using make_shared_from_this in AsyncCall]
             SILKWORM_LOG(LogInfo) << "Received rpc result of " << message->name() << "\n";
-            //message->handle_completion(call);  // call convey reply (SentPeers or Empty), dangerous... will be executed in another thread
-            shared_ptr<Message> completion = CompletionMessage::make(message, rpc);
+            shared_ptr<Message> completion = CompletionMessage::make(message, rpc); //message->handle_completion(call) would be dangerous... would be executed in another thread
             messages.push(completion); // coroutines would avoid this
           });
 
@@ -140,7 +142,7 @@ void Stage1::execution_loop() { // no-thread version
           shared_ptr<Message> message = std::make_shared<OutboundGetBlockHeaders>();
           messages.push(message);
 
-          std::this_thread::sleep_for(5s);
+          std::this_thread::sleep_for(60s);
       }
       SILKWORM_LOG(LogInfo) << "request_generation thread exiting...\n";
     }};

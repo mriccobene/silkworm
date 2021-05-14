@@ -14,20 +14,15 @@
    limitations under the License.
 */
 
-#include "Message.hpp"
-#include <silkworm/common/log.hpp>
+#include "SendMessageByMinBlock.hpp"
 
-namespace silkworm {
+namespace silkworm::rpc {
 
-/*
-Message::~Message() {
-    SILKWORM_LOG(LogDebug) << "Message destroyed\n";
-}
-*/
-
-std::ostream& operator<<(std::ostream& os, const silkworm::Message& msg) {
-    os << msg.name() << " content: " << msg.content();
-    return os;
+SendMessageByMinBlock::SendMessageByMinBlock(BlockNum min_block, std::unique_ptr<sentry::OutboundMessageData> message):
+    AsyncUnaryCall("SendMessageByMinBlock", &sentry::Sentry::Stub::PrepareAsyncSendMessageByMinBlock, {})
+{
+    request_.set_min_block(min_block);
+    request_.set_allocated_data(message.release());  // take ownership
 }
 
 }

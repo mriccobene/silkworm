@@ -157,5 +157,10 @@ namespace rlp {
 
 }
 
+    inline std::ostream& operator<<(std::ostream& os, const NewBlockHashesPacket& packet)
+    {
+        os << packet.size() << " new block hashes/nums";
+        return os;
+    }
 }
 #endif  // SILKWORM_NEWBLOCKHASHPACKET_HPP

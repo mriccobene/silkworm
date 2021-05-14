@@ -47,4 +47,10 @@ InboundMessage::reply_call_t InboundNewBlockHashes::execute() {
     return nullptr;
 }
 
+std::string InboundNewBlockHashes::content() const {
+    std::stringstream content;
+    content << packet_;
+    return content.str();
+}
+
 }

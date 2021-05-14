@@ -14,33 +14,23 @@
    limitations under the License.
 */
 
-#ifndef SILKWORM_MESSAGE_HPP
-#define SILKWORM_MESSAGE_HPP
+#ifndef SILKWORM_SENDMESSAGEBYMINBLOCK_HPP
+#define SILKWORM_SENDMESSAGEBYMINBLOCK_HPP
 
 #include "stages/stage1/SentryClient.hpp"
-#include "stages/stage1/Types.hpp"
 
+namespace silkworm::rpc {
 
-namespace silkworm {
-
-class Message {
+class SendMessageByMinBlock: public rpc::AsyncUnaryCall<sentry::Sentry, sentry::SendMessageByMinBlockRequest, sentry::SentPeers> {
   public:
-    using rpc_t = std::shared_ptr<SentryRpc>;
+    SendMessageByMinBlock(BlockNum min_block, std::unique_ptr<sentry::OutboundMessageData> message);
 
-    virtual std::string name() const = 0;
-    virtual std::string content() const = 0;
+    using SentryRpc::on_receive_reply;
 
-    virtual rpc_t execute() = 0;    // inbound message does a reply, outbound message does a request
-
-    virtual void handle_completion(SentryRpc&) {}
-
-    virtual ~Message() = default;
+    static auto make(BlockNum min_block, std::unique_ptr<sentry::OutboundMessageData> message)
+    {return std::make_shared<SendMessageByMinBlock>(min_block, std::move(message));}
 };
-
-std::ostream& operator<<(std::ostream&, const silkworm::Message&);
 
 }
 
-
-
-#endif  // SILKWORM_MESSAGE_HPP
+#endif  // SILKWORM_SENDMESSAGEBYMINBLOCK_HPP

@@ -77,5 +77,13 @@ namespace rlp {
 
 }
 
+    inline std::ostream& operator<<(std::ostream& os, const HashOrNumber& packet) {
+        if (std::holds_alternative<Hash>(packet))
+            os << std::get<Hash>(packet);
+        else
+            os << std::get<BlockNum>(packet);
+        return os;
+    }
+
 }
 #endif  // SILKWORM_HASHORNUMBER_HPP
