@@ -26,8 +26,6 @@ if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++20 -fcoroutines")
 endif()
 
-find_package(Boost CONFIG REQUIRED COMPONENTS filesystem)
-
 find_package(CLI11 CONFIG REQUIRED)
 
 find_package(gRPC CONFIG REQUIRED)
@@ -51,7 +49,6 @@ set_source_files_properties("${CMAKE_SOURCE_DIR}/interfaces/types.pb.cc" PROPERT
 target_link_libraries(silkworm_stage1 PUBLIC silkworm_db
                                              silkworm_tg_api
                                              CLI11::CLI11
-                                             Boost::filesystem
                                              gRPC::grpc++
                                              protobuf::libprotobuf)
 
