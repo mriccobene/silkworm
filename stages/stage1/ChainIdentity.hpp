@@ -28,7 +28,8 @@ struct ChainIdentity {
     std::string name;
     ChainConfig chain;
     Hash genesis_hash;
-    std::vector<BlockNum> hard_forks;
+
+    std::vector<BlockNum> distinct_fork_numbers(); // helper method
 
     static ChainIdentity mainnet;
     static ChainIdentity goerli;

@@ -17,24 +17,31 @@
 
 namespace silkworm {
 
+
+std::vector<BlockNum> ChainIdentity::distinct_fork_numbers() {
+    std::vector<BlockNum> forks;
+
+    for(std::optional<uint64_t> bn: chain.fork_blocks) {
+        if (bn && *bn != 0)
+            forks.push_back(*bn);
+    }
+    if (chain.dao_block)
+        forks.push_back(*chain.dao_block);
+    if (chain.muir_glacier_block)
+        forks.push_back(*chain.muir_glacier_block);
+
+    sort(forks.begin(), forks.end());                             // block list must be ordered
+    forks.erase(unique(forks.begin(), forks.end()), forks.end()); // do not repeat block if 2 forks overlap
+
+    return forks;
+}
+
 static ChainIdentity mainnet_identity() {
     ChainIdentity id;
 
     id.name = "mainnet";
-
     id.chain = kMainnetConfig;
     id.genesis_hash = Hash::from_hex("d4e56740f876aef8c010b86a40d5f56745a118d0906a34e69aec8c0db1cb8fa3"); // mainnet genesis hash in hex
-
-    id.hard_forks.push_back(*id.chain.homestead_block);
-    id.hard_forks.push_back(*id.chain.dao_block);
-    id.hard_forks.push_back(*id.chain.tangerine_whistle_block);
-    id.hard_forks.push_back(*id.chain.spurious_dragon_block);
-    id.hard_forks.push_back(*id.chain.byzantium_block);
-    id.hard_forks.push_back(*id.chain.constantinople_block);
-    //id.hard_forks.push_back(*chain.petersburg_block);     // todo: uses all the forks but erase block numbers with the same value or zero
-    id.hard_forks.push_back(*id.chain.istanbul_block);
-    id.hard_forks.push_back(*id.chain.muir_glacier_block);
-    id.hard_forks.push_back(*id.chain.berlin_block);
 
     return id;
 }
@@ -43,12 +50,8 @@ static ChainIdentity goerli_identity() {
     ChainIdentity id;
 
     id.name = "goerli";
-
     id.chain = kGoerliConfig;
     id.genesis_hash = Hash::from_hex("bf7e331f7f7c1dd2e05159666b3bf8bc7a8a3a9eb1d518969eab529dd9b88c1a"); // goerli genesis hash in hex
-
-    id.hard_forks.push_back(*id.chain.istanbul_block); // todo: uses all the forks but erase block numbers with the same value or zero
-    id.hard_forks.push_back(*id.chain.berlin_block);
 
     return id;
 }

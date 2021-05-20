@@ -29,7 +29,7 @@ std::shared_ptr<InboundMessage> InboundMessage::make(const sentry::InboundMessag
     else if (raw_message.id() == sentry::MessageId::GetBlockHeaders)
         message = std::make_shared<InboundGetBlockHeaders>(raw_message);
     else
-        SILKWORM_LOG(LogWarn) << "InboundMessage " << sentry::MessageId_Name(raw_message.id()) << " received but not implemented yet\n";
+        SILKWORM_LOG(LogLevel::Warn) << "InboundMessage " << sentry::MessageId_Name(raw_message.id()) << " received but not implemented yet\n";
     return message;
 }
 

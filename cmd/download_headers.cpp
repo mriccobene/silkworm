@@ -50,7 +50,7 @@ int main(int argc, char* argv[]) {
 
     CLI11_PARSE(app, argc, argv);
 
-    SILKWORM_LOG_VERBOSITY(LogTrace);
+    SILKWORM_LOG_VERBOSITY(LogLevel::Trace);
 
     try {
         // EIP-2124 based chain identity scheme (networkId + genesis + forks)
@@ -65,7 +65,7 @@ int main(int argc, char* argv[]) {
         cout << "Download Headers - Silkworm\n"
              << "   chain-id: " << chain_identity.chain.chain_id << "\n"
              << "   genesis-hash: " << chain_identity.genesis_hash << "\n"
-             << "   hard-forks: " << chain_identity.hard_forks.size() << "\n";
+             << "   hard-forks: " << chain_identity.distinct_fork_numbers().size() << "\n";
 
         // Stage1
         Stage1 stage1{chain_identity, db_path, sentry_addr};

@@ -48,7 +48,7 @@ std::vector<Header> HeaderLogic::recoverByHash(Hash origin, uint64_t amount, uin
             BlockNum next = current + skip + 1;
             if (next <= current) {
                 unknown = true;
-                SILKWORM_LOG(LogLevels::LogWarn)
+                SILKWORM_LOG(LogLevel::Warn)
                     << "GetBlockHeaders skip overflow attack:"
                     << " current=" << current
                     << ", skip=" << skip
