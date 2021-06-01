@@ -63,18 +63,9 @@ namespace rlp {
         rlp_head.payload_length += rlp::length(from.skip);
         rlp_head.payload_length += rlp::length(from.reverse);
 
-        size_t rlp_head_len = rlp::length_of_length(rlp_head.payload_length) + rlp_head.payload_length;
+        size_t rlp_head_len = rlp::length_of_length(rlp_head.payload_length);
 
-        size_t body_len = 0;
-        /* eth/66
-         body_len += rlp::length(from.requestId);
-        */
-        body_len += rlp::length(from.origin);
-        body_len += rlp::length(from.amount);
-        body_len += rlp::length(from.skip);
-        body_len += rlp::length(from.reverse);
-
-        return rlp_head_len + body_len;
+        return rlp_head_len + rlp_head.payload_length;
     }
 
     inline rlp::DecodingResult decode(ByteView& from, GetBlockHeadersPacket& to) noexcept {

@@ -16,10 +16,12 @@
 
 #include <catch2/catch.hpp>
 #include "NewBlockHashesPacket.hpp"
+#include "GetBlockHeadersPacket.hpp"
 
 namespace silkworm {
 
 // TESTs related to NewBlockHashesPacket encoding/decoding
+// ----------------------------------------------------------------------------
 
 /*
 input:  e6e5a0eb2c33963824bf97d01cff8a65f00dc402fbf64f473cb4778a547ac08cebc35483bd8410
@@ -62,6 +64,84 @@ TEST_CASE("NewBlockHashesPacket encoding") {
     rlp::encode(encoded, packet);
 
     REQUIRE(to_hex(encoded) == "e6e5a0eb2c33963824bf97d01cff8a65f00dc402fbf64f473cb4778a547ac08cebc35483bd8410");
+
+    // todo: activate this test
+
+    //auto len = rlp::length(packet);
+
+    //REQUIRE(len == encoded.size());
 }
+
+// TESTs related to GetBlockHeadersPacket encoding/decoding
+// ----------------------------------------------------------------------------
+
+/*
+input:  c783b9ffff018080 (check!)
+decoded:
+         C7 = list, 7 bytes
+            |-- 83b9ffff018080
+                 |-- 83 = string, 3 bytes
+                      |-- b9ffff
+                 |-- 01 = string, value = 01
+                 |-- 80 = string, 0 bytes
+                 |-- 80 = string, 0 bytes
+ */
+TEST_CASE("GetBlockHeadersPacket decoding") {
+    using namespace std;
+
+    optional<Bytes> encoded = from_hex("c783b9ffff018080");
+    REQUIRE(encoded.has_value());
+
+    GetBlockHeadersPacket packet;
+
+    ByteView encoded_view = encoded.value();
+    rlp::DecodingResult result = rlp::decode(encoded_view, packet);
+
+    REQUIRE(result == rlp::DecodingResult::kOk);
+    REQUIRE(std::holds_alternative<BlockNum>(packet.origin) == true);
+    REQUIRE(std::get<BlockNum>(packet.origin) == 12189695); //intx::from_string("0xb9ffff"));
+    REQUIRE(packet.amount == 1);
+    REQUIRE(packet.skip == 0);
+    REQUIRE(packet.reverse == false);
+}
+
+TEST_CASE("GetBlockHeadersPacket encoding") {
+    using namespace std;
+
+    GetBlockHeadersPacket packet;
+
+    packet.origin = BlockNum{12189695};
+    packet.amount = 1;
+    packet.skip = 0;
+    packet.reverse = false;
+
+    Bytes encoded;
+    rlp::encode(encoded, packet);
+
+    REQUIRE(to_hex(encoded) == "c783b9ffff018080");
+
+    auto len = rlp::length(packet);
+
+    REQUIRE(len == encoded.size());
+}
+
+// TESTs related to GetBlockHeadersPacket66 encoding/decoding
+// ----------------------------------------------------------------------------
+
+/*
+input:  d1886b1a456ba6e2f81dc783b9ffff018080
+decoded:
+        d1 = list, 17 bytes
+         |-- 886b1a456ba6e2f81dc783b9ffff018080
+               |-- 88 = string, 8 bytes
+                    |-- 6b1a456ba6e2f81d
+               |-- C7 = list, 7 bytes
+                    |-- 83b9ffff018080
+                          |-- 83 = string, 3 bytes
+                               |-- b9ffff
+                          |-- 01 = string, value = 01
+                          |-- 80 = string, 0 bytes
+                          |-- 80 = string, 0 bytes
+ */
 
 }

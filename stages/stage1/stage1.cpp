@@ -25,6 +25,7 @@
 #include "messages/OutboundGetBlockHeaders.hpp"
 #include "messages/CompletionMessage.hpp"
 #include "rpc/ReceiveMessages.hpp"
+#include "rpc/ReceiveUploadMessages.hpp"
 #include "rpc/SetStatus.hpp"
 #include "ConcurrentContainers.hpp"
 
@@ -85,7 +86,7 @@ void Stage1::execution_loop() { // no-thread version
     std::this_thread::sleep_for(3s); // wait for connection setup before submit other requests
 
 
-    // start message receiving
+    // start message receiving (headers & block announcements)
     auto receive_messages = rpc::ReceiveMessages::make();
     receive_messages->on_receive_reply([&, receive_messages](auto& call) {
       SILKWORM_LOG(LogLevel::Debug) << "receive-messages reply arrived\n";
@@ -93,7 +94,7 @@ void Stage1::execution_loop() { // no-thread version
           sentry::InboundMessage& reply = receive_messages->reply();
           auto message = InboundMessage::make(reply);
           if (message) {
-              SILKWORM_LOG(LogLevel::Info) << "Message received from remote peer: " << *message << "\n";
+              SILKWORM_LOG(LogLevel::Info) << "Message received from remote peer " << *message << "\n";
               messages.push(message);
           }
       }
@@ -104,6 +105,24 @@ void Stage1::execution_loop() { // no-thread version
     });
     sentry_.exec_remotely(receive_messages);
 
+    // start message receiving (headers & block requests)
+    auto receive_upl_msgs = rpc::ReceiveUploadMessages::make();
+    receive_upl_msgs->on_receive_reply([&, receive_upl_msgs](auto& call) {
+      SILKWORM_LOG(LogLevel::Debug) << "receive-upload-messages reply arrived\n";
+      if (!call.terminated()) {
+          sentry::InboundMessage& reply = receive_upl_msgs->reply();
+          auto message = InboundMessage::make(reply);
+          if (message) {
+              SILKWORM_LOG(LogLevel::Info) << "(upload)Message received from remote peer " << *message << "\n";
+              messages.push(message);
+          }
+      }
+      else {
+          exiting_ = true;
+          SILKWORM_LOG(LogLevel::Critical) << "receiving (upload)messages stream interrupted, cause:'" << call.status().error_message() << "', exiting...\n";
+      }
+    });
+    sentry_.exec_remotely(receive_upl_msgs);
 
     // message processing
     std::thread message_processing{[&]() {

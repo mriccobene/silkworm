@@ -53,21 +53,24 @@ namespace rlp {
     }
 
     inline DecodingResult decode(ByteView& from, HashOrNumber& to) noexcept {
-        ByteView copy(from);  // to decode but not consume
-        auto [h, err] = decode_header(copy);
+        auto [h, err] = decode_header(from);
         if (err != DecodingResult::kOk) {
             return err;
         }
-
-        // uint8_t payload_length = from[0] - 0x80; // in the simple cases that we need here
+        if (h.list)
+            return DecodingResult::kUnexpectedList;
 
         if (h.payload_length == 32) {
             Hash hash;
-            err = rlp::decode(from, dynamic_cast<evmc::bytes32&>(hash));
+            //err = rlp::decode(from, dynamic_cast<evmc::bytes32&>(hash)); -> wrong, it searches a header in from
+            std::memcpy(hash.raw_bytes(), from.data(), 32);
+            from.remove_prefix(32);
             to = hash;
         } else if (h.payload_length <= 8) {
-            BlockNum number;
-            err = rlp::decode(from, number);
+            BlockNum number{};
+            //err = rlp::decode(from, number); -> wrong, it searches a header in from
+            std::tie(number, err) = read_uint64(from.substr(0, h.payload_length));
+            from.remove_prefix(h.payload_length);
             to = number;
         } else {
             err = DecodingResult::kUnexpectedLength;

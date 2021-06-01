@@ -26,11 +26,6 @@ namespace silkworm {
         BlockNum number;  // number of the block
     };
 
-    //struct NewBlockHashesPacket {
-    //    int num_of_elements;  // WARNING: this field is not on the wire
-    //    NewBlock elements[];  // a list of block announcements (len not specified)
-    //};
-
     using NewBlockHashesPacket = std::vector<NewBlock>;
 
 namespace rlp {
@@ -43,6 +38,14 @@ namespace rlp {
 
         rlp_encode(to, from.hash);
         rlp::encode(to, from.number);
+    }
+
+    inline size_t length(const NewBlock& from) noexcept {
+        rlp::Header rlp_head{true,
+                             rlp::length(from.hash) + rlp::length(from.number)};
+
+        size_t rlp_head_len = rlp::length_of_length(rlp_head.payload_length);
+        return rlp_head_len + rlp_head.payload_length;
     }
 
     inline rlp::DecodingResult decode(ByteView& from, NewBlock& to) noexcept {
@@ -67,29 +70,6 @@ namespace rlp {
         return from.length() == leftover ? DecodingResult::kOk : DecodingResult::kListLengthMismatch;
     }
 
-    inline size_t length(const NewBlock& from) noexcept {
-        size_t len = rlp::length(from.hash) + rlp::length(from.number);
-        return length_of_length(len) + len; // todo: check!
-    }
-/*
-    inline void encode(Bytes& to, const NewBlockHashesPacket& from) noexcept {
-        rlp::Header rlp_head{true, 0};
-
-        if (from.num_of_elements == 0) {
-            rlp::encode_header(to, rlp_head);
-            return;
-        }
-
-        rlp_head.payload_length += rlp::length(from.elements[0]) * from.num_of_elements;
-        rlp::encode_header(to, rlp_head);
-
-        // do not encode from.num_of_elements, it is not part of the NewBlockHashesPacket
-
-        for(int i = 0; i < from.num_of_elements; i++) {
-            encode(to, from.elements[i]);
-        }
-    }
-*/
     inline void encode(Bytes& to, const NewBlockHashesPacket& from) noexcept {
         rlp::Header rlp_head{true, 0};
 
@@ -105,31 +85,6 @@ namespace rlp {
             encode(to, from[i]);
         }
     }
-
-    /*
-    inline rlp::DecodingResult decode(ByteView& from, NewBlockHashesPacket& to) noexcept {
-        using namespace rlp;
-
-        auto [rlp_head, err] = decode_header(from);
-        if (err != DecodingResult::kOk) {
-            return err;
-        }
-        if (!rlp_head.list) {
-            return DecodingResult::kUnexpectedString;
-        }
-
-        uint64_t leftover{from.length() - rlp_head.payload_length};
-
-        to.num_of_elements = rlp_head.payload_length / length(NewBlock{});  // todo: check!
-
-        for(int i = 0; i < to.num_of_elements; i++) {
-            DecodingResult err = decode(from, to.elements[i]);
-            if (err != DecodingResult::kOk) return err;
-        }
-
-        return from.length() == leftover ? DecodingResult::kOk : DecodingResult::kListLengthMismatch;
-    }
-    */
 
     inline rlp::DecodingResult decode(ByteView& from, NewBlockHashesPacket& to) noexcept {
         using namespace rlp;
@@ -159,7 +114,10 @@ namespace rlp {
 
     inline std::ostream& operator<<(std::ostream& os, const NewBlockHashesPacket& packet)
     {
-        os << packet.size() << " new block hashes/nums";
+        if (packet.size() == 1)
+            os << "block num " << packet[0].number /* << " hash " << to_hex(packet[0].hash) */;
+        else
+            os << packet.size() << " new block hashes/nums";
         return os;
     }
 }
