@@ -15,6 +15,7 @@
 */
 
 #include "SelfExtendingChain.hpp"
+#include "RandomNumber.hpp"
 
 namespace silkworm {
 
@@ -34,7 +35,7 @@ BlockNum SelfExtendingChain::top_seen_block_height() {
     return topSeenHeight_;
 }
 
-std::optional<GetBlockHeadersPacket> SelfExtendingChain::headers_forward() {
+std::optional<GetBlockHeadersPacket66> SelfExtendingChain::headers_forward() {
     // todo: implements!
     // ...
     // only for test:
@@ -44,7 +45,7 @@ std::optional<GetBlockHeadersPacket> SelfExtendingChain::headers_forward() {
 // Request skeleton - Request "seed" headers
 // It requests N headers starting at highestInDb with step = stride up to topSeenHeight
 
-std::optional<GetBlockHeadersPacket> SelfExtendingChain::request_skeleton() {
+std::optional<GetBlockHeadersPacket66> SelfExtendingChain::request_skeleton() {
     if (anchors_.size() > 16) return std::nullopt;
 
     if (topSeenHeight_ < highestInDb_ + stride) return std::nullopt;
@@ -53,11 +54,12 @@ std::optional<GetBlockHeadersPacket> SelfExtendingChain::request_skeleton() {
     if (length > max_len)
         length = max_len;
 
-    GetBlockHeadersPacket packet;
-    packet.origin = highestInDb_ + stride;
-    packet.amount = length;
-    packet.skip = stride;
-    packet.reverse = false;
+    GetBlockHeadersPacket66 packet;
+    packet.requestId = RANDOM_NUMBER.generate_one();
+    packet.request.origin = highestInDb_ + stride;
+    packet.request.amount = length;
+    packet.request.skip = stride;
+    packet.request.reverse = false;
 
     return {packet};
 }

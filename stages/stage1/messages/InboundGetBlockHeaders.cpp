@@ -23,7 +23,7 @@ namespace silkworm {
 
 
 InboundGetBlockHeaders::InboundGetBlockHeaders(const sentry::InboundMessage& msg): InboundMessage() {
-    if (msg.id() != sentry::MessageId::GetBlockHeaders)
+    if (msg.id() != sentry::MessageId::GET_BLOCK_HEADERS_66)
         throw std::logic_error("InboundGetBlockHeaders received wrong InboundMessage");
 
     peerId_ = string_from_H512(msg.peer_id());
@@ -37,17 +37,18 @@ InboundGetBlockHeaders::InboundGetBlockHeaders(const sentry::InboundMessage& msg
 InboundMessage::reply_call_t InboundGetBlockHeaders::execute() {
     using namespace std;
     vector<Header> headers;
-    if (holds_alternative<Hash>(packet_.origin))
-        headers = HeaderLogic::recoverByHash(get<Hash>(packet_.origin), packet_.amount, packet_.skip, packet_.reverse);
+    // todo: add requestId
+    if (holds_alternative<Hash>(packet_.request.origin))
+        headers = HeaderLogic::recoverByHash(get<Hash>(packet_.request.origin), packet_.request.amount, packet_.request.skip, packet_.request.reverse);
     else
-        headers = HeaderLogic::recoverByNumber(get<BlockNum>(packet_.origin), packet_.amount, packet_.skip, packet_.reverse);
+        headers = HeaderLogic::recoverByNumber(get<BlockNum>(packet_.request.origin), packet_.request.amount, packet_.request.skip, packet_.request.reverse);
 
     auto rlp_encoding_len = rlp::length(headers);
     Bytes rlp_encoding(rlp_encoding_len, 0);
     rlp::encode(rlp_encoding, headers);
 
     auto msg_reply = std::make_unique<sentry::OutboundMessageData>();
-    msg_reply->set_id(sentry::MessageId::BlockHeaders);
+    msg_reply->set_id(sentry::MessageId::BLOCK_HEADERS_66);
     msg_reply->set_data(rlp_encoding.data(), rlp_encoding.length()); // copy
 
     return std::make_shared<rpc::SendMessageById>(peerId_, std::move(msg_reply));
@@ -55,7 +56,7 @@ InboundMessage::reply_call_t InboundGetBlockHeaders::execute() {
 
 void InboundGetBlockHeaders::handle_completion(SentryRpc& reply) {
     [[maybe_unused]] auto& specific_reply = dynamic_cast<rpc::SendMessageById&>(reply);
-    // use specific_reply...
+    // todo: use specific_reply...
 }
 
 std::string InboundGetBlockHeaders::content() const {

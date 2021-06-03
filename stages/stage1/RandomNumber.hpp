@@ -14,30 +14,30 @@
    limitations under the License.
 */
 
-#ifndef SILKWORM_INBOUNDGETBLOCKHEADERS_HPP
-#define SILKWORM_INBOUNDGETBLOCKHEADERS_HPP
-
-#include "InboundMessage.hpp"
-#include "stages/stage1/packets/GetBlockHeadersPacket.hpp"
-
+#ifndef SILKWORM_RANDOMNUMBER_HPP
+#define SILKWORM_RANDOMNUMBER_HPP
+#include <random>
+#include "Singleton.hpp"
 
 namespace silkworm {
 
-class InboundGetBlockHeaders: public InboundMessage {
+class RandomNumber {
+    std::mt19937_64 generator_; // the 64-bit Mersenne Twister 19937 generator
+    std::uniform_int_distribution<unsigned long long> distr_; // a uniform distribution
+
   public:
-    InboundGetBlockHeaders(const sentry::InboundMessage& msg);
+    RandomNumber() {
+        std::random_device rd;
+        generator_.seed(rd()); // init generator_ with a random seed
+    }
 
-    std::string name() const override {return "InboundGetBlockHeaders";}
-    std::string content() const override;
+    int64_t generate_one() {
+        return distr_(generator_);
+    }
 
-    reply_call_t execute() override;
-
-    void handle_completion(SentryRpc&) override;
-
-  private:
-    std::string peerId_;
-    GetBlockHeadersPacket66 packet_;
 };
 
+#define RANDOM_NUMBER default_instantiating::Singleton<RandomNumber>::instance()
+
 }
-#endif  // SILKWORM_INBOUNDGETBLOCKHEADERS_HPP
+#endif  // SILKWORM_RANDOMNUMBER_HPP

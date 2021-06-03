@@ -34,7 +34,7 @@ class OutboundGetBlockHeaders : public OutboundMessage {
     void handle_completion(SentryRpc&) override;
 
   private:
-    GetBlockHeadersPacket packet_;
+    GetBlockHeadersPacket66 packet_;
 };
 
 }

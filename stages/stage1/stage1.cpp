@@ -25,8 +25,8 @@
 #include "messages/OutboundGetBlockHeaders.hpp"
 #include "messages/CompletionMessage.hpp"
 #include "rpc/ReceiveMessages.hpp"
-#include "rpc/ReceiveUploadMessages.hpp"
 #include "rpc/SetStatus.hpp"
+#include "rpc/SendMessageById.hpp"
 #include "ConcurrentContainers.hpp"
 
 namespace silkworm {
@@ -43,6 +43,8 @@ Stage1::~Stage1() {
     SILKWORM_LOG(LogLevel::Error) << "stage1 destroyed\n";
 }
 
+std::string result(std::shared_ptr<SentryRpc> rpc);
+
 void Stage1::execution_loop() { // no-thread version
     using std::shared_ptr;
     using namespace std::chrono_literals;
@@ -53,7 +55,7 @@ void Stage1::execution_loop() { // no-thread version
     BlockNum head_height = HeaderLogic::head_height(db_);
     working_chain_.highest_block_in_db(head_height); // the second limit will be set at the each block announcements
 
-    // handling async rpc
+    // handling async rpc ---------------------------------------------------------------------------------------------
     std::thread rpc_handling{[&]() {    // todo: add try...catch to trap exceptions and set exiting_=true to cause other thread exiting
       while (!exiting_) {
           auto executed_rpc = sentry_.receive_one_result();
@@ -63,30 +65,39 @@ void Stage1::execution_loop() { // no-thread version
               if (status.ok())
                   SILKWORM_LOG(LogLevel::Debug) << "RPC ok, " << executed_rpc->name() << "\n";
               else
-              SILKWORM_LOG(LogLevel::Warn) << "RPC failed, " << executed_rpc->name() << ", error: '" << status.error_message() << "', code: " << status.error_code()
-                                    << ", details: " << status.error_details() << std::endl;
+                  SILKWORM_LOG(LogLevel::Warn)
+                      << "RPC failed, " << executed_rpc->name() << ", error: '" << status.error_message()
+                      << "', code: " << status.error_code() << ", details: " << status.error_details() << std::endl;
           }
       }
       SILKWORM_LOG(LogLevel::Info) << "rpc_handling thread exiting...\n";
     }};
 
 
-    // set status
+    // set status -----------------------------------------------------------------------------------------------------
     auto [head_hash, head_td] = HeaderLogic::head_hash_and_total_difficulty(db_);
-    auto set_status = rpc::SetStatus::make(chain_identity_.chain, chain_identity_.genesis_hash, chain_identity_.distinct_fork_numbers(), head_hash, head_td);
-    set_status->on_receive_reply([&](auto& call) {
+    auto set_status = rpc::SetStatus::make(chain_identity_.chain, chain_identity_.genesis_hash,
+                                           chain_identity_.distinct_fork_numbers(), head_hash, head_td);
+    set_status->on_receive_reply([&, set_status](auto& call) {
       if (!call.status().ok()) {
           exiting_ = true;
-          SILKWORM_LOG(LogLevel::Critical) << "failed to set status to the remote sentry, cause:'" << call.status().error_message() << "', exiting...\n";
+          SILKWORM_LOG(LogLevel::Critical)
+              << "failed to set status to the remote sentry, cause:'" << call.status().error_message() << "', exiting...\n";
+          return;
       }
-      else
-          SILKWORM_LOG(LogLevel::Debug) << "set-status reply arrived\n";
+      SILKWORM_LOG(LogLevel::Debug) << "set-status reply arrived\n";
+      sentry::SetStatusReply& reply = set_status->reply();
+      sentry::Protocol supported_protocol = reply.protocol();
+      if (supported_protocol != sentry::Protocol::ETH66) {
+          exiting_ = true;
+          SILKWORM_LOG(LogLevel::Critical) << "sentry do not support eth/66 protocol, exiting...\n";
+      }
     });
     sentry_.exec_remotely(set_status);
     std::this_thread::sleep_for(3s); // wait for connection setup before submit other requests
 
 
-    // start message receiving (headers & block announcements)
+    // start message receiving (headers & blocks announcements & requests) --------------------------------------------
     auto receive_messages = rpc::ReceiveMessages::make();
     receive_messages->on_receive_reply([&, receive_messages](auto& call) {
       SILKWORM_LOG(LogLevel::Debug) << "receive-messages reply arrived\n";
@@ -100,31 +111,14 @@ void Stage1::execution_loop() { // no-thread version
       }
       else {
           exiting_ = true;
-          SILKWORM_LOG(LogLevel::Critical) << "receiving messages stream interrupted, cause:'" << call.status().error_message() << "', exiting...\n";
+          SILKWORM_LOG(LogLevel::Critical)
+              << "receiving messages stream interrupted, cause:'" << call.status().error_message() << "', exiting...\n";
       }
     });
     sentry_.exec_remotely(receive_messages);
 
-    // start message receiving (headers & block requests)
-    auto receive_upl_msgs = rpc::ReceiveUploadMessages::make();
-    receive_upl_msgs->on_receive_reply([&, receive_upl_msgs](auto& call) {
-      SILKWORM_LOG(LogLevel::Debug) << "receive-upload-messages reply arrived\n";
-      if (!call.terminated()) {
-          sentry::InboundMessage& reply = receive_upl_msgs->reply();
-          auto message = InboundMessage::make(reply);
-          if (message) {
-              SILKWORM_LOG(LogLevel::Info) << "(upload)Message received from remote peer " << *message << "\n";
-              messages.push(message);
-          }
-      }
-      else {
-          exiting_ = true;
-          SILKWORM_LOG(LogLevel::Critical) << "receiving (upload)messages stream interrupted, cause:'" << call.status().error_message() << "', exiting...\n";
-      }
-    });
-    sentry_.exec_remotely(receive_upl_msgs);
 
-    // message processing
+    // message processing ---------------------------------------------------------------------------------------------
     std::thread message_processing{[&]() {
       while (!exiting_) {
           shared_ptr<Message> message;
@@ -144,7 +138,7 @@ void Stage1::execution_loop() { // no-thread version
               SILKWORM_LOG(LogLevel::Info) << "Sending outgoing request " << *message << "\n";
 
           rpc->on_receive_reply([message, rpc, &messages](auto&) { // copy message and rpc to retain their lifetime (shared_ptr) [avoid rpc passing using make_shared_from_this in AsyncCall]
-            SILKWORM_LOG(LogLevel::Info) << "Received rpc result of " << message->name() << "\n";
+            SILKWORM_LOG(LogLevel::Info) << "Received rpc result of " << message->name() << ": " << result(rpc) << "\n";
             shared_ptr<Message> completion = CompletionMessage::make(message, rpc); //message->handle_completion(call) would be dangerous... would be executed in another thread
             messages.push(completion); // coroutines would avoid this
           });
@@ -155,7 +149,7 @@ void Stage1::execution_loop() { // no-thread version
     }};
 
 
-    // make outbound requests
+    // make outbound requests -----------------------------------------------------------------------------------------
     std::thread request_generation{[&]() {
       while (!exiting_) {
           shared_ptr<Message> message = std::make_shared<OutboundGetBlockHeaders>();
@@ -166,10 +160,20 @@ void Stage1::execution_loop() { // no-thread version
       SILKWORM_LOG(LogLevel::Info) << "request_generation thread exiting...\n";
     }};
 
+    // wait exiting ---------------------------------------------------------------------------------------------------
     rpc_handling.join();
     message_processing.join();
     request_generation.join();
     SILKWORM_LOG(LogLevel::Info) << "Stage1 execution_loop exiting...\n";
+}
+
+std::string result(std::shared_ptr<SentryRpc> rpc) {
+    std::shared_ptr<rpc::SendMessageById> sendMessageById = std::dynamic_pointer_cast<rpc::SendMessageById>(rpc);
+    if (sendMessageById) {
+        sentry::SentPeers peers = sendMessageById->reply();
+        return std::to_string(peers.peers_size()) + " peer(s)";
+    }
+    return "-todo-";
 }
 
 }  // namespace silkworm

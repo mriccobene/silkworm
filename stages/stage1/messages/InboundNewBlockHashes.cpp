@@ -21,7 +21,7 @@
 namespace silkworm {
 
 InboundNewBlockHashes::InboundNewBlockHashes(const sentry::InboundMessage& msg): InboundMessage() {
-    if (msg.id() != sentry::MessageId::NewBlockHashes)
+    if (msg.id() != sentry::MessageId::NEW_BLOCK_HASHES_66)
         throw std::logic_error("InboundNewBlockHashes received wrong InboundMessage");
 
     peerId_ = string_from_H512(msg.peer_id());

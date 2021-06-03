@@ -72,9 +72,8 @@ TEST_CASE("NewBlockHashesPacket encoding") {
     //REQUIRE(len == encoded.size());
 }
 
-// TESTs related to GetBlockHeadersPacket encoding/decoding
+// TESTs related to GetBlockHeadersPacket encoding/decoding - eth/65 version
 // ----------------------------------------------------------------------------
-
 /*
 input:  c783b9ffff018080 (check!)
 decoded:
@@ -86,7 +85,7 @@ decoded:
                  |-- 80 = string, 0 bytes
                  |-- 80 = string, 0 bytes
  */
-TEST_CASE("GetBlockHeadersPacket decoding") {
+TEST_CASE("GetBlockHeadersPacket (eth/65) decoding") {
     using namespace std;
 
     optional<Bytes> encoded = from_hex("c783b9ffff018080");
@@ -105,7 +104,7 @@ TEST_CASE("GetBlockHeadersPacket decoding") {
     REQUIRE(packet.reverse == false);
 }
 
-TEST_CASE("GetBlockHeadersPacket encoding") {
+TEST_CASE("GetBlockHeadersPacket (eth/65) encoding") {
     using namespace std;
 
     GetBlockHeadersPacket packet;
@@ -125,9 +124,8 @@ TEST_CASE("GetBlockHeadersPacket encoding") {
     REQUIRE(len == encoded.size());
 }
 
-// TESTs related to GetBlockHeadersPacket66 encoding/decoding
+// TESTs related to GetBlockHeadersPacket66 encoding/decoding - eth/66 version
 // ----------------------------------------------------------------------------
-
 /*
 input:  d1886b1a456ba6e2f81dc783b9ffff018080
 decoded:
@@ -143,5 +141,45 @@ decoded:
                           |-- 80 = string, 0 bytes
                           |-- 80 = string, 0 bytes
  */
+TEST_CASE("GetBlockHeadersPacket (eth/66) decoding") {
+    using namespace std;
+
+    optional<Bytes> encoded = from_hex("d1886b1a456ba6e2f81dc783b9ffff018080");
+    REQUIRE(encoded.has_value());
+
+    GetBlockHeadersPacket66 packet;
+
+    ByteView encoded_view = encoded.value();
+    rlp::DecodingResult result = rlp::decode(encoded_view, packet);
+
+    REQUIRE(result == rlp::DecodingResult::kOk);
+    REQUIRE(packet.requestId == 0x6b1a456ba6e2f81d);
+    REQUIRE(std::holds_alternative<BlockNum>(packet.request.origin) == true);
+    REQUIRE(std::get<BlockNum>(packet.request.origin) == 12189695); //intx::from_string("0xb9ffff"));
+    REQUIRE(packet.request.amount == 1);
+    REQUIRE(packet.request.skip == 0);
+    REQUIRE(packet.request.reverse == false);
+}
+
+TEST_CASE("GetBlockHeadersPacket (eth/66) encoding") {
+    using namespace std;
+
+    GetBlockHeadersPacket66 packet;
+
+    packet.requestId = 0x6b1a456ba6e2f81d;
+    packet.request.origin = BlockNum{12189695};
+    packet.request.amount = 1;
+    packet.request.skip = 0;
+    packet.request.reverse = false;
+
+    Bytes encoded;
+    rlp::encode(encoded, packet);
+
+    REQUIRE(to_hex(encoded) == "d1886b1a456ba6e2f81dc783b9ffff018080");
+
+    auto len = rlp::length(packet);
+
+    REQUIRE(len == encoded.size());
+}
 
 }

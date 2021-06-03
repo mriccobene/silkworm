@@ -31,16 +31,16 @@ OutboundGetBlockHeaders::request_call_t OutboundGetBlockHeaders::execute() {
     if (!packet) return nullptr;
     packet_ = *packet;
 
-    if (std::holds_alternative<Hash>(packet_.origin))
+    if (std::holds_alternative<Hash>(packet_.request.origin))
         throw std::logic_error("OutboundGetBlockHeaders expects block number not hash");    // todo: check!
 
-    BlockNum min_block = std::get<BlockNum>(packet_.origin);
-    if (!packet_.reverse)
-        min_block += packet_.amount * packet_.skip;
+    BlockNum min_block = std::get<BlockNum>(packet_.request.origin);
+    if (!packet_.request.reverse)
+        min_block += packet_.request.amount * packet_.request.skip;
 
     auto msg_reply = std::make_unique<sentry::OutboundMessageData>();
 
-    msg_reply->set_id(sentry::MessageId::GetBlockHeaders);
+    msg_reply->set_id(sentry::MessageId::GET_BLOCK_HEADERS_66);
 
     auto rlp_encoding_len = rlp::length(packet_);
     Bytes rlp_encoding(rlp_encoding_len, 0);
