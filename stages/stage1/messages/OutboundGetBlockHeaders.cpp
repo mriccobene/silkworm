@@ -42,8 +42,7 @@ OutboundGetBlockHeaders::request_call_t OutboundGetBlockHeaders::execute() {
 
     msg_reply->set_id(sentry::MessageId::GET_BLOCK_HEADERS_66);
 
-    auto rlp_encoding_len = rlp::length(packet_);
-    Bytes rlp_encoding(rlp_encoding_len, 0);
+    Bytes rlp_encoding;
     rlp::encode(rlp_encoding, packet_);
     msg_reply->set_data(rlp_encoding.data(), rlp_encoding.length()); // copy
 

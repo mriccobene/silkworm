@@ -16,6 +16,7 @@
 
 #include "InboundNewBlockHashes.hpp"
 #include "stages/stage1/stage1.hpp"
+
 #include <algorithm>
 
 namespace silkworm {

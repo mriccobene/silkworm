@@ -88,6 +88,7 @@ namespace rlp {
     size_t length(const intx::uint256&);
 
     size_t length(const BlockHeader&);
+    size_t length(const BlockBody&);
     size_t length(const Log&);
     size_t length(const AccessListEntry&);
     size_t length(const Transaction&);

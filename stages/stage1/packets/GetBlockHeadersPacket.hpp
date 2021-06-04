@@ -17,7 +17,7 @@
 #ifndef SILKWORM_GETBLOCKHEADERSPACKET_HPP
 #define SILKWORM_GETBLOCKHEADERSPACKET_HPP
 
-#include "stages/stage1/HashOrNumber.hpp"
+#include "HashOrNumber.hpp"
 
 namespace silkworm {
 
@@ -94,6 +94,7 @@ namespace rlp {
     }
 
     // eth/66 version
+    // todo: remove using concept version
 
     inline void encode(Bytes& to, const GetBlockHeadersPacket66& from) noexcept {
         rlp::Header rlp_head{true, 0};

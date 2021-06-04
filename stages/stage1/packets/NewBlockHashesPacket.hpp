@@ -18,6 +18,7 @@
 #define SILKWORM_NEWBLOCKHASHPACKET_HPP
 
 #include "stages/stage1/Types.hpp"
+#include "RLPVector.hpp"
 
 namespace silkworm {
 
@@ -36,7 +37,7 @@ namespace rlp {
 
         rlp::encode_header(to, rlp_head);
 
-        rlp_encode(to, from.hash);
+        rlp::encode(to, from.hash);
         rlp::encode(to, from.number);
     }
 
@@ -60,7 +61,7 @@ namespace rlp {
 
         uint64_t leftover{from.length() - rlp_head.payload_length};
 
-        if (DecodingResult err{rlp_decode(from, to.hash)}; err != DecodingResult::kOk) {
+        if (DecodingResult err{rlp::decode(from, to.hash)}; err != DecodingResult::kOk) {
             return err;
         }
         if (DecodingResult err{rlp::decode(from, to.number)}; err != DecodingResult::kOk) {
@@ -70,44 +71,19 @@ namespace rlp {
         return from.length() == leftover ? DecodingResult::kOk : DecodingResult::kListLengthMismatch;
     }
 
-    inline void encode(Bytes& to, const NewBlockHashesPacket& from) noexcept {
-        rlp::Header rlp_head{true, 0};
+    // size_t length(const NewBlockHashesPacket& from)           implemented by  rlp::length<T>(const std::vector<T>& v)
+    // void encode(Bytes& to, const NewBlockHashesPacket& from)  implemented by  rlp::encode<T>(Bytes& to, const std::vector<T>& v)
 
-        if (from.empty()) {
-            rlp::encode_header(to, rlp_head);
-            return;
-        }
+    void encode(Bytes& to, const NewBlockHashesPacket& from) {
+        rlp::encode_vec(to, from);
+    }
 
-        rlp_head.payload_length += rlp::length(from[0]) * from.size();
-        rlp::encode_header(to, rlp_head);
-
-        for(size_t i = 0; i < from.size(); i++) {
-            encode(to, from[i]);
-        }
+    size_t length(const NewBlockHashesPacket& from) {
+        return rlp::length_vec(from);
     }
 
     inline rlp::DecodingResult decode(ByteView& from, NewBlockHashesPacket& to) noexcept {
-        using namespace rlp;
-
-        auto [rlp_head, err] = decode_header(from);
-        if (err != DecodingResult::kOk) {
-            return err;
-        }
-        if (!rlp_head.list) {
-            return DecodingResult::kUnexpectedString;
-        }
-
-        uint64_t leftover{from.length() - rlp_head.payload_length};
-
-        auto num_of_elements = rlp_head.payload_length / length(NewBlock{});  // todo: check!
-        to.resize(num_of_elements);
-
-        for(size_t i = 0; i < num_of_elements; i++) {
-            DecodingResult err = decode(from, to[i]);
-            if (err != DecodingResult::kOk) return err;
-        }
-
-        return from.length() == leftover ? DecodingResult::kOk : DecodingResult::kListLengthMismatch;
+        return rlp::decode_vec(from, to); // decode_vec
     }
 
 }
