@@ -27,8 +27,8 @@
 
 namespace silkworm {
 
-// HashOrNumber type def
-using HashOrNumber = std::variant<Hash, BlockNum>;
+    // HashOrNumber type def
+    using HashOrNumber = std::variant<Hash, BlockNum>;
 
 // HashOrNumber rlp encoding/decoding
 namespace rlp {

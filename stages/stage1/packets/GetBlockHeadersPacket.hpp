@@ -93,54 +93,12 @@ namespace rlp {
         return from.length() == leftover ? DecodingResult::kOk : DecodingResult::kListLengthMismatch;
     }
 
-    // eth/66 version
-    // todo: remove using concept version
+    // ... length(const GetBlockHeadersPacket66& from)            implemented by template <Eth66Packet T> size_t length(const T& from)
 
-    inline void encode(Bytes& to, const GetBlockHeadersPacket66& from) noexcept {
-        rlp::Header rlp_head{true, 0};
+    // ... encode(Bytes& to, const GetBlockHeadersPacket66& from) implemented by template <Eth66Packet T> void encode(Bytes& to, const T& from)
 
-        rlp_head.payload_length += rlp::length(from.requestId);
-        rlp_head.payload_length += rlp::length(from.request);
+    // ... decode(ByteView& from, GetBlockHeadersPacket66& to)    implemented by template <Eth66Packet T> rlp::DecodingResult decode(ByteView& from, T& to)
 
-        rlp::encode_header(to, rlp_head);
-
-        rlp::encode(to, from.requestId);
-        rlp::encode(to, from.request);
-    }
-
-    inline size_t length(const GetBlockHeadersPacket66& from) noexcept {
-        rlp::Header rlp_head{true, 0};
-
-        rlp_head.payload_length += rlp::length(from.requestId);
-        rlp_head.payload_length += rlp::length(from.request);
-
-        size_t rlp_head_len = rlp::length_of_length(rlp_head.payload_length);
-
-        return rlp_head_len + rlp_head.payload_length;
-    }
-
-    inline rlp::DecodingResult decode(ByteView& from, GetBlockHeadersPacket66& to) noexcept {
-        using namespace rlp;
-
-        auto [rlp_head, err]{decode_header(from)};
-        if (err != DecodingResult::kOk) {
-            return err;
-        }
-        if (!rlp_head.list) {
-            return DecodingResult::kUnexpectedString;
-        }
-
-        uint64_t leftover{from.length() - rlp_head.payload_length};
-
-        if (DecodingResult err{rlp::decode(from, to.requestId)}; err != DecodingResult::kOk) {
-            return err;
-        }
-        if (DecodingResult err{rlp::decode(from, to.request)}; err != DecodingResult::kOk) {
-            return err;
-        }
-
-        return from.length() == leftover ? DecodingResult::kOk : DecodingResult::kListLengthMismatch;
-    }
 } // rlp namespace
 
     inline std::ostream& operator<<(std::ostream& os, const GetBlockHeadersPacket66& packet)
@@ -154,5 +112,7 @@ namespace rlp {
     }
 
 } // silkworm namespace
+
+#include "RLPEth66PacketCoding.hpp"
 
 #endif  // SILKWORM_GETBLOCKHEADERSPACKET_HPP

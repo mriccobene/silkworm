@@ -89,5 +89,7 @@ namespace rlp {
             os << packet.size() << " new block hashes/nums";
         return os;
     }
-}
+
+} // silkworm namespace
+
 #endif  // SILKWORM_NEWBLOCKHASHPACKET_HPP

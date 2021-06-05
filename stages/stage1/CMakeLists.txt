@@ -68,6 +68,8 @@ add_executable(stage1_test "${CMAKE_SOURCE_DIR}/cmd/unit_test.cpp"
                             ${STAGE1_TESTS})
 target_link_libraries(stage1_test silkworm_stage1 Catch2::Catch2)
 
+set_property(TARGET stage1_test PROPERTY CXX_STANDARD 20)
+
 if(MSVC)
   target_compile_options(stage1_test PRIVATE /EHsc)
 #else()

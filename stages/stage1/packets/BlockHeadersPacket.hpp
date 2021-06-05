@@ -18,16 +18,15 @@
 #define SILKWORM_BLOCKHEADERSPACKET_HPP
 
 #include "stages/stage1/Types.hpp"
-#include "RLPEth66PacketCoding.hpp"
 
 namespace silkworm {
 
-using BlockHeadersPacket = std::vector<Header>;
+    using BlockHeadersPacket = std::vector<Header>;
 
-struct BlockHeadersPacket66 {  // eth/66 version
-    uint64_t requestId;
-    BlockHeadersPacket request;
-};
+    struct BlockHeadersPacket66 {  // eth/66 version
+        uint64_t requestId;
+        BlockHeadersPacket request;
+    };
 
 namespace rlp {
 
@@ -45,6 +44,8 @@ namespace rlp {
 
 }
 
-}
+} // silkworm namespace
+
+#include "RLPEth66PacketCoding.hpp"
 
 #endif  // SILKWORM_BLOCKHEADERSPACKET_HPP

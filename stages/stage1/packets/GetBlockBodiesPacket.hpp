@@ -21,82 +21,42 @@
 
 namespace silkworm {
 
-using GetBlockBodiesPacket = std::vector<Hash>;
+    using GetBlockBodiesPacket = std::vector<Hash>;
 
-struct GetBlockBodiesPacket66 { // eth/66 version
-    uint64_t requestId;
-    GetBlockBodiesPacket request;
-};
+    struct GetBlockBodiesPacket66 { // eth/66 version
+        uint64_t requestId;
+        GetBlockBodiesPacket request;
+    };
 
 namespace rlp {
 
-// size_t length(const GetBlockBodiesPacket& from)           implemented by  rlp::length<T>(const std::vector<T>& v)
-// void encode(Bytes& to, const GetBlockBodiesPacket& from)  implemented by  rlp::encode(Bytes& to, const std::vector<T>& v)
+    // size_t length(const GetBlockBodiesPacket& from)           implemented by  rlp::length<T>(const std::vector<T>& v)
+    // void encode(Bytes& to, const GetBlockBodiesPacket& from)  implemented by  rlp::encode(Bytes& to, const std::vector<T>& v)
 
-rlp::DecodingResult decode(ByteView& from, GetBlockBodiesPacket& to) noexcept;
+    rlp::DecodingResult decode(ByteView& from, GetBlockBodiesPacket& to) noexcept;
 
-// eth/66 version
-// todo: remove using concept version
+    // ... length(const GetBlockBodiesPacket66& from)            implemented by template <Eth66Packet T> size_t length(const T& from)
 
-inline void encode(Bytes& to, const GetBlockBodiesPacket66& from) noexcept {
-    rlp::Header rlp_head{true, 0};
+    // ... encode(Bytes& to, const GetBlockBodiesPacket66& from) implemented by template <Eth66Packet T> void encode(Bytes& to, const T& from)
 
-    rlp_head.payload_length += rlp::length(from.requestId);
-    rlp_head.payload_length += rlp::length(from.request);
+    // ... decode(ByteView& from, GetBlockBodiesPacket66& to)    implemented by template <Eth66Packet T> rlp::DecodingResult decode(ByteView& from, T& to)
 
-    rlp::encode_header(to, rlp_head);
-
-    rlp::encode(to, from.requestId);
-    rlp::encode(to, from.request);
-}
-
-inline size_t length(const GetBlockBodiesPacket66& from) noexcept {
-    rlp::Header rlp_head{true, 0};
-
-    rlp_head.payload_length += rlp::length(from.requestId);
-    rlp_head.payload_length += rlp::length(from.request);
-
-    size_t rlp_head_len = rlp::length_of_length(rlp_head.payload_length);
-
-    return rlp_head_len + rlp_head.payload_length;
-}
-
-inline rlp::DecodingResult decode(ByteView& from, GetBlockBodiesPacket66& to) noexcept {
-    using namespace rlp;
-
-    auto [rlp_head, err]{decode_header(from)};
-    if (err != DecodingResult::kOk) {
-        return err;
-    }
-    if (!rlp_head.list) {
-        return DecodingResult::kUnexpectedString;
-    }
-
-    uint64_t leftover{from.length() - rlp_head.payload_length};
-
-    if (DecodingResult err{rlp::decode(from, to.requestId)}; err != DecodingResult::kOk) {
-        return err;
-    }
-    if (DecodingResult err{rlp::decode(from, to.request)}; err != DecodingResult::kOk) {
-        return err;
-    }
-
-    return from.length() == leftover ? DecodingResult::kOk : DecodingResult::kListLengthMismatch;
-}
 } // rlp namespace
 
-inline std::ostream& operator<<(std::ostream& os, const GetBlockBodiesPacket66& packet)
-{
-    os << " reqId="  << packet.requestId;
+    inline std::ostream& operator<<(std::ostream& os, const GetBlockBodiesPacket66& packet)
+    {
+        os << " reqId="  << packet.requestId;
 
-    if (packet.request.size() == 1)
-        os << " hash=" << to_hex(packet.request[0]);
-    else
-        os << " hash=" << packet.request.size() << " block hashes";
+        if (packet.request.size() == 1)
+            os << " hash=" << to_hex(packet.request[0]);
+        else
+            os << " hash=" << packet.request.size() << " block hashes";
 
-    return os;
-}
+        return os;
+    }
 
 } // silkworm namespace
+
+#include "RLPEth66PacketCoding.hpp"
 
 #endif  // SILKWORM_GETBLOCKBODIESPACKET_HPP

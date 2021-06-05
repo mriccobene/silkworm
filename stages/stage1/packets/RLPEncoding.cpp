@@ -41,4 +41,6 @@ namespace silkworm::rlp {
     size_t length(const NewBlockHashesPacket& from) {
         return rlp::length_vec(from);
     }
+
 }
+

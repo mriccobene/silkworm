@@ -18,16 +18,15 @@
 #define SILKWORM_BLOCKBODIESPACKET_HPP
 
 #include "stages/stage1/Types.hpp"
-#include "RLPEth66PacketCoding.hpp"
 
 namespace silkworm {
 
-using BlockBodiesPacket = std::vector<BlockBody>;
+    using BlockBodiesPacket = std::vector<BlockBody>;
 
-struct BlockBodiesPacket66 { // eth/66 version
-    uint64_t requestId;
-    BlockBodiesPacket request;
-};
+    struct BlockBodiesPacket66 { // eth/66 version
+        uint64_t requestId;
+        BlockBodiesPacket request;
+    };
 
 namespace rlp {
 
@@ -44,6 +43,8 @@ namespace rlp {
     // ... decode(ByteView& from, BlockBodiesPacket66& to)    implemented by template <Eth66Packet T> rlp::DecodingResult decode(ByteView& from, T& to)
 }
 
-}
+} // silkworm namespace
+
+#include "RLPEth66PacketCoding.hpp"
 
 #endif  // SILKWORM_BLOCKBODIESPACKET_HPP
