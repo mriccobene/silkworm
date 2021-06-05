@@ -23,6 +23,7 @@
 #include <silkworm/rlp/encode.hpp>
 
 #include "stages/stage1/Types.hpp"
+#include "RLPError.hpp"
 
 namespace silkworm {
 
@@ -31,12 +32,6 @@ using HashOrNumber = std::variant<Hash, BlockNum>;
 
 // HashOrNumber rlp encoding/decoding
 namespace rlp {
-
-    class rlp_error : public std::runtime_error {
-      public:
-        rlp_error() : std::runtime_error("rlp encoding/decoding error") {}
-        rlp_error(const std::string& description) : std::runtime_error(description) {}
-    };
 
     inline void encode(Bytes& to, const HashOrNumber& from) {
         if (std::holds_alternative<Hash>(from))

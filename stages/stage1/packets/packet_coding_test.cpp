@@ -15,9 +15,8 @@
 */
 
 #include <catch2/catch.hpp>
-//#include "NewBlockHashesPacket.hpp"
-//#include "GetBlockHeadersPacket.hpp"
-#include "Packets.hpp"
+#include "NewBlockHashesPacket.hpp"
+#include "GetBlockHeadersPacket.hpp"
 
 namespace silkworm {
 

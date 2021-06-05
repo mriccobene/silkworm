@@ -17,9 +17,8 @@
 #ifndef SILKWORM_BLOCKBODIESPACKET_HPP
 #define SILKWORM_BLOCKBODIESPACKET_HPP
 
-#include "RLPEth66Packets.hpp"
-#include "RLPVector.hpp"
 #include "stages/stage1/Types.hpp"
+#include "RLPEth66PacketCoding.hpp"
 
 namespace silkworm {
 
@@ -36,9 +35,7 @@ namespace rlp {
 
     // ... encode(Bytes& to, const BlockBodiesPacket& from)   implemented by rlp::encode(Bytes& to, const std::vector<T>& v)
 
-    inline rlp::DecodingResult decode(ByteView& from, BlockBodiesPacket& to) noexcept {
-        return rlp::decode_vec(from, to);  // decode_vec
-    }
+    rlp::DecodingResult decode(ByteView& from, BlockBodiesPacket& to) noexcept;
 
     // ... length(const BlockBodiesPacket66& from)            implemented by template <Eth66Packet T> size_t length(const T& from)
 

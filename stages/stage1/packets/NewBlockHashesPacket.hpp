@@ -18,7 +18,6 @@
 #define SILKWORM_NEWBLOCKHASHPACKET_HPP
 
 #include "stages/stage1/Types.hpp"
-#include "RLPVector.hpp"
 
 namespace silkworm {
 
@@ -74,17 +73,11 @@ namespace rlp {
     // size_t length(const NewBlockHashesPacket& from)           implemented by  rlp::length<T>(const std::vector<T>& v)
     // void encode(Bytes& to, const NewBlockHashesPacket& from)  implemented by  rlp::encode<T>(Bytes& to, const std::vector<T>& v)
 
-    void encode(Bytes& to, const NewBlockHashesPacket& from) {
-        rlp::encode_vec(to, from);
-    }
+    void encode(Bytes& to, const NewBlockHashesPacket& from);
 
-    size_t length(const NewBlockHashesPacket& from) {
-        return rlp::length_vec(from);
-    }
+    size_t length(const NewBlockHashesPacket& from);
 
-    inline rlp::DecodingResult decode(ByteView& from, NewBlockHashesPacket& to) noexcept {
-        return rlp::decode_vec(from, to); // decode_vec
-    }
+    rlp::DecodingResult decode(ByteView& from, NewBlockHashesPacket& to) noexcept;
 
 }
 

@@ -17,6 +17,8 @@
 #ifndef SILKWORM_RLPETH66PACKETS_HPP
 #define SILKWORM_RLPETH66PACKETS_HPP
 
+#include "stages/stage1/Types.hpp"
+
 namespace silkworm::rlp {
 
 template <class T>

@@ -29,13 +29,50 @@
  */
 namespace silkworm::rlp {
     template <class T>
-    void encode_vec(Bytes& to, const std::vector<T>& v);
+    inline void encode_vec(Bytes& to, const std::vector<T>& v) {
+        Header h{true, 0};
+        for (const T& x : v) {
+            h.payload_length += length(x);
+        }
+        encode_header(to, h);
+        for (const T& x : v) {
+            encode(to, x);
+        }
+    }
 
     template <class T>
-    size_t length_vec(const std::vector<T>& v);
+    inline size_t length_vec(const std::vector<T>& v) {
+        size_t payload_length{0};
+        for (const T& x : v) {
+            payload_length += length(x);
+        }
+        return length_of_length(payload_length) + payload_length;
+    }
 
     template <class T>
-    DecodingResult decode_vec(ByteView& from, std::vector<T>& to);
+    inline DecodingResult decode_vec(ByteView& from, std::vector<T>& to) {
+        auto [h, err]{decode_header(from)};
+        if (err != DecodingResult::kOk) {
+            return err;
+        }
+        if (!h.list) {
+            return DecodingResult::kUnexpectedString;
+        }
+
+        to.clear();
+
+        ByteView payload_view{from.substr(0, h.payload_length)};
+        while (!payload_view.empty()) {
+            to.emplace_back();
+            if (err = decode(payload_view, to.back()); err != DecodingResult::kOk) {
+                return err;
+            }
+        }
+
+        from.remove_prefix(h.payload_length);
+        return DecodingResult::kOk;
+    }
 }
+
 
 #endif  // SILKWORM_RLPVECTOR_HPP
