@@ -18,38 +18,21 @@
 #include <silkworm/types/block.hpp>
 
 namespace silkworm {
-/*
-func AnswerGetBlockBodiesQuery(db ethdb.Tx, query GetBlockBodiesPacket) []rlp.RawValue { //nolint:unparam
-	// Gather blocks until the fetch or network limits is reached
-	var (
-		bytes  int
-		bodies []rlp.RawValue
-	)
-	for lookups, hash := range query {
-		if bytes >= softResponseLimit || len(bodies) >= maxBodiesServe ||
-			lookups >= 2*maxBodiesServe {
-			break
-		}
-		number := rawdb.ReadHeaderNumber(db, hash)
-		if number == nil {
-			continue
-		}
-		data := rawdb.ReadBodyRLP(db, hash, *number)
-		if len(data) == 0 {
-			continue
-		}
-		bodies = append(bodies, data)
-		bytes += len(data)
-	}
-	return bodies
-}
- */
 
-std::vector<BlockBody> BodyLogic::recover([[maybe_unused]] std::vector<Hash> request) {
+std::vector<BlockBody> BodyLogic::recover(DbTx& db, std::vector<Hash> request) {
     std::vector<BlockBody> response;
-
-    // todo: implements!
-
+    size_t bytes = 0;
+    for(size_t i = 0; i <= request.size(); ++i) {
+        Hash& hash = request[i];
+        auto body = db.read_body(hash);
+        if (!body) continue;
+        response.push_back(*body);
+        bytes += rlp::length(*body);
+        if (bytes >= soft_response_limit ||
+            response.size() >= max_bodies_serve ||
+            i >= 2 * max_bodies_serve)
+            break;
+    }
     return response;
 }
 

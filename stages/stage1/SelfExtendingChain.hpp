@@ -34,6 +34,9 @@ class SelfExtendingChain {  // tentative name - todo: improve!
     std::optional<GetBlockHeadersPacket66> headers_forward(); // progresses Headers stage in the forward direction
     void request_ack(GetBlockHeadersPacket66 packet, time_point_t tp, time_dur_t timeout);
 
+    void save_external_announce(Hash hash);
+    bool has_link(Hash hash);
+
   private:
     static constexpr BlockNum max_len = 192;
     static constexpr BlockNum stride = 8 * max_len;

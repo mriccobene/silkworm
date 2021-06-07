@@ -19,6 +19,7 @@
 #include "stages/stage1/BodyLogic.hpp"
 #include "stages/stage1/packets/BlockBodiesPacket.hpp"
 #include "stages/stage1/packets/RLPError.hpp"
+#include "stages/stage1/stage1.hpp"
 
 namespace silkworm {
 
@@ -51,7 +52,7 @@ InboundMessage::reply_call_t InboundGetBlockBodies::execute() {
 
     BlockBodiesPacket66 reply;
     reply.requestId = packet_.requestId;
-    reply.request = BodyLogic::recover(packet_.request);
+    reply.request = BodyLogic::recover(STAGE1.db_tx(), packet_.request);
 
     Bytes rlp_encoding;
     rlp::encode(rlp_encoding, reply);

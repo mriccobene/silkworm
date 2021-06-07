@@ -16,6 +16,7 @@
 
 #include "SelfExtendingChain.hpp"
 #include "RandomNumber.hpp"
+#include <silkworm/common/log.hpp>
 
 namespace silkworm {
 
@@ -62,6 +63,17 @@ std::optional<GetBlockHeadersPacket66> SelfExtendingChain::request_skeleton() {
     packet.request.reverse = false;
 
     return {packet};
+}
+
+void SelfExtendingChain::save_external_announce(Hash) {
+    // Erigon implementation:
+    // hd.seenAnnounces.Add(hash)
+    // todo: implement!
+    SILKWORM_LOG(LogLevel::Warn) << "SelfExtendingChain::save_external_announce() not implemented yet\n";
+}
+
+bool SelfExtendingChain::has_link(Hash hash) {
+    return (links_.find(hash) != links_.end());
 }
 
 }

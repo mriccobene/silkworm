@@ -15,8 +15,10 @@
 */
 
 #include "InboundNewBlockHashes.hpp"
+#include "stages/stage1/rpc/SendMessageById.hpp"
+#include "stages/stage1/RandomNumber.hpp"
 #include "stages/stage1/stage1.hpp"
-
+#include <silkworm/common/log.hpp>
 #include <algorithm>
 
 namespace silkworm {
@@ -38,12 +40,39 @@ InboundMessage::reply_call_t InboundNewBlockHashes::execute() {
 
     BlockNum max = STAGE1.working_chain().top_seen_block_height();
     for(size_t i = 0; i < packet_.size(); i++) {
-        BlockNum current = packet_[i].number;
-        max = std::max(max, current);
-    }
-    STAGE1.working_chain().top_seen_block_height(max);
+        Hash hash = packet_[i].hash;
 
-    // todo: implements rest of processing if any! (see TG)
+        // save announcement
+        STAGE1.working_chain().save_external_announce(hash);
+        if (STAGE1.working_chain().has_link(hash))
+            continue;
+
+        // todo: do we need an OutboundGetBlockHeader message with this implementation? it will be put in the stage1 message queue and executed when popped out
+        // request header
+        GetBlockHeadersPacket66 reply;
+        reply.requestId = RANDOM_NUMBER.generate_one();
+        reply.request.origin = hash;
+        reply.request.amount = 1;
+        reply.request.skip = 0;
+        reply.request.reverse = 0;
+
+        Bytes rlp_encoding;
+        rlp::encode(rlp_encoding, reply);
+
+        auto msg_reply = std::make_unique<sentry::OutboundMessageData>();
+        msg_reply->set_id(sentry::MessageId::GET_BLOCK_HEADERS_66);
+        msg_reply->set_data(rlp_encoding.data(), rlp_encoding.length()); // copy
+
+        auto rpc = rpc::SendMessageById::make(peerId_, std::move(msg_reply));
+
+        // todo: implements the execution of rpc! (or encode it in a OutboundGetBlockHeader and put it in the stage1 message queue
+        SILKWORM_LOG(LogLevel::Warn) << name() << ": processing implementation not completed yet\n";
+
+        // calculate top seen block height
+        max = std::max(max, packet_[i].number);
+    }
+
+    STAGE1.working_chain().top_seen_block_height(max);
 
     return nullptr;
 }

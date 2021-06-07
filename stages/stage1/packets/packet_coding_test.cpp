@@ -155,7 +155,7 @@ TEST_CASE("GetBlockHeadersPacket (eth/66) decoding") {
     REQUIRE(result == rlp::DecodingResult::kOk);
     REQUIRE(packet.requestId == 0x6b1a456ba6e2f81d);
     REQUIRE(std::holds_alternative<BlockNum>(packet.request.origin) == true);
-    REQUIRE(std::get<BlockNum>(packet.request.origin) == 12189695); //intx::from_string("0xb9ffff"));
+    REQUIRE(std::get<BlockNum>(packet.request.origin) == 0xb9ffff); // 12189695
     REQUIRE(packet.request.amount == 1);
     REQUIRE(packet.request.skip == 0);
     REQUIRE(packet.request.reverse == false);
@@ -167,7 +167,7 @@ TEST_CASE("GetBlockHeadersPacket (eth/66) encoding") {
     GetBlockHeadersPacket66 packet;
 
     packet.requestId = 0x6b1a456ba6e2f81d;
-    packet.request.origin = BlockNum{12189695};
+    packet.request.origin = BlockNum{0xb9ffff};
     packet.request.amount = 1;
     packet.request.skip = 0;
     packet.request.reverse = false;
