@@ -29,7 +29,7 @@ class InboundGetBlockBodies: public InboundMessage {
     std::string name() const override {return "InboundGetBlockBodies";}
     std::string content() const override;
 
-    reply_call_t execute() override;
+    reply_calls_t execute() override;
 
     void handle_completion(SentryRpc&) override;
 

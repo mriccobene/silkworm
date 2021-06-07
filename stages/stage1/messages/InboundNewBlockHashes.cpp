@@ -35,10 +35,13 @@ InboundNewBlockHashes::InboundNewBlockHashes(const sentry::InboundMessage& msg):
         throw rlp::rlp_error("rlp decoding error decoding NewBlockHashes");
 }
 
-InboundMessage::reply_call_t InboundNewBlockHashes::execute() {
+InboundMessage::reply_calls_t InboundNewBlockHashes::execute() {
     using namespace std;
 
     BlockNum max = STAGE1.working_chain().top_seen_block_height();
+
+    reply_calls_t calls;
+
     for(size_t i = 0; i < packet_.size(); i++) {
         Hash hash = packet_[i].hash;
 
@@ -47,7 +50,6 @@ InboundMessage::reply_call_t InboundNewBlockHashes::execute() {
         if (STAGE1.working_chain().has_link(hash))
             continue;
 
-        // todo: do we need an OutboundGetBlockHeader message with this implementation? it will be put in the stage1 message queue and executed when popped out
         // request header
         GetBlockHeadersPacket66 reply;
         reply.requestId = RANDOM_NUMBER.generate_one();
@@ -65,8 +67,7 @@ InboundMessage::reply_call_t InboundNewBlockHashes::execute() {
 
         auto rpc = rpc::SendMessageById::make(peerId_, std::move(msg_reply));
 
-        // todo: implements the execution of rpc! (or encode it in a OutboundGetBlockHeader and put it in the stage1 message queue
-        SILKWORM_LOG(LogLevel::Warn) << name() << ": processing implementation not completed yet\n";
+        calls.push_back(rpc);
 
         // calculate top seen block height
         max = std::max(max, packet_[i].number);
@@ -74,7 +75,7 @@ InboundMessage::reply_call_t InboundNewBlockHashes::execute() {
 
     STAGE1.working_chain().top_seen_block_height(max);
 
-    return nullptr;
+    return calls;
 }
 
 std::string InboundNewBlockHashes::content() const {

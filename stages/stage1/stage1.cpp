@@ -129,21 +129,23 @@ void Stage1::execution_loop() { // no-thread version
               SILKWORM_LOG(LogLevel::Info) << "Processing message " << *message << "\n";
           }
 
-          shared_ptr<SentryRpc> rpc = message->execute();
-          if (!rpc) continue;
+          auto rpc_bundle = message->execute();
+          if (rpc_bundle.size() == 0) continue;
 
           if (std::dynamic_pointer_cast<InboundMessage>(message))
               SILKWORM_LOG(LogLevel::Info) << "Replying to incoming request " << message->name() << "\n";
           else // OutboundMessage
               SILKWORM_LOG(LogLevel::Info) << "Sending outgoing request " << *message << "\n";
 
-          rpc->on_receive_reply([message, rpc, &messages](auto&) { // copy message and rpc to retain their lifetime (shared_ptr) [avoid rpc passing using make_shared_from_this in AsyncCall]
-            SILKWORM_LOG(LogLevel::Info) << "Received rpc result of " << message->name() << ": " << result(rpc) << "\n";
-            shared_ptr<Message> completion = CompletionMessage::make(message, rpc); //message->handle_completion(call) would be dangerous... would be executed in another thread
-            messages.push(completion); // coroutines would avoid this
-          });
+          for(auto& rpc: rpc_bundle) {
+              rpc->on_receive_reply([message, rpc, &messages](auto&) { // copy message and rpc to retain their lifetime (shared_ptr) [avoid rpc passing using make_shared_from_this in AsyncCall]
+                SILKWORM_LOG(LogLevel::Info) << "Received rpc result of " << message->name() << ": " << result(rpc) << "\n";
+                shared_ptr<Message> completion = CompletionMessage::make(message, rpc); //message->handle_completion(call) would be dangerous... would be executed in another thread
+                messages.push(completion); // coroutines would avoid this
+              });
 
-          sentry_.exec_remotely(rpc);
+              sentry_.exec_remotely(rpc);
+          }
       }
       SILKWORM_LOG(LogLevel::Info) << "message_processing thread exiting...\n";
     }};

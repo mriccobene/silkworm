@@ -47,7 +47,7 @@ func (p *Peer) ReplyBlockBodiesRLP(id uint64, bodies []rlp.RawValue) error {
 	})
 }
  */
-InboundMessage::reply_call_t InboundGetBlockBodies::execute() {
+InboundMessage::reply_calls_t InboundGetBlockBodies::execute() {
     using namespace std;
 
     BlockBodiesPacket66 reply;
@@ -61,7 +61,7 @@ InboundMessage::reply_call_t InboundGetBlockBodies::execute() {
     msg_reply->set_id(sentry::MessageId::BLOCK_HEADERS_66);
     msg_reply->set_data(rlp_encoding.data(), rlp_encoding.length()); // copy
 
-    return std::make_shared<rpc::SendMessageById>(peerId_, std::move(msg_reply));
+    return {std::make_shared<rpc::SendMessageById>(peerId_, std::move(msg_reply))};
 
 }
 

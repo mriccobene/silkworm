@@ -29,7 +29,7 @@ class InboundNewBlockHashes: public InboundMessage {
     std::string name() const override {return "InboundNewBlockHashes";}
     std::string content() const override;
 
-    reply_call_t execute() override;
+    reply_calls_t execute() override;
 
   private:
     std::string peerId_;

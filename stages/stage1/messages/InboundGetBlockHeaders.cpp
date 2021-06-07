@@ -34,7 +34,7 @@ InboundGetBlockHeaders::InboundGetBlockHeaders(const sentry::InboundMessage& msg
         throw rlp::rlp_error("rlp decoding error decoding GetBlockHeaders");
 }
 
-InboundMessage::reply_call_t InboundGetBlockHeaders::execute() {
+InboundMessage::reply_calls_t InboundGetBlockHeaders::execute() {
     using namespace std;
 
     BlockHeadersPacket66 reply;
@@ -53,7 +53,7 @@ InboundMessage::reply_call_t InboundGetBlockHeaders::execute() {
     msg_reply->set_id(sentry::MessageId::BLOCK_HEADERS_66);
     msg_reply->set_data(rlp_encoding.data(), rlp_encoding.length()); // copy
 
-    return std::make_shared<rpc::SendMessageById>(peerId_, std::move(msg_reply));
+    return {std::make_shared<rpc::SendMessageById>(peerId_, std::move(msg_reply))};
 }
 
 void InboundGetBlockHeaders::handle_completion(SentryRpc& reply) {

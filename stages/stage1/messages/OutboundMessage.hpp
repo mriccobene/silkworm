@@ -24,9 +24,10 @@ namespace silkworm {
 
 class OutboundMessage : public Message {
   public:
-    using request_call_t = std::shared_ptr<SentryRpc>;
+    using request_call_t = rpc_t; // a more specific name
+    using request_calls_t = rpc_bundle_t;
 
-    request_call_t execute() override = 0;
+    request_calls_t execute() override = 0;
 };
 
 }

@@ -24,11 +24,11 @@ namespace silkworm {
 
 OutboundGetBlockHeaders::OutboundGetBlockHeaders() {}
 
-OutboundGetBlockHeaders::request_call_t OutboundGetBlockHeaders::execute() {
+OutboundGetBlockHeaders::request_calls_t OutboundGetBlockHeaders::execute() {
     // see TG sendHeaderRequest
 
     auto packet = STAGE1.working_chain().headers_forward();
-    if (!packet) return nullptr;
+    if (!packet) return {};
     packet_ = *packet;
 
     if (std::holds_alternative<Hash>(packet_.request.origin))
@@ -46,7 +46,7 @@ OutboundGetBlockHeaders::request_call_t OutboundGetBlockHeaders::execute() {
     rlp::encode(rlp_encoding, packet_);
     msg_reply->set_data(rlp_encoding.data(), rlp_encoding.length()); // copy
 
-    return rpc::SendMessageByMinBlock::make(min_block, std::move(msg_reply));
+    return {rpc::SendMessageByMinBlock::make(min_block, std::move(msg_reply))};
 }
 
 void OutboundGetBlockHeaders::handle_completion(SentryRpc& /*reply*/) {

@@ -29,7 +29,7 @@ class OutboundGetBlockHeaders : public OutboundMessage {
     std::string name() const override {return "OutboundGetBlockHeaders";}
     std::string content() const override;
 
-    request_call_t execute() override;
+    request_calls_t execute() override;
 
     void handle_completion(SentryRpc&) override;
 
