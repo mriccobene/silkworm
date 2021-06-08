@@ -220,5 +220,25 @@ namespace rlp {
         return from.length() == leftover ? DecodingResult::kOk : DecodingResult::kListLengthMismatch;
     }
 
+    size_t length(const Block& block) {
+        Header rlp_head{true, 0};
+        rlp_head.payload_length += length(block.header);
+        rlp_head.payload_length += length(block.transactions);
+        rlp_head.payload_length += length(block.ommers);
+
+        return length_of_length(rlp_head.payload_length) + rlp_head.payload_length;
+    }
+
+    void encode(Bytes& to, const Block& block) {
+        Header rlp_head{true, 0};
+        rlp_head.payload_length += length(block.header);
+        rlp_head.payload_length += length(block.transactions);
+        rlp_head.payload_length += length(block.ommers);
+        encode_header(to, rlp_head);
+        encode(to, block.header);
+        encode(to, block.transactions);
+        encode(to, block.ommers);
+    }
+
 }  // namespace rlp
 }  // namespace silkworm

@@ -21,16 +21,16 @@
 
 namespace silkworm {
 
-    struct NewBlock {     // one particular block being announced
+    struct NewBlockHash {     // one particular block being announced
         Hash hash;        // hash of the block
         BlockNum number;  // number of the block
     };
 
-    using NewBlockHashesPacket = std::vector<NewBlock>;
+    using NewBlockHashesPacket = std::vector<NewBlockHash>;
 
 namespace rlp {
 
-    inline void encode(Bytes& to, const NewBlock& from) noexcept {
+    inline void encode(Bytes& to, const NewBlockHash& from) noexcept {
         rlp::Header rlp_head{true,
                              rlp::length(from.hash) + rlp::length(from.number)};
 
@@ -40,7 +40,7 @@ namespace rlp {
         rlp::encode(to, from.number);
     }
 
-    inline size_t length(const NewBlock& from) noexcept {
+    inline size_t length(const NewBlockHash& from) noexcept {
         rlp::Header rlp_head{true,
                              rlp::length(from.hash) + rlp::length(from.number)};
 
@@ -48,7 +48,7 @@ namespace rlp {
         return rlp_head_len + rlp_head.payload_length;
     }
 
-    inline rlp::DecodingResult decode(ByteView& from, NewBlock& to) noexcept {
+    inline rlp::DecodingResult decode(ByteView& from, NewBlockHash& to) noexcept {
 
         auto [rlp_head, err]{decode_header(from)};
         if (err != DecodingResult::kOk) {
