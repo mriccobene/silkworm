@@ -58,7 +58,7 @@ InboundMessage::reply_calls_t InboundGetBlockBodies::execute() {
     rlp::encode(rlp_encoding, reply);
 
     auto msg_reply = std::make_unique<sentry::OutboundMessageData>();
-    msg_reply->set_id(sentry::MessageId::BLOCK_HEADERS_66);
+    msg_reply->set_id(sentry::MessageId::BLOCK_BODIES_66);
     msg_reply->set_data(rlp_encoding.data(), rlp_encoding.length()); // copy
 
     return {std::make_shared<rpc::SendMessageById>(peerId_, std::move(msg_reply))};
