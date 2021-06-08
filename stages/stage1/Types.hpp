@@ -83,8 +83,11 @@ inline std::ostream& operator<<(std::ostream& out, const evmc::bytes32& b32) {
 
 namespace rlp {
     void encode(Bytes& to, const Hash& h);
-
     rlp::DecodingResult decode(ByteView& from, Hash& to) noexcept;
+
+    template <class T> void encode_vec(Bytes& to, const std::vector<T>& v);
+    template <class T> size_t length_vec(const std::vector<T>& v);
+    template <class T> DecodingResult decode_vec(ByteView& from, std::vector<T>& to);
 }
 
 }

@@ -57,6 +57,6 @@ namespace rlp {
 
 } // silkworm namespace
 
-#include "RLPEth66PacketCoding.hpp"
+
 
 #endif  // SILKWORM_GETBLOCKBODIESPACKET_HPP

@@ -23,7 +23,6 @@
 
 // generic implementations (must follow types)
 #include <silkworm/rlp/decode.hpp>
-#include "RLPEth66PacketCoding.hpp"
 #include "RLPVectorCoding.hpp"
 
 // specific implementations
@@ -49,3 +48,5 @@ namespace silkworm::rlp {
         return rlp::decode_vec(from, to); // decode_vec
     }
 }
+
+#include "RLPEth66PacketCoding.hpp"

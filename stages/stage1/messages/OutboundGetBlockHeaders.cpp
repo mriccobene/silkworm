@@ -17,6 +17,7 @@
 #include "OutboundGetBlockHeaders.hpp"
 #include "stages/stage1/rpc/SendMessageByMinBlock.hpp"
 #include "stages/stage1/stage1.hpp"
+#include "stages/stage1/packets/RLPEth66PacketCoding.hpp"
 #include <silkworm/common/log.hpp>
 #include <sstream>
 

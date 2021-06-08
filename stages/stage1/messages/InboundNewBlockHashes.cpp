@@ -20,6 +20,7 @@
 #include "stages/stage1/stage1.hpp"
 #include <silkworm/common/log.hpp>
 #include <algorithm>
+#include "stages/stage1/packets/RLPEth66PacketCoding.hpp"
 
 namespace silkworm {
 

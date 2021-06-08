@@ -15,9 +15,11 @@
 */
 
 #include <catch2/catch.hpp>
+#include "GetBlockBodiesPacket.hpp"
 #include "NewBlockHashesPacket.hpp"
-#include "GetBlockHeadersPacket.hpp"
 #include "NewBlockPacket.hpp"
+#include "GetBlockHeadersPacket.hpp"
+#include "RLPEth66PacketCoding.hpp"
 
 namespace silkworm {
 
@@ -221,6 +223,57 @@ TEST_CASE("GetBlockHeadersPacket (eth/66) encoding") {
     rlp::encode(encoded, packet);
 
     REQUIRE(to_hex(encoded) == "d1886b1a456ba6e2f81dc783b9ffff018080");
+
+    auto len = rlp::length(packet);
+
+    REQUIRE(len == encoded.size());
+}
+
+// TESTs related to GetBlockHeadersPacket66 encoding/decoding - eth/66 version
+// ----------------------------------------------------------------------------
+/*
+input:  f84d88ae9405dbeebf3f01f842a0a36b1595c5acd878b63f83d3b62f6882edd27b757582f5319aebc17bc3e98246a09f20a871bf5151959fff4c88783bf4ef27b170a4cbe92b8f63ca1fe7d6ab829c
+decoded:
+        f84d -> list, len of len = 1 byte, len = 77
+          |-- 88 -> string, 8 bytes
+          |-- ae94 05db eebf 3f01 = string
+          |-- f842 -> list, len of len = 1 byte, len = 66
+              |-- a0 -> string, 32 bytes
+                  |-- a36b1595c5acd878b63f83d3b62f6882edd27b757582f5319aebc17bc3e98246
+              |-- a0 -> string, 32 bytes
+                  |-- 9f20a871bf5151959fff4c88783bf4ef27b170a4cbe92b8f63ca1fe7d6ab829c
+*/
+TEST_CASE("GetBlockBodiesPacket (eth/66) decoding") {
+    using namespace std;
+
+    optional<Bytes> encoded = from_hex("f84d88ae9405dbeebf3f01f842a0a36b1595c5acd878b63f83d3b62f6882edd27b757582f5319aebc17bc3e98246a09f20a871bf5151959fff4c88783bf4ef27b170a4cbe92b8f63ca1fe7d6ab829c");
+    REQUIRE(encoded.has_value());
+
+    GetBlockBodiesPacket66 packet;
+
+    ByteView encoded_view = encoded.value();
+    rlp::DecodingResult result = rlp::decode(encoded_view, packet);
+
+    REQUIRE(result == rlp::DecodingResult::kOk);
+    REQUIRE(packet.requestId == 0xae9405dbeebf3f01);
+    REQUIRE(packet.request.size() == 2);
+    REQUIRE(packet.request[0] == Hash::from_hex("a36b1595c5acd878b63f83d3b62f6882edd27b757582f5319aebc17bc3e98246"));
+    REQUIRE(packet.request[1] == Hash::from_hex("9f20a871bf5151959fff4c88783bf4ef27b170a4cbe92b8f63ca1fe7d6ab829c"));
+}
+
+TEST_CASE("GetBlockBodiesPacket (eth/66) encoding") {
+    using namespace std;
+
+    GetBlockBodiesPacket66 packet;
+
+    packet.requestId = 0xae9405dbeebf3f01;
+    packet.request.push_back(Hash::from_hex("a36b1595c5acd878b63f83d3b62f6882edd27b757582f5319aebc17bc3e98246"));
+    packet.request.push_back(Hash::from_hex("9f20a871bf5151959fff4c88783bf4ef27b170a4cbe92b8f63ca1fe7d6ab829c"));
+
+    Bytes encoded;
+    rlp::encode(encoded, packet);
+
+    REQUIRE(to_hex(encoded) == "f84d88ae9405dbeebf3f01f842a0a36b1595c5acd878b63f83d3b62f6882edd27b757582f5319aebc17bc3e98246a09f20a871bf5151959fff4c88783bf4ef27b170a4cbe92b8f63ca1fe7d6ab829c");
 
     auto len = rlp::length(packet);
 
