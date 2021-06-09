@@ -29,6 +29,7 @@ class InboundGetBlockHeaders: public InboundMessage {
 
     std::string name() const override {return "InboundGetBlockHeaders";}
     std::string content() const override;
+    uint64_t reqId() const override;
 
     reply_calls_t execute() override;
 

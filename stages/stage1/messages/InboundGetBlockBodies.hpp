@@ -28,6 +28,7 @@ class InboundGetBlockBodies: public InboundMessage {
 
     std::string name() const override {return "InboundGetBlockBodies";}
     std::string content() const override;
+    uint64_t reqId() const override;
 
     reply_calls_t execute() override;
 

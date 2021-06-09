@@ -103,7 +103,7 @@ namespace rlp {
 
     inline std::ostream& operator<<(std::ostream& os, const GetBlockHeadersPacket66& packet)
     {
-        os << " reqId="  << packet.requestId
+        os <<   "reqId="  << packet.requestId
            << " origin=" << packet.request.origin
            << " amount=" << packet.request.amount
            << " skip="   << packet.request.skip

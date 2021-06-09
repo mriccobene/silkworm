@@ -31,6 +31,7 @@ class CompletionMessage: public Message {
 
     std::string name() const override {return "CompletionMessage";}
     std::string content() const override {return "-";}
+    uint64_t reqId() const override {return msg_waiting_completion_->reqId();};
 
     rpc_bundle_t execute() override {msg_waiting_completion_->handle_completion(*completed_rpc_); return {};}
 

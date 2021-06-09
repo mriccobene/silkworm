@@ -26,11 +26,18 @@
 #include "messages/CompletionMessage.hpp"
 #include "rpc/ReceiveMessages.hpp"
 #include "rpc/SetStatus.hpp"
-#include "rpc/SendMessageById.hpp"
 #include "ConcurrentContainers.hpp"
+
+#include "rpc/SendMessageById.hpp"
+#include "rpc/SendMessageByMinBlock.hpp"
+#include "rpc/PeerMinBlock.hpp"
 
 namespace silkworm {
 
+// logs
+std::string result(std::shared_ptr<SentryRpc> rpc);
+
+// impl
 Stage1::Stage1(ChainIdentity chain_identity, std::string db_path, std::string sentry_addr):
     chain_identity_(std::move(chain_identity)),
     db_{db_path},
@@ -42,8 +49,6 @@ Stage1::Stage1(ChainIdentity chain_identity, std::string db_path, std::string se
 Stage1::~Stage1() {
     SILKWORM_LOG(LogLevel::Error) << "stage1 destroyed\n";
 }
-
-std::string result(std::shared_ptr<SentryRpc> rpc);
 
 void Stage1::execution_loop() { // no-thread version
     using std::shared_ptr;
@@ -63,7 +68,7 @@ void Stage1::execution_loop() { // no-thread version
           if (executed_rpc && executed_rpc->terminated()) {
               auto status = executed_rpc->status();
               if (status.ok())
-                  SILKWORM_LOG(LogLevel::Debug) << "RPC ok, " << executed_rpc->name() << "\n";
+                  SILKWORM_LOG(LogLevel::Trace) << "RPC ok, " << executed_rpc->name() << "\n";
               else
                   SILKWORM_LOG(LogLevel::Warn)
                       << "RPC failed, " << executed_rpc->name() << ", error: '" << status.error_message()
@@ -85,7 +90,7 @@ void Stage1::execution_loop() { // no-thread version
               << "failed to set status to the remote sentry, cause:'" << call.status().error_message() << "', exiting...\n";
           return;
       }
-      SILKWORM_LOG(LogLevel::Debug) << "set-status reply arrived\n";
+      SILKWORM_LOG(LogLevel::Trace) << "set-status reply arrived\n";
       sentry::SetStatusReply& reply = set_status->reply();
       sentry::Protocol supported_protocol = reply.protocol();
       if (supported_protocol != sentry::Protocol::ETH66) {
@@ -100,12 +105,12 @@ void Stage1::execution_loop() { // no-thread version
     // start message receiving (headers & blocks announcements & requests) --------------------------------------------
     auto receive_messages = rpc::ReceiveMessages::make();
     receive_messages->on_receive_reply([&, receive_messages](auto& call) {
-      SILKWORM_LOG(LogLevel::Debug) << "receive-messages reply arrived\n";
+      SILKWORM_LOG(LogLevel::Trace) << "receive-messages reply arrived\n";
       if (!call.terminated()) {
           sentry::InboundMessage& reply = receive_messages->reply();
           auto message = InboundMessage::make(reply);
           if (message) {
-              SILKWORM_LOG(LogLevel::Info) << "Message received from remote peer " << *message << "\n";
+              SILKWORM_LOG(LogLevel::Info) << "Message received from remote peer " << identify(*message) << "\n";
               messages.push(message);
           }
       }
@@ -132,15 +137,16 @@ void Stage1::execution_loop() { // no-thread version
           auto rpc_bundle = message->execute();
           if (rpc_bundle.size() == 0) continue;
 
-          if (std::dynamic_pointer_cast<InboundMessage>(message))
-              SILKWORM_LOG(LogLevel::Info) << "Replying to incoming request " << message->name() << "\n";
-          else // OutboundMessage
+          if (std::dynamic_pointer_cast<OutboundMessage>(message)) {
               SILKWORM_LOG(LogLevel::Info) << "Sending outgoing request " << *message << "\n";
+          }
 
           for(auto& rpc: rpc_bundle) {
+              SILKWORM_LOG(LogLevel::Info) << "Replying to " << identify(*message) << " with " << rpc->name() << "\n";
+
               rpc->on_receive_reply([message, rpc, &messages](auto&) { // copy message and rpc to retain their lifetime (shared_ptr) [avoid rpc passing using make_shared_from_this in AsyncCall]
-                SILKWORM_LOG(LogLevel::Info) << "Received rpc result of " << message->name() << ": " << result(rpc) << "\n";
-                shared_ptr<Message> completion = CompletionMessage::make(message, rpc); //message->handle_completion(call) would be dangerous... would be executed in another thread
+                SILKWORM_LOG(LogLevel::Info) << "Received rpc result of " << identify(*message) << ": " << result(rpc) << "\n";
+                shared_ptr<Message> completion = CompletionMessage::make(message, rpc); //message->handle_completion(call) would be dangerous... this is not the processing thread
                 messages.push(completion); // coroutines would avoid this
               });
 
@@ -170,11 +176,23 @@ void Stage1::execution_loop() { // no-thread version
 }
 
 std::string result(std::shared_ptr<SentryRpc> rpc) {
-    std::shared_ptr<rpc::SendMessageById> sendMessageById = std::dynamic_pointer_cast<rpc::SendMessageById>(rpc);
+    auto sendMessageById = std::dynamic_pointer_cast<rpc::SendMessageById>(rpc);
     if (sendMessageById) {
-        sentry::SentPeers peers = sendMessageById->reply();
+        const sentry::SentPeers& peers = sendMessageById->reply();
         return std::to_string(peers.peers_size()) + " peer(s)";
     }
+
+    auto sendMessageByMinBlock = std::dynamic_pointer_cast<rpc::SendMessageByMinBlock>(rpc);
+    if (sendMessageByMinBlock) {
+        const sentry::SentPeers& peers = sendMessageByMinBlock->reply();
+        return std::to_string(peers.peers_size()) + " peer(s)";
+    }
+
+    auto peerMinBlock = std::dynamic_pointer_cast<rpc::PeerMinBlock>(rpc);
+    if (peerMinBlock) {
+        return "ok";  // no result
+    }
+
     return "-todo-";
 }
 

@@ -47,7 +47,7 @@ namespace rlp {
 
     inline std::ostream& operator<<(std::ostream& os, const BlockHeadersPacket66& packet)
     {
-        os << " reqId="  << packet.requestId;
+        os << "reqId=" << packet.requestId;
         os << " headers(bn)=";
 
         const size_t max_display = 3;

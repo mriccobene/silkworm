@@ -28,6 +28,8 @@ InboundNewBlock::InboundNewBlock(const sentry::InboundMessage& msg): InboundMess
     if (msg.id() != sentry::MessageId::NEW_BLOCK_66)
         throw std::logic_error("InboundNewBlock received wrong InboundMessage");
 
+    reqId_ = RANDOM_NUMBER.generate_one();  // for trace purposes
+
     peerId_ = string_from_H512(msg.peer_id());
 
     ByteView data = byte_view_of_string(msg.data()); // copy for consumption
@@ -40,6 +42,10 @@ InboundMessage::reply_calls_t InboundNewBlock::execute() {
     using namespace std;
     // todo: implement!
     return {};
+}
+
+uint64_t InboundNewBlock::reqId() const {
+    return reqId_;
 }
 
 std::string InboundNewBlock::content() const {

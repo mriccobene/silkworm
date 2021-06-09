@@ -28,6 +28,7 @@ class OutboundGetBlockHeaders : public OutboundMessage {
 
     std::string name() const override {return "OutboundGetBlockHeaders";}
     std::string content() const override;
+    uint64_t reqId() const override;
 
     request_calls_t execute() override;
 

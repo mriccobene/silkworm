@@ -28,6 +28,8 @@ InboundNewBlockHashes::InboundNewBlockHashes(const sentry::InboundMessage& msg):
     if (msg.id() != sentry::MessageId::NEW_BLOCK_HASHES_66)
         throw std::logic_error("InboundNewBlockHashes received wrong InboundMessage");
 
+    reqId_ = RANDOM_NUMBER.generate_one();  // for trace purposes
+
     peerId_ = string_from_H512(msg.peer_id());
 
     ByteView data = byte_view_of_string(msg.data()); // copy for consumption
@@ -77,6 +79,10 @@ InboundMessage::reply_calls_t InboundNewBlockHashes::execute() {
     STAGE1.working_chain().top_seen_block_height(max);
 
     return calls;
+}
+
+uint64_t InboundNewBlockHashes::reqId() const {
+    return reqId_;
 }
 
 std::string InboundNewBlockHashes::content() const {

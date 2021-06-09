@@ -45,7 +45,7 @@ namespace rlp {
 
     inline std::ostream& operator<<(std::ostream& os, const BlockBodiesPacket66& packet)
     {
-        os << " reqId="  << packet.requestId;
+        os <<   "reqId="  << packet.requestId;
         os << " bodies=" << packet.request.size();
         return os;
     }

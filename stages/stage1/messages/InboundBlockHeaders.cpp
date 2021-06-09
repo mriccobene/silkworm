@@ -69,7 +69,7 @@ InboundMessage::reply_calls_t InboundBlockHeaders::execute() {
         } else {
             outreq := proto_sentry.PenalizePeerRequest{
                 PeerId:  in.PeerId,
-                Penalty: proto_sentry.PenaltyKind_Kick, 
+                Penalty: proto_sentry.PenaltyKind_Kick,
             }
             if _, err1 := sentry.PenalizePeer(ctx, &outreq, &grpc.EmptyCallOption{}); err1 != nil {
                 log.Error("Could not send penalty", "err", err1)
@@ -89,6 +89,10 @@ InboundMessage::reply_calls_t InboundBlockHeaders::execute() {
 
 void InboundBlockHeaders::handle_completion([[maybe_unused]] SentryRpc&) {
     // There is no replay
+}
+
+uint64_t InboundBlockHeaders::reqId() const {
+    return packet_.requestId;
 }
 
 std::string InboundBlockHeaders::content() const {

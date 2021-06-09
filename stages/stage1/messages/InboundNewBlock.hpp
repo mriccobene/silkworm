@@ -28,13 +28,14 @@ class InboundNewBlock: public InboundMessage {
 
     std::string name() const override {return "InboundNewBlock";}
     std::string content() const override;
+    uint64_t reqId() const override;
 
     reply_calls_t execute() override;
 
   private:
     std::string peerId_;
     NewBlockPacket packet_;
-
+    uint64_t reqId_;
 };
 
 }

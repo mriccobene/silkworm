@@ -55,6 +55,10 @@ void OutboundGetBlockHeaders::handle_completion(SentryRpc& /*reply*/) {
     //  use specific_reply...
 }
 
+uint64_t OutboundGetBlockHeaders::reqId() const {
+    return packet_.requestId;
+}
+
 std::string OutboundGetBlockHeaders::content() const {
     std::stringstream content;
     content << packet_;

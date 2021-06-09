@@ -70,6 +70,10 @@ void InboundGetBlockBodies::handle_completion(SentryRpc& reply) {
     // todo: use specific_reply...
 }
 
+uint64_t InboundGetBlockBodies::reqId() const {
+    return packet_.requestId;
+}
+
 std::string InboundGetBlockBodies::content() const {
     std::stringstream content;
     content << packet_;
