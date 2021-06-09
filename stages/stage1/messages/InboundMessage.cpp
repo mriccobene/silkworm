@@ -19,6 +19,7 @@
 #include "InboundNewBlock.hpp"
 #include "InboundGetBlockHeaders.hpp"
 #include "InboundGetBlockBodies.hpp"
+#include "InboundBlockHeaders.hpp"
 #include <silkworm/common/log.hpp>
 #include <iostream>
 
@@ -34,6 +35,8 @@ std::shared_ptr<InboundMessage> InboundMessage::make(const sentry::InboundMessag
         message = std::make_shared<InboundGetBlockHeaders>(raw_message);
     else if (raw_message.id() == sentry::MessageId::GET_BLOCK_BODIES_66)
         message = std::make_shared<InboundGetBlockBodies>(raw_message);
+    else if (raw_message.id() == sentry::MessageId::BLOCK_HEADERS_66)
+        message = std::make_shared<InboundBlockHeaders>(raw_message);
     else
         SILKWORM_LOG(LogLevel::Warn)
             << "InboundMessage " << sentry::MessageId_Name(raw_message.id()) << " received but not implemented yet\n";

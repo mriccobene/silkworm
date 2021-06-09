@@ -43,6 +43,13 @@ namespace rlp {
     // ... decode(ByteView& from, BlockBodiesPacket66& to)    implemented by template <Eth66Packet T> rlp::DecodingResult decode(ByteView& from, T& to)
 }
 
+    inline std::ostream& operator<<(std::ostream& os, const BlockBodiesPacket66& packet)
+    {
+        os << " reqId="  << packet.requestId;
+        os << " bodies=" << packet.request.size();
+        return os;
+    }
+
 } // silkworm namespace
 
 #include "RLPEth66PacketCoding.hpp"

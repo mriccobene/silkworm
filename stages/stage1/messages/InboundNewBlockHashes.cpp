@@ -57,7 +57,7 @@ InboundMessage::reply_calls_t InboundNewBlockHashes::execute() {
         reply.request.origin = hash;
         reply.request.amount = 1;
         reply.request.skip = 0;
-        reply.request.reverse = 0;
+        reply.request.reverse = false;
 
         Bytes rlp_encoding;
         rlp::encode(rlp_encoding, reply);
