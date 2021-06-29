@@ -24,7 +24,7 @@
 #include "SentryClient.hpp"
 #include "Singleton.hpp"
 #include "Types.hpp"
-#include "SelfExtendingChain.hpp"
+#include "WorkingChain.hpp"
 
 namespace silkworm {
 
@@ -42,7 +42,7 @@ class Stage1 : public Stage {
     ChainIdentity chain_identity_;
     DbTx db_;
     SentryClient sentry_;
-    SelfExtendingChain working_chain_;
+    WorkingChain working_chain_;
 
   public:
 
@@ -55,7 +55,7 @@ class Stage1 : public Stage {
 
     SentryClient& sentry() {return sentry_;}
 
-    SelfExtendingChain& working_chain() {return working_chain_;}
+    WorkingChain& working_chain() {return working_chain_;}
 
     void execution_loop() override;
 

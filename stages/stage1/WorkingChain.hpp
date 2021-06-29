@@ -14,17 +14,17 @@
    limitations under the License.
 */
 
-#ifndef SILKWORM_SELFEXTENDINGCHAIN_HPP
-#define SILKWORM_SELFEXTENDINGCHAIN_HPP
+#ifndef SILKWORM_WORKINGCHAIN_HPP
+#define SILKWORM_WORKINGCHAIN_HPP
 
 #include "HeaderLogic.hpp"
 #include "stages/stage1/packets/GetBlockHeadersPacket.hpp"
 
 namespace silkworm {
 
-class SelfExtendingChain {  // tentative name - todo: improve!
+class WorkingChain {  // tentative name - todo: improve!
   public:
-    SelfExtendingChain(BlockNum highestInDb, BlockNum topSeenHeight);
+    WorkingChain(BlockNum highestInDb, BlockNum topSeenHeight);
 
     void highest_block_in_db(BlockNum n);
     BlockNum highest_block_in_db();
@@ -33,6 +33,9 @@ class SelfExtendingChain {  // tentative name - todo: improve!
 
     std::optional<GetBlockHeadersPacket66> headers_forward(); // progresses Headers stage in the forward direction
     void request_ack(GetBlockHeadersPacket66 packet, time_point_t tp, time_dur_t timeout);
+
+    using RequestMoreHeaders = bool;
+    std::tuple<Penalty,RequestMoreHeaders> accept_headers(const std::vector<BlockHeader>&);
 
     void save_external_announce(Hash hash);
     bool has_link(Hash hash);
@@ -43,6 +46,9 @@ class SelfExtendingChain {  // tentative name - todo: improve!
 
     std::optional<GetBlockHeadersPacket66> request_more_headers();
     std::optional<GetBlockHeadersPacket66> request_skeleton();
+
+    std::tuple<std::vector<Segment>, Penalty> split_into_segments(const std::vector<BlockHeader>&);
+    RequestMoreHeaders process_segment(Segment);
 
     Oldest_First_Link_Queue persistedLinkQueue_;
     Youngest_First_Link_Queue linkQueue_;
@@ -56,4 +62,4 @@ class SelfExtendingChain {  // tentative name - todo: improve!
 
 }
 
-#endif  // SILKWORM_SELFEXTENDINGCHAIN_HPP
+#endif  // SILKWORM_WORKINGCHAIN_HPP

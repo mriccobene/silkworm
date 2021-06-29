@@ -81,6 +81,18 @@ inline std::ostream& operator<<(std::ostream& out, const evmc::bytes32& b32) {
     return out;
 }
 
+enum Penalty: int {
+    NoPenalty = 0,
+    BadBlockPenalty,
+    DuplicateHeaderPenalty,
+    WrongChildBlockHeightPenalty,
+    WrongChildDifficultyPenalty,
+    InvalidSealPenalty,
+    TooFarFuturePenalty,
+    TooFarPastPenalty,
+    AbandonedAnchorPenalty
+};
+
 namespace rlp {
     void encode(Bytes& to, const Hash& h);
     rlp::DecodingResult decode(ByteView& from, Hash& to) noexcept;
@@ -90,6 +102,12 @@ namespace rlp {
     template <class T> DecodingResult decode_vec(ByteView& from, std::vector<T>& to);
 }
 
+}
+
+// from c++23
+template< class Enum >
+constexpr std::underlying_type_t<Enum> to_underlying( Enum e ) noexcept {
+    return static_cast<std::underlying_type_t<Enum>>(e);
 }
 
 #endif  // SILKWORM_TYPES_HPP

@@ -54,4 +54,6 @@ namespace rlp {
 
 #include "RLPEth66PacketCoding.hpp"
 
+static_assert(silkworm::rlp::Eth66Packet<silkworm::BlockBodiesPacket66>);
+
 #endif  // SILKWORM_BLOCKBODIESPACKET_HPP

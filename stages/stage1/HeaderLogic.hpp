@@ -43,6 +43,8 @@ struct Anchor {
     std::vector<std::shared_ptr<Link>> links;   // Links attached immediately to this anchor
 };
 
+struct Segment {};  // todo: define!
+
 struct Link_Older_Than: public std::binary_function<std::shared_ptr<Link>, std::shared_ptr<Link>, bool>
 {
     bool operator()(const std::shared_ptr<Link>& x, const std::shared_ptr<Link>& y) const
