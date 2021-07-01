@@ -515,23 +515,23 @@ func (hd *HeaderDownload) findLink(segment *ChainSegment, start int) (found bool
  */
 // find_link find the highest existing link (from start) that the new segment can be attached to
 auto WorkingChain::find_link(Segment segment, int start) -> std::tuple<Found, End> {
-    auto [unused, duplicate] = get_link(segment.headers[start]->hash());
-    if (duplicate)
+    auto duplicate_link = get_link(segment.headers[start]->hash());
+    if (duplicate_link)
         return {false, 0};
     for (size_t i = start; i < segment.headers.size(); i++) {
         // Check if the header can be attached to any links
-        auto [link, attaching] = get_link(segment.headers[i]->parent_hash);
-        if (attaching)
-            return {true, start + i + 1};
+        auto attaching_link = get_link(segment.headers[i]->parent_hash);
+        if (attaching_link)
+            return {true, i + 1}; // return the ordinal of the next link
     }
     return {false, segment.headers.size()};
 }
 
-auto WorkingChain::get_link(Hash hash) -> std::tuple<std::shared_ptr<Link>, Found> {   // todo: tuple or optional?
+auto WorkingChain::get_link(Hash hash) -> std::optional<std::shared_ptr<Link>> {
     auto it = links_.find(hash);
     if (it != links_.end())
-        return {it->second, true};
-    return {nullptr, false};
+        return {it->second};
+    return {};
 }
 
 }

@@ -47,9 +47,14 @@ struct Bundle {     // is it helpful?
 };
 
 struct SegmentEx {
+
     std::tuple<std::vector<Segment>, Penalty> make(const Bundle& headers); // split into segment
 
     Header_Ref lowest_header() {return *headers.rbegin();}
+
+    //auto attach(Anchor_Map, Link_Map) ->
+    //auto find_anchor_in(Anchor_Map) -> Header_Ref;
+    //auto find_link_in(Link_Map) ->
 
     std::vector<Header_Ref> headers;
 
@@ -96,7 +101,7 @@ class WorkingChain {  // tentative name - todo: improve!
     using Found = bool; using Start = int; using End = int;
     auto find_anchor(Segment)                                 -> std::tuple<Found, Start>;
     auto find_link(Segment segment, int start)                -> std::tuple<Found, End>;
-    auto get_link(Hash hash)                                  -> std::tuple<std::shared_ptr<Link>, Found>;
+    auto get_link(Hash hash)                                  -> std::optional<std::shared_ptr<Link>>;
 
     Oldest_First_Link_Queue persistedLinkQueue_;
     Youngest_First_Link_Queue linkQueue_;
