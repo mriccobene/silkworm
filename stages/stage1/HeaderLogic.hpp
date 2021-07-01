@@ -22,6 +22,7 @@
 #include <vector>
 #include <queue>
 #include <map>
+#include <set>
 
 namespace silkworm {
 
@@ -42,8 +43,6 @@ struct Anchor {
     int timeouts;                               // Number of timeout that this anchor has experiences - after certain threshold, it gets invalidated
     std::vector<std::shared_ptr<Link>> links;   // Links attached immediately to this anchor
 };
-
-struct Segment {};  // todo: define!
 
 struct Link_Older_Than: public std::binary_function<std::shared_ptr<Link>, std::shared_ptr<Link>, bool>
 {
@@ -75,8 +74,8 @@ using Oldest_First_Anchor_Queue = std::priority_queue<std::shared_ptr<Anchor>,
                                                       std::vector<std::shared_ptr<Anchor>>,
                                                       Anchor_Older_Than>;
 
-using Link_Map = std::multimap<Hash,std::shared_ptr<Link>>;     // hash = link hash
-using Anchor_Map = std::multimap<Hash,std::shared_ptr<Anchor>>; // hash = anchor *parent* hash
+using Link_Map = std::map<Hash,std::shared_ptr<Link>>;     // hash = link hash
+using Anchor_Map = std::map<Hash,std::shared_ptr<Anchor>>; // hash = anchor *parent* hash
 
 class HeaderLogic {     // todo: modularize this!
   public:
@@ -97,5 +96,7 @@ class HeaderLogic {     // todo: modularize this!
 };
 
 }
+
+
 
 #endif  // SILKWORM_HEADERLOGIC_HPP

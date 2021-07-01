@@ -22,6 +22,47 @@
 
 namespace silkworm {
 
+// Auxiliary types ----------------------------------------------------------------------------------------------------
+using Header_Ref = std::vector<BlockHeader>::const_iterator; // todo: check what is better among const_iterator or shared_ptr or hash
+
+inline std::vector<Header_Ref> to_ref(const std::vector<BlockHeader>& headers) {
+    std::vector<Header_Ref> refs;
+    for(Header_Ref i = headers.begin(); i < headers.end(); i++)
+        refs.push_back(i);
+    return refs;
+}
+
+// Segment, a sequence of headers connected to one another (with parent-hash relationship),
+// without any branching, ordered from high block number to lower block number
+struct Segment {
+    std::vector<Header_Ref> headers;
+    //std::vector<something> headersRaw;    // todo: do we need this?
+    //shared_ptr<Bundle> storage; // todo: do we need this to bundle Header_Ref referred objects?
+};
+
+// ---------------
+
+struct Bundle {     // is it helpful?
+    std::vector<BlockHeader> headers;
+};
+
+struct SegmentEx {
+    std::tuple<std::vector<Segment>, Penalty> make(const Bundle& headers); // split into segment
+
+    Header_Ref lowest_header() {return *headers.rbegin();}
+
+    std::vector<Header_Ref> headers;
+
+  private:
+    SegmentEx();
+
+    //std::vector<something> headersRaw;    // todo: do we need this?
+    //shared_ptr<Bundle> storage; // todo: do we need this to bundle Header_Ref referred objects?
+};
+
+
+// WorkingChain -------------------------------------------------------------------------------------------------------
+
 class WorkingChain {  // tentative name - todo: improve!
   public:
     WorkingChain(BlockNum highestInDb, BlockNum topSeenHeight);
@@ -44,11 +85,18 @@ class WorkingChain {  // tentative name - todo: improve!
     static constexpr BlockNum max_len = 192;
     static constexpr BlockNum stride = 8 * max_len;
 
-    std::optional<GetBlockHeadersPacket66> request_more_headers();
-    std::optional<GetBlockHeadersPacket66> request_skeleton();
+    std::optional<GetBlockHeadersPacket66> request_skeleton(); // anchor collection
+    std::optional<GetBlockHeadersPacket66> request_more_headers(); // anchor extension
 
-    std::tuple<std::vector<Segment>, Penalty> split_into_segments(const std::vector<BlockHeader>&);
-    RequestMoreHeaders process_segment(Segment);
+
+
+    auto split_into_segments(const std::vector<BlockHeader>&) -> std::tuple<std::vector<Segment>, Penalty>;
+    auto process_segment(Segment)                             -> RequestMoreHeaders;
+
+    using Found = bool; using Start = int; using End = int;
+    auto find_anchor(Segment)                                 -> std::tuple<Found, Start>;
+    auto find_link(Segment segment, int start)                -> std::tuple<Found, End>;
+    auto get_link(Hash hash)                                  -> std::tuple<std::shared_ptr<Link>, Found>;
 
     Oldest_First_Link_Queue persistedLinkQueue_;
     Youngest_First_Link_Queue linkQueue_;
@@ -57,7 +105,7 @@ class WorkingChain {  // tentative name - todo: improve!
     Anchor_Map anchors_;
     BlockNum highestInDb_;
     BlockNum topSeenHeight_;
-
+    std::set<Hash> badHeaders_;
 };
 
 }
