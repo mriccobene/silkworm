@@ -93,6 +93,8 @@ enum Penalty: int {
     AbandonedAnchorPenalty
 };
 
+using PeerId = std::string;
+
 namespace rlp {
     void encode(Bytes& to, const Hash& h);
     rlp::DecodingResult decode(ByteView& from, Hash& to) noexcept;

@@ -36,7 +36,7 @@ class InboundBlockHeaders: public InboundMessage {
     void handle_completion(SentryRpc&) override;
 
   private:
-    std::string peerId_;
+    PeerId peerId_;
     BlockHeadersPacket66 packet_;
 };
 

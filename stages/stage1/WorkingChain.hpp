@@ -41,30 +41,37 @@ struct Segment {
 };
 
 // ---------------
+namespace sperimental {
 
-struct Bundle {     // is it helpful?
+using Bundle_Ref = std::vector<BlockHeader>::const_iterator;
+
+struct Bundle {
     std::vector<BlockHeader> headers;
 };
 
-struct SegmentEx {
+using Segment_Ref = std::vector<BlockHeader>::const_iterator;
 
-    std::tuple<std::vector<Segment>, Penalty> make(const Bundle& headers); // split into segment
+struct Segment {
 
-    Header_Ref lowest_header() {return *headers.rbegin();}
+    static auto split_into_segment(const Bundle& headers) -> std::tuple<std::vector<Segment>, Penalty>;
 
-    //auto attach(Anchor_Map, Link_Map) ->
-    //auto find_anchor_in(Anchor_Map) -> Header_Ref;
-    //auto find_link_in(Link_Map) ->
+    Segment_Ref lowest_header() {return *headers.rbegin();}
 
-    std::vector<Header_Ref> headers;
+    auto attach(Anchor_Map, Link_Map) -> std::tuple<Segment_Ref,Segment_Ref>;
+
+    auto find_anchor_in(Anchor_Map) -> Segment_Ref;
+    auto find_link_in(Link_Map, Segment_Ref anchor) -> Segment_Ref;
+
+    std::vector<Bundle_Ref> headers;
 
   private:
-    SegmentEx();
+    Segment();
 
     //std::vector<something> headersRaw;    // todo: do we need this?
-    //shared_ptr<Bundle> storage; // todo: do we need this to bundle Header_Ref referred objects?
+    Bundle* bundle;
 };
 
+}
 
 // WorkingChain -------------------------------------------------------------------------------------------------------
 
@@ -81,7 +88,7 @@ class WorkingChain {  // tentative name - todo: improve!
     void request_ack(GetBlockHeadersPacket66 packet, time_point_t tp, time_dur_t timeout);
 
     using RequestMoreHeaders = bool;
-    std::tuple<Penalty,RequestMoreHeaders> accept_headers(const std::vector<BlockHeader>&);
+    std::tuple<Penalty,RequestMoreHeaders> accept_headers(const std::vector<BlockHeader>&, PeerId);
 
     void save_external_announce(Hash hash);
     bool has_link(Hash hash);
@@ -94,14 +101,20 @@ class WorkingChain {  // tentative name - todo: improve!
     std::optional<GetBlockHeadersPacket66> request_more_headers(); // anchor extension
 
 
-
+    using IsANewBlock = bool;
     auto split_into_segments(const std::vector<BlockHeader>&) -> std::tuple<std::vector<Segment>, Penalty>;
-    auto process_segment(Segment)                             -> RequestMoreHeaders;
+    auto process_segment(Segment, IsANewBlock, PeerId) -> RequestMoreHeaders;
 
     using Found = bool; using Start = int; using End = int;
     auto find_anchor(Segment)                                 -> std::tuple<Found, Start>;
     auto find_link(Segment segment, int start)                -> std::tuple<Found, End>;
     auto get_link(Hash hash)                                  -> std::optional<std::shared_ptr<Link>>;
+
+    using Error = int;
+    void connect(Segment, Start, End);                          // throw SegmentCutAndPasteException
+    auto extendDown(Segment, Start, End) -> RequestMoreHeaders; // throw SegmentCutAndPasteException
+    void extendUp(Segment, Start, End);                         // throw SegmentCutAndPasteException
+    auto newAnchor(Segment, Start, End, PeerId) -> RequestMoreHeaders; // throw SegmentCutAndPasteException
 
     Oldest_First_Link_Queue persistedLinkQueue_;
     Youngest_First_Link_Queue linkQueue_;

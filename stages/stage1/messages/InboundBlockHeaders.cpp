@@ -86,7 +86,7 @@ InboundMessage::reply_calls_t InboundBlockHeaders::execute() {
 
     reply_calls_t reply_calls;
 
-    auto [penalty, requestMoreHeaders] = STAGE1.working_chain().accept_headers(packet_.request);
+    auto [penalty, requestMoreHeaders] = STAGE1.working_chain().accept_headers(packet_.request, peerId_);
 
     /* really do we need to call request_more_headers() here? it will be called by header_forward()...
      * or do we only need to enable header_forward() if blocked?

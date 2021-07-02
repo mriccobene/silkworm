@@ -23,6 +23,14 @@
 
 namespace silkworm {
 
+
+class segment_cut_and_paste_error: public std::logic_error {
+  public:
+    segment_cut_and_paste_error() : std::logic_error("segment cut&paste error, unknown reason") {}
+    segment_cut_and_paste_error(const std::string& reason) : std::logic_error(reason) {}
+};
+
+
 WorkingChain::WorkingChain(BlockNum highestInDb, BlockNum topSeenHeight): highestInDb_(highestInDb), topSeenHeight_(topSeenHeight) {
 }
 
@@ -162,7 +170,7 @@ bool WorkingChain::has_link(Hash hash) {
     return (links_.find(hash) != links_.end());
 }
 
-auto WorkingChain::accept_headers(const std::vector<BlockHeader>& headers) -> std::tuple<Penalty,RequestMoreHeaders> {
+auto WorkingChain::accept_headers(const std::vector<BlockHeader>& headers, PeerId peerId) -> std::tuple<Penalty,RequestMoreHeaders> {
     bool requestMoreHeaders = false;
 
     auto [segments, penalty] = split_into_segments(headers); // todo: Erigon here pass also headerRaw
@@ -171,7 +179,7 @@ auto WorkingChain::accept_headers(const std::vector<BlockHeader>& headers) -> st
         return {penalty, requestMoreHeaders};
 
     for(auto& segment: segments) {
-        requestMoreHeaders |= process_segment(segment);
+        requestMoreHeaders |= process_segment(segment, false, peerId);
     }
 
     return {Penalty::NoPenalty, requestMoreHeaders};
@@ -455,8 +463,7 @@ func (hd *HeaderDownload) ProcessSegment(segment *ChainSegment, newBlock bool, p
 }
 
 */
-auto WorkingChain::process_segment(Segment segment) -> RequestMoreHeaders {
-
+auto WorkingChain::process_segment(Segment segment, IsANewBlock isANewBlock, PeerId peerId) -> RequestMoreHeaders {
     auto [foundAnchor, start] = find_anchor(segment);
     auto [foundTip, end] = find_link(segment, start);
 
@@ -469,9 +476,45 @@ auto WorkingChain::process_segment(Segment segment) -> RequestMoreHeaders {
     [[maybe_unused]] auto height = lowest_header->number;
     [[maybe_unused]] auto hash = lowest_header->hash();
 
+    if (isANewBlock /*|| hd.seenAnnounces.Seen(hash)*/) {  // todo: translate seenAnnounces
+        if (height > topSeenHeight_) topSeenHeight_ = height;
+    }
+
+    auto startNum = segment.headers[start]->number;
+    auto endNum = segment.headers[end - 1]->number;
+
+    std::string op;
+    bool requestMore = false;
+    try {
+        if (foundAnchor) {
+            if (foundTip) {
+                op = "connect";
+                connect(segment, start, end);
+            } else {  // ExtendDown
+                op = "extend down";
+                requestMore = extendDown(segment, start, end);
+            }
+        }
+        else if (foundTip) {
+            if (end > 0 ) { // ExtendUp
+                op = "extend up";
+                extendUp(segment, start, end);
+            }
+        }
+        else { // NewAnchor
+            op = "new anchor";
+            requestMore = newAnchor(segment, start, end, peerId);
+        }
+        SILKWORM_LOG(LogLevel::Debug) << "Segment: " << op << " start=" << startNum << " end=" << endNum << "\n";
+    }
+    catch(segment_cut_and_paste_error& e) {
+        SILKWORM_LOG(LogLevel::Debug) << "Segment: " << op << " failure, reason:" << e.what() << "\n";
+        return false;
+    }
+
     // todo: implement!
 
-    return false;
+    return requestMore /* && hd.requestChaining */; // todo: translate requestChaining
 }
 
 /*
@@ -514,7 +557,7 @@ func (hd *HeaderDownload) findLink(segment *ChainSegment, start int) (found bool
 }
  */
 // find_link find the highest existing link (from start) that the new segment can be attached to
-auto WorkingChain::find_link(Segment segment, int start) -> std::tuple<Found, End> {
+auto WorkingChain::find_link(Segment segment, int start) -> std::tuple<Found, End> { // todo: End o Header_Ref?
     auto duplicate_link = get_link(segment.headers[start]->hash());
     if (duplicate_link)
         return {false, 0};
