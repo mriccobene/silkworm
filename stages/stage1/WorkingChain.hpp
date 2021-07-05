@@ -96,10 +96,13 @@ class WorkingChain {  // tentative name - todo: improve!
   private:
     static constexpr BlockNum max_len = 192;
     static constexpr BlockNum stride = 8 * max_len;
+    static constexpr size_t anchor_limit = 512;
+    static constexpr size_t link_total = 1024*1024;
+    static constexpr size_t persistent_link_limit = link_total / 16;
+    static constexpr size_t link_limit = link_total - persistent_link_limit;
 
     std::optional<GetBlockHeadersPacket66> request_skeleton(); // anchor collection
     std::optional<GetBlockHeadersPacket66> request_more_headers(); // anchor extension
-
 
     using IsANewBlock = bool;
     auto split_into_segments(const std::vector<BlockHeader>&) -> std::tuple<std::vector<Segment>, Penalty>;
@@ -109,6 +112,7 @@ class WorkingChain {  // tentative name - todo: improve!
     auto find_anchor(Segment)                                 -> std::tuple<Found, Start>;
     auto find_link(Segment segment, int start)                -> std::tuple<Found, End>;
     auto get_link(Hash hash)                                  -> std::optional<std::shared_ptr<Link>>;
+    void reduce_links();
 
     using Error = int;
     void connect(Segment, Start, End);                          // throw SegmentCutAndPasteException

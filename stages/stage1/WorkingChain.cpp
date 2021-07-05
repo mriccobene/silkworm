@@ -473,10 +473,9 @@ auto WorkingChain::process_segment(Segment segment, IsANewBlock isANewBlock, Pee
     }
 
     auto lowest_header = *segment.headers.rbegin();
-    [[maybe_unused]] auto height = lowest_header->number;
-    [[maybe_unused]] auto hash = lowest_header->hash();
+    auto height = lowest_header->number;
 
-    if (isANewBlock /*|| hd.seenAnnounces.Seen(hash)*/) {  // todo: translate seenAnnounces
+    if (isANewBlock /*|| hd.seenAnnounces.Seen(lowest_header->hash())*/) {  // todo: translate seenAnnounces
         if (height > topSeenHeight_) topSeenHeight_ = height;
     }
 
@@ -512,9 +511,34 @@ auto WorkingChain::process_segment(Segment segment, IsANewBlock isANewBlock, Pee
         return false;
     }
 
-    // todo: implement!
+    reduce_links();
+
+    // select { case hd.DeliveryNotify <- struct{}{}: default: } // todo: translate
 
     return requestMore /* && hd.requestChaining */; // todo: translate requestChaining
+}
+
+void WorkingChain::reduce_links() {
+    if (linkQueue_.size() <= link_limit)
+        return; // does nothing
+
+    SILKWORM_LOG(LogLevel::Debug) << "LinkQueue: too many links, cutting down from " << linkQueue_.size() << " to " << link_limit << "\n";
+
+    while (linkQueue_.size() > link_limit) {
+        auto link = linkQueue_.top();
+        linkQueue_.pop();
+        links_.erase(link->hash);
+        // delete not needed, using shared_ptr
+
+        auto parentLink_i = links_.find(link->header->parent_hash);
+        if (parentLink_i != links_.end())
+            parentLink_i->second->remove_child(link);
+
+        auto anchor_i = anchors_.find(link->header->parent_hash);
+        if (anchor_i != anchors_.end())
+            anchor_i->second->remove_child(link);
+
+    }
 }
 
 /*
@@ -575,6 +599,204 @@ auto WorkingChain::get_link(Hash hash) -> std::optional<std::shared_ptr<Link>> {
     if (it != links_.end())
         return {it->second};
     return {};
+}
+
+/*
+// Connect connects some working trees using anchors of some, and a link of another
+func (hd *HeaderDownload) connect(segment *ChainSegment, start, end int) error {
+	// Find attachment link again
+	linkHeader := segment.Headers[end-1]
+	// Find attachement anchors again
+	anchorHeader := segment.Headers[start]
+	attachmentLink, ok1 := hd.getLink(linkHeader.ParentHash)
+	if !ok1 {
+		return fmt.Errorf("connect attachment link not found for %x", linkHeader.ParentHash)
+	}
+	if attachmentLink.preverified && len(attachmentLink.next) > 0 {
+		return fmt.Errorf("cannot connect to preverified link %d with children", attachmentLink.blockHeight)
+	}
+	anchor, ok2 := hd.anchors[anchorHeader.Hash()]
+	if !ok2 {
+		return fmt.Errorf("connect attachment anchors not found for %x", anchorHeader.Hash())
+	}
+	anchorPreverified := false
+	for _, link := range anchor.links {
+		if link.preverified {
+			anchorPreverified = true
+			break
+		}
+	}
+	delete(hd.anchors, anchor.parentHash)
+	// Iterate over headers backwards (from parents towards children)
+	prevLink := attachmentLink
+	for i := end - 1; i >= start; i-- {
+		link := hd.addHeaderAsLink(segment.Headers[i], false ) // false = persisted
+		prevLink.next = append(prevLink.next, link)
+		prevLink = link
+		if !anchorPreverified {
+			if _, ok := hd.preverifiedHashes[link.hash]; ok {
+				hd.markPreverified(link)
+			}
+		}
+	}
+	prevLink.next = anchor.links
+	anchor.links = nil
+	if anchorPreverified {
+		// Mark the entire segment as preverified
+		hd.markPreverified(prevLink)
+	}
+	if attachmentLink.persisted {
+		link := hd.links[linkHeader.Hash()]
+		hd.insertList = append(hd.insertList, link)
+	}
+	return nil
+}
+*/
+void WorkingChain::connect(Segment, Start, End) { // throw SegmentCutAndPasteException
+    // todo: implement!
+}
+
+/*
+// ExtendDown extends some working trees down from the anchor, using given chain segment
+// it creates a new anchor and collects all the links from the attached anchors to it
+func (hd *HeaderDownload) extendDown(segment *ChainSegment, start, end int) (bool, error) {
+	// Find attachment anchor again
+	anchorHeader := segment.Headers[start]
+	if anchor, attaching := hd.anchors[anchorHeader.Hash()]; attaching {
+		anchorPreverified := false
+		for _, link := range anchor.links {
+			if link.preverified {
+				anchorPreverified = true
+				break
+			}
+		}
+		newAnchorHeader := segment.Headers[end-1]
+		var newAnchor *Anchor
+		newAnchor, preExisting := hd.anchors[newAnchorHeader.ParentHash]
+		if !preExisting {
+			newAnchor = &Anchor{
+				parentHash:  newAnchorHeader.ParentHash,
+				timestamp:   0,
+				peerID:      anchor.peerID,
+				blockHeight: newAnchorHeader.Number.Uint64(),
+			}
+			if newAnchor.blockHeight > 0 {
+				hd.anchors[newAnchorHeader.ParentHash] = newAnchor
+				heap.Push(hd.anchorQueue, newAnchor)
+			}
+		}
+
+		delete(hd.anchors, anchor.parentHash)
+		// Add all headers in the segments as links to this anchor
+		var prevLink *Link
+		for i := end - 1; i >= start; i-- {
+			link := hd.addHeaderAsLink(segment.Headers[i], false ) // false = persisted
+			if prevLink == nil {
+				newAnchor.links = append(newAnchor.links, link)
+			} else {
+				prevLink.next = append(prevLink.next, link)
+			}
+			prevLink = link
+			if !anchorPreverified {
+				if _, ok := hd.preverifiedHashes[link.hash]; ok {
+					hd.markPreverified(link)
+				}
+			}
+		}
+		prevLink.next = anchor.links
+		anchor.links = nil
+		if anchorPreverified {
+			// Mark the entire segment as preverified
+			hd.markPreverified(prevLink)
+		}
+		return !preExisting, nil
+	}
+	return false, fmt.Errorf("extendDown attachment anchors not found for %x", anchorHeader.Hash())
+}
+ */
+auto WorkingChain::extendDown(Segment, Start, End) -> RequestMoreHeaders {  // throw SegmentCutAndPasteException
+    // todo: implement!
+    return false;
+}
+
+/*
+// ExtendUp extends a working tree up from the link, using given chain segment
+func (hd *HeaderDownload) extendUp(segment *ChainSegment, start, end int) error {
+	// Find attachment link again
+	linkHeader := segment.Headers[end-1]
+	attachmentLink, attaching := hd.getLink(linkHeader.ParentHash)
+	if !attaching {
+		return fmt.Errorf("extendUp attachment link not found for %x", linkHeader.ParentHash)
+	}
+	if attachmentLink.preverified && len(attachmentLink.next) > 0 {
+		return fmt.Errorf("cannot extendUp from preverified link %d with children", attachmentLink.blockHeight)
+	}
+	// Iterate over headers backwards (from parents towards children)
+	prevLink := attachmentLink
+	for i := end - 1; i >= start; i-- {
+		link := hd.addHeaderAsLink(segment.Headers[i], false ) // false = persisted
+		prevLink.next = append(prevLink.next, link)
+		prevLink = link
+		if _, ok := hd.preverifiedHashes[link.hash]; ok {
+			hd.markPreverified(link)
+		}
+	}
+
+	if attachmentLink.persisted {
+		link := hd.links[linkHeader.Hash()]
+		hd.insertList = append(hd.insertList, link)
+	}
+	return nil
+}
+*/
+void WorkingChain::extendUp(Segment, Start, End) {  // throw SegmentCutAndPasteException
+    // todo: implement!
+}
+
+/*
+// if anchor will be abandoned - given peerID will get Penalty
+func (hd *HeaderDownload) newAnchor(segment *ChainSegment, start, end int, peerID string) (bool, error) {
+	anchorHeader := segment.Headers[end-1]
+
+	var anchor *Anchor
+	anchor, preExisting := hd.anchors[anchorHeader.ParentHash]
+	if !preExisting {
+		if anchorHeader.Number.Uint64() < hd.highestInDb {
+			return false, fmt.Errorf("new anchor too far in the past: %d, latest header in db: %d", anchorHeader.Number.Uint64(), hd.highestInDb)
+		}
+		if len(hd.anchors) >= hd.anchorLimit {
+			return false, fmt.Errorf("too many anchors: %d, limit %d", len(hd.anchors), hd.anchorLimit)
+		}
+		anchor = &Anchor{
+			parentHash:  anchorHeader.ParentHash,
+			peerID:      peerID,
+			timestamp:   0,
+			blockHeight: anchorHeader.Number.Uint64(),
+		}
+		hd.anchors[anchorHeader.ParentHash] = anchor
+		heap.Push(hd.anchorQueue, anchor)
+	}
+	// Iterate over headers backwards (from parents towards children)
+	var prevLink *Link
+	for i := end - 1; i >= start; i-- {
+		header := segment.Headers[i]
+		link := hd.addHeaderAsLink(header, false ) // false = persisted
+		if prevLink == nil {
+			anchor.links = append(anchor.links, link)
+		} else {
+			prevLink.next = append(prevLink.next, link)
+		}
+		prevLink = link
+		if _, ok := hd.preverifiedHashes[link.hash]; ok {
+			hd.markPreverified(link)
+		}
+	}
+	return !preExisting, nil
+}
+ */
+auto WorkingChain::newAnchor(Segment, Start, End, PeerId) -> RequestMoreHeaders {  // throw SegmentCutAndPasteException
+    // todo: implement!
+    return false;
 }
 
 }

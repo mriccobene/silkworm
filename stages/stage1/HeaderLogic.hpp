@@ -34,6 +34,10 @@ struct Link {
     bool persisted;                             // Whether this link comes from the database record
     bool preverified;                           // Ancestor of pre-verified header
     int idx;                                    // Index in the heap (used by Go binary heap impl, remove?)
+
+    void remove_child(std::shared_ptr<Link> child) {
+        std::remove_if(next.begin(), next.end(), [child](auto& link) {return (link->hash == child->hash);});
+    }
 };
 
 struct Anchor {
@@ -42,6 +46,10 @@ struct Anchor {
     uint64_t timestamp;                         // Zero when anchor has just been created, otherwise timestamps when timeout on this anchor request expires
     int timeouts;                               // Number of timeout that this anchor has experiences - after certain threshold, it gets invalidated
     std::vector<std::shared_ptr<Link>> links;   // Links attached immediately to this anchor
+
+    void remove_child(std::shared_ptr<Link> child) {
+        std::remove_if(links.begin(), links.end(), [child](auto& link) {return (link->hash == child->hash);});
+    }
 };
 
 struct Link_Older_Than: public std::binary_function<std::shared_ptr<Link>, std::shared_ptr<Link>, bool>
