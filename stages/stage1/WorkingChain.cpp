@@ -170,10 +170,24 @@ bool WorkingChain::has_link(Hash hash) {
     return (links_.find(hash) != links_.end());
 }
 
+auto WorkingChain::find_bad_header(const std::vector<BlockHeader>& headers) -> bool {
+    for(auto& header: headers) {
+        Hash header_hash = header.hash();
+        if (badHeaders_.contains(header_hash))
+            return true;
+    }
+    return false;
+}
+
 auto WorkingChain::accept_headers(const std::vector<BlockHeader>& headers, PeerId peerId) -> std::tuple<Penalty,RequestMoreHeaders> {
     bool requestMoreHeaders = false;
 
-    auto [segments, penalty] = split_into_segments(headers); // todo: Erigon here pass also headerRaw
+    if (find_bad_header(headers))
+        return {Penalty::BadBlockPenalty, requestMoreHeaders};
+
+    auto header_list = HeaderList::make(headers);
+
+    auto [segments, penalty] = header_list->split_into_segments(); // todo: Erigon here pass also headerRaw
 
     if (penalty != Penalty::NoPenalty)
         return {penalty, requestMoreHeaders};
@@ -183,6 +197,28 @@ auto WorkingChain::accept_headers(const std::vector<BlockHeader>& headers, PeerI
     }
 
     return {Penalty::NoPenalty, requestMoreHeaders};
+}
+
+auto HeaderList::to_ref() -> std::vector<Header_Ref> {
+    std::vector<Header_Ref> refs;
+    for(Header_Ref i = headers_.begin(); i < headers_.end(); i++)
+        refs.push_back(i);
+    return refs;
+}
+
+std::tuple<bool,Penalty> HeaderList::childParentValidity(Header_Ref child, Header_Ref parent) {
+    if (parent->number + 1 != child->number)
+        return {false, Penalty::WrongChildBlockHeightPenalty};
+    return {true, NoPenalty};
+}
+
+std::tuple<bool,Penalty> HeaderList::childrenParentValidity(const std::vector<Header_Ref>& children, Header_Ref parent) {
+    for(auto& child: children) {
+        auto [valid, penalty] = childParentValidity(child, parent);
+        if (!valid)
+            return {false, penalty};
+    }
+    return {true, Penalty::NoPenalty};
 }
 
 /*
@@ -231,20 +267,6 @@ func (hd *HeaderDownload) SplitIntoSegments(headersRaw [][]byte, msg []*types.He
 }
  */
 
-std::tuple<bool,Penalty> childParentValidity(Header_Ref child, Header_Ref parent) {
-    if (parent->number + 1 != child->number)
-        return {false, Penalty::WrongChildBlockHeightPenalty};
-    return {true, NoPenalty};
-}
-
-std::tuple<bool,Penalty> childrenParentValidity(const std::vector<Header_Ref>& children, Header_Ref parent) {
-    for(auto& child: children) {
-        auto [valid, penalty] = childParentValidity(child, parent);
-        if (!valid)
-            return {false, penalty};
-    }
-    return {true, Penalty::NoPenalty};
-}
 
 /*
  * SplitIntoSegments converts message containing headers into a collection of chain segments.
@@ -257,8 +279,9 @@ std::tuple<bool,Penalty> childrenParentValidity(const std::vector<Header_Ref>& c
  *    - segments form a partial order
  *    - whatever part of the chain that becomes canonical it is not necessary to redo the process of division into segments
  */
-auto WorkingChain::split_into_segments(const std::vector<BlockHeader>& full_headers) -> std::tuple<std::vector<Segment>, Penalty> {
-    std::vector<Header_Ref> headers = to_ref(full_headers);
+auto HeaderList::split_into_segments() -> std::tuple<std::vector<Segment>, Penalty> {
+
+    std::vector<Header_Ref> headers = to_ref();
     std::sort(headers.begin(), headers.end(), [](auto& h1, auto& h2){return h1->number > h2->number;}); // sort headers from the highest block height to the lowest
 
     std::vector<Segment> segments;
@@ -269,14 +292,12 @@ auto WorkingChain::split_into_segments(const std::vector<BlockHeader>& full_head
 
     for(auto& header: headers) {
         Hash header_hash = header->hash();
-        if (badHeaders_.contains(header_hash))
-            return {{}, Penalty::BadBlockPenalty};
         if (dedupMap.contains(header_hash))
             return {{}, Penalty::DuplicateHeaderPenalty};
         dedupMap.insert(header_hash);
         auto children = childrenMap[header_hash];
 
-        auto [valid, penalty] = childrenParentValidity(children, header);
+        auto [valid, penalty] = HeaderList::childrenParentValidity(children, header);
         if (!valid) return {{}, penalty};
 
         if (children.size() == 1) {
@@ -286,7 +307,7 @@ auto WorkingChain::split_into_segments(const std::vector<BlockHeader>& full_head
         else {
             // No children, or more than one child, create new segment
             segmentIdx = segments.size();
-            segments.emplace_back();    // add a void segment
+            segments.push_back(Segment(shared_from_this()));    // add a void segment
         }
 
         segments[segmentIdx].headers.push_back(header);
@@ -300,6 +321,7 @@ auto WorkingChain::split_into_segments(const std::vector<BlockHeader>& full_head
 
     return {segments, Penalty::NoPenalty};
 }
+
 /* implementation without Header_Ref
 std::tuple<bool,Penalty> childParentValidity(const BlockHeader& child, const BlockHeader& parent) {
     if (parent.number + 1 != child.number)
@@ -795,7 +817,10 @@ func (hd *HeaderDownload) newAnchor(segment *ChainSegment, start, end int, peerI
 }
  */
 auto WorkingChain::newAnchor(Segment, Start, End, PeerId) -> RequestMoreHeaders {  // throw SegmentCutAndPasteException
+    //auto anchorHeader = segment.lowest_header();
+
     // todo: implement!
+
     return false;
 }
 

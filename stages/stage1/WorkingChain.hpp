@@ -23,55 +23,49 @@
 namespace silkworm {
 
 // Auxiliary types ----------------------------------------------------------------------------------------------------
-using Header_Ref = std::vector<BlockHeader>::const_iterator; // todo: check what is better among const_iterator or shared_ptr or hash
+struct Segment; // forward declaration
 
-inline std::vector<Header_Ref> to_ref(const std::vector<BlockHeader>& headers) {
-    std::vector<Header_Ref> refs;
-    for(Header_Ref i = headers.begin(); i < headers.end(); i++)
-        refs.push_back(i);
-    return refs;
-}
+// A list of (possibly unrelated) headers
+struct HeaderList: std::enable_shared_from_this<HeaderList> {
+  public:
+    using Header_Ref = std::vector<BlockHeader>::const_iterator; // todo: check what is better among const_iterator or shared_ptr or hash
+
+    static std::shared_ptr<HeaderList> make(const std::vector<BlockHeader>& headers) {
+        return std::shared_ptr<HeaderList>(new HeaderList(headers));
+    }
+
+    auto split_into_segments() -> std::tuple<std::vector<Segment>, Penalty>;
+
+    std::vector<BlockHeader>& headers() {return headers_;}
+
+  private:
+    HeaderList(std::vector<BlockHeader> headers): headers_(std::move(headers)) {}
+
+    std::vector<BlockHeader> headers_;
+
+    std::vector<Header_Ref> to_ref();
+
+    std::tuple<bool,Penalty> static childParentValidity(Header_Ref child, Header_Ref parent);
+
+    std::tuple<bool,Penalty> static childrenParentValidity(const std::vector<Header_Ref>& children, Header_Ref parent);
+};
+
 
 // Segment, a sequence of headers connected to one another (with parent-hash relationship),
 // without any branching, ordered from high block number to lower block number
 struct Segment {
-    std::vector<Header_Ref> headers;
-    //std::vector<something> headersRaw;    // todo: do we need this?
-    //shared_ptr<Bundle> storage; // todo: do we need this to bundle Header_Ref referred objects?
+    Segment(std::shared_ptr<HeaderList> l): storage_(l) {
+    }
+
+    std::vector<HeaderList::Header_Ref> headers;     // pointers/iterators to the headers that belongs to this segment
+    //std::vector<something> headersRaw; // todo: do we need this?
+
+    HeaderList::Header_Ref lowest_header() {return *headers.rbegin();}
+
+protected:
+    std::shared_ptr<HeaderList> storage_; // all the headers
 };
 
-// ---------------
-namespace sperimental {
-
-using Bundle_Ref = std::vector<BlockHeader>::const_iterator;
-
-struct Bundle {
-    std::vector<BlockHeader> headers;
-};
-
-using Segment_Ref = std::vector<BlockHeader>::const_iterator;
-
-struct Segment {
-
-    static auto split_into_segment(const Bundle& headers) -> std::tuple<std::vector<Segment>, Penalty>;
-
-    Segment_Ref lowest_header() {return *headers.rbegin();}
-
-    auto attach(Anchor_Map, Link_Map) -> std::tuple<Segment_Ref,Segment_Ref>;
-
-    auto find_anchor_in(Anchor_Map) -> Segment_Ref;
-    auto find_link_in(Link_Map, Segment_Ref anchor) -> Segment_Ref;
-
-    std::vector<Bundle_Ref> headers;
-
-  private:
-    Segment();
-
-    //std::vector<something> headersRaw;    // todo: do we need this?
-    Bundle* bundle;
-};
-
-}
 
 // WorkingChain -------------------------------------------------------------------------------------------------------
 
@@ -105,7 +99,6 @@ class WorkingChain {  // tentative name - todo: improve!
     std::optional<GetBlockHeadersPacket66> request_more_headers(); // anchor extension
 
     using IsANewBlock = bool;
-    auto split_into_segments(const std::vector<BlockHeader>&) -> std::tuple<std::vector<Segment>, Penalty>;
     auto process_segment(Segment, IsANewBlock, PeerId) -> RequestMoreHeaders;
 
     using Found = bool; using Start = int; using End = int;
@@ -113,6 +106,7 @@ class WorkingChain {  // tentative name - todo: improve!
     auto find_link(Segment segment, int start)                -> std::tuple<Found, End>;
     auto get_link(Hash hash)                                  -> std::optional<std::shared_ptr<Link>>;
     void reduce_links();
+    bool find_bad_header(const std::vector<BlockHeader>&);
 
     using Error = int;
     void connect(Segment, Start, End);                          // throw SegmentCutAndPasteException
