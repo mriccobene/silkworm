@@ -120,20 +120,21 @@ class WorkingChain {  // tentative name - todo: improve!
     void mark_as_preverified(std::shared_ptr<Link>);
 
     using Error = int;
-    void connect(const Segment&, Start, End);                          // throw SegmentCutAndPasteException
-    auto extendDown(const Segment&, Start, End) -> RequestMoreHeaders; // throw SegmentCutAndPasteException
-    void extendUp(const Segment&, Start, End);                         // throw SegmentCutAndPasteException
-    auto newAnchor(Segment::Slice, PeerId) -> RequestMoreHeaders; // throw SegmentCutAndPasteException
+    void connect(Segment::Slice);                                 // throw segment_cut_and_paste_error
+    auto extend_down(Segment::Slice) -> RequestMoreHeaders;        // throw segment_cut_and_paste_error
+    void extend_up(Segment::Slice);                                // throw segment_cut_and_paste_error
+    auto new_anchor(Segment::Slice, PeerId) -> RequestMoreHeaders; // throw segment_cut_and_paste_error
 
-    Oldest_First_Link_Queue persistedLinkQueue_;
-    Youngest_First_Link_Queue linkQueue_;
-    Oldest_First_Anchor_Queue anchorQueue_;
-    Link_Map links_;
-    Anchor_Map anchors_;
+    Oldest_First_Link_Queue persistedLinkQueue_; // Priority queue of persisted links used to limit their number
+    Youngest_First_Link_Queue linkQueue_;        // Priority queue of non-persisted links used to limit their number
+    Oldest_First_Anchor_Queue anchorQueue_;      // Priority queue of anchors used to sequence the header requests
+    Link_Map links_;                             // Links by header hash
+    Anchor_Map anchors_;                         // Mapping from parentHash to collection of anchors
+    Link_List insertList_;                       // List of non-persisted links that can be inserted (their parent is persisted)
     BlockNum highestInDb_;
     BlockNum topSeenHeight_;
     std::set<Hash> badHeaders_;
-    std::set<Hash> preverifiedHashes_; // todo: fill!
+    std::set<Hash> preverifiedHashes_; // todo: fill! // Set of hashes that are known to belong to canonical chain
 };
 
 }

@@ -100,6 +100,9 @@ using Oldest_First_Anchor_Queue = std::priority_queue<std::shared_ptr<Anchor>,
 using Link_Map = std::map<Hash,std::shared_ptr<Link>>;     // hash = link hash
 using Anchor_Map = std::map<Hash,std::shared_ptr<Anchor>>; // hash = anchor *parent* hash
 
+using Link_List = std::vector<std::shared_ptr<Link>>;
+
+
 class HeaderLogic {     // todo: modularize this!
   public:
     static const long soft_response_limit = 2 * 1024 * 1024; // Target maximum size of returned blocks, headers or node data.

@@ -564,7 +564,7 @@ func (hd *HeaderDownload) ProcessSegment(segment *ChainSegment, newBlock bool, p
 		} else {
 			// ExtendDown
 			var err error
-			if requestMore, err = hd.extendDown(segment, start, end); err != nil {
+			if requestMore, err = hd.extend_down(segment, start, end); err != nil {
 				log.Debug("ExtendDown failed", "error", err)
 				return
 			}
@@ -649,28 +649,29 @@ auto WorkingChain::process_segment(const Segment& segment, IsANewBlock isANewBlo
     auto startNum = segment[start]->number;
     auto endNum = segment[end - 1]->number;
 
+    Segment::Slice segment_slice{segment.begin()+start, segment.begin()+end};
+
     std::string op;
     bool requestMore = false;
     try {
         if (foundAnchor) {
             if (foundTip) {
                 op = "connect";
-                connect(segment, start, end);
+                connect(segment_slice);
             } else {  // ExtendDown
                 op = "extend down";
-                requestMore = extendDown(segment, start, end);
+                requestMore = extend_down(segment_slice);
             }
         }
         else if (foundTip) {
             if (end > 0 ) { // ExtendUp
                 op = "extend up";
-                extendUp(segment, start, end);
+                extend_up(segment_slice);
             }
         }
         else { // NewAnchor
             op = "new anchor";
-            Segment::Slice segment_slice{segment.begin()+start, segment.begin()+end};
-            requestMore = newAnchor(segment_slice, peerId);
+            requestMore = new_anchor(segment_slice, peerId);
         }
         SILKWORM_LOG(LogLevel::Debug) << "Segment: " << op << " start=" << startNum << " end=" << endNum << "\n";
     }
@@ -820,7 +821,7 @@ func (hd *HeaderDownload) connect(segment *ChainSegment, start, end int) error {
 	return nil
 }
 */
-void WorkingChain::connect(const Segment&, Start, End) { // throw SegmentCutAndPasteException
+void WorkingChain::connect(Segment::Slice) { // throw segment_cut_and_paste_error
     // todo: implement!
 }
 
@@ -830,7 +831,7 @@ void WorkingChain::connect(const Segment&, Start, End) { // throw SegmentCutAndP
 func (hd *HeaderDownload) extendDown(segment *ChainSegment, start, end int) (bool, error) {
 	// Find attachment anchor again
 	anchorHeader := segment.Headers[start]
-	if anchor, attaching := hd.anchors[anchorHeader.Hash()]; attaching {
+	if , attaching := hd.anchors[anchorHeader.Hash()]; attaching {
 		anchorPreverified := false
 		for _, link := range anchor.links {
 			if link.preverified {
@@ -879,12 +880,66 @@ func (hd *HeaderDownload) extendDown(segment *ChainSegment, start, end int) (boo
 		}
 		return !preExisting, nil
 	}
-	return false, fmt.Errorf("extendDown attachment anchors not found for %x", anchorHeader.Hash())
+	return false, fmt.Errorf("extend_down attachment anchors not found for %x", anchorHeader.Hash())
 }
  */
-auto WorkingChain::extendDown(const Segment&, Start, End) -> RequestMoreHeaders {  // throw SegmentCutAndPasteException
-    // todo: implement!
-    return false;
+auto WorkingChain::extend_down(Segment::Slice segment_slice) -> RequestMoreHeaders {  // throw segment_cut_and_paste_error
+    using std::to_string;
+
+    auto anchor_header = *segment_slice.begin(); // highest header
+    auto a = anchors_.find(anchor_header->hash());
+    bool attaching = a != anchors_.end();
+    if (!attaching)
+        throw segment_cut_and_paste_error("segment cut&paste error, extend down attachment anchors not found for " +
+                                          to_hex(anchor_header->hash()));
+
+    auto anchor = a->second;
+    auto anchor_preverified = false;
+    for (auto& link: anchor->links) {  // todo: use find_if
+        if (link->preverified) {
+            anchor_preverified = true;
+            break;
+        }
+    }
+
+    // todo: modularize this block in "add_anchor_if_not_present"
+    auto new_anchor_header = *segment_slice.rbegin(); // lowest header
+    std::shared_ptr<Anchor> new_anchor;
+    a = anchors_.find(new_anchor_header->parent_hash);
+    bool pre_existing = a != anchors_.end();
+    if (!pre_existing) {
+        new_anchor = std::make_shared<Anchor>(*new_anchor_header, anchor->peerId);
+        if (new_anchor->blockHeight > 0) {
+            anchors_[new_anchor_header->parent_hash] = new_anchor;
+            anchorQueue_.push(new_anchor);
+        }
+    }
+
+    anchors_.erase(anchor->parentHash);
+
+    // todo: modularize this block
+    // Iterate over headers backwards (from parents towards children)
+    // Add all headers in the segments as links to this anchor
+    std::shared_ptr<Link> prev_link;
+    for(auto h = segment_slice.rbegin(); h != segment_slice.rend(); h++) {
+        auto header = *h;
+        bool persisted = false;
+        auto link = add_header_as_link(*header, persisted);
+        if (!prev_link)
+            anchor->links.push_back(link);  // add the link chain in the anchor
+        else
+            prev_link->next.push_back(link); // add link as next of the preceding
+        prev_link = link;
+        if (!anchor_preverified && preverifiedHashes_.contains(link->hash))
+            mark_as_preverified(link);
+    }
+
+    prev_link->next = std::move(anchor->links);
+    anchor->links.clear();
+    if (anchor_preverified)
+        mark_as_preverified(prev_link); // Mark the entire segment as preverified
+
+    return !pre_existing;
 }
 
 /*
@@ -917,10 +972,38 @@ func (hd *HeaderDownload) extendUp(segment *ChainSegment, start, end int) error 
 	return nil
 }
 */
-void WorkingChain::extendUp(const Segment&, Start, End) {  // throw SegmentCutAndPasteException
-    // todo: implement!
-}
+void WorkingChain::extend_up(Segment::Slice segment_slice) {  // throw segment_cut_and_paste_error
+    using std::to_string;
 
+    auto link_header = *segment_slice.rbegin(); // lowest header
+    auto attachment_link = get_link(link_header->parent_hash);
+    if (!attachment_link)
+        throw segment_cut_and_paste_error("segment cut&paste error, extend up attachment link not found for " +
+                                                  to_hex(link_header->parent_hash));
+    if (attachment_link.value()->preverified && attachment_link.value()->next.size() > 0)
+        throw segment_cut_and_paste_error("segment cut&paste error, cannot extend up from preverified link " +
+                                          to_string(attachment_link.value()->blockHeight) + " with children");
+
+    // todo: modularize this block
+    // Iterate over headers backwards (from parents towards children)
+    std::shared_ptr<Link> prev_link = attachment_link.value();
+    for(auto h = segment_slice.rbegin(); h != segment_slice.rend(); h++) {
+        auto header = *h;
+        bool persisted = false;
+        auto link = add_header_as_link(*header, persisted);
+        prev_link->next.push_back(link); // add link as next of the preceding
+        prev_link = link;
+        if (preverifiedHashes_.contains(link->hash))
+            mark_as_preverified(link);
+    }
+
+    if (attachment_link.value()->persisted) {
+        auto link = links_.find(link_header->hash());
+        if (link != links_.end()) // todo: Erigon code assume true always, check!
+            insertList_.push_back(link->second);
+    }
+
+}
 
 /*
 // if anchor will be abandoned - given peerID will get Penalty
@@ -963,32 +1046,33 @@ func (hd *HeaderDownload) newAnchor(segment *ChainSegment, start, end int, peerI
 	return !preExisting, nil
 }
  */
-auto WorkingChain::newAnchor(Segment::Slice segment_slice, PeerId peerId) -> RequestMoreHeaders {  // throw SegmentCutAndPasteException
+auto WorkingChain::new_anchor(Segment::Slice segment_slice, PeerId peerId) -> RequestMoreHeaders {  // throw segment_cut_and_paste_error
     using std::to_string;
 
-    auto anchorHeader = *segment_slice.rbegin(); // lowest header
+    auto anchor_header = *segment_slice.rbegin(); // lowest header
 
+    // todo: modularize this block in "add_anchor_if_not_present"
     // Add to anchors list if not
-    auto a = anchors_.find(anchorHeader->parent_hash);
+    auto a = anchors_.find(anchor_header->parent_hash);
     bool pre_existing = a != anchors_.end();
     std::shared_ptr<Anchor> anchor;
-
     if (!pre_existing) {
-        if (anchorHeader->number < highestInDb_)
+        if (anchor_header->number < highestInDb_)
             throw segment_cut_and_paste_error("segment cut&paste error, new anchor too far in the past: "
-                + to_string(anchorHeader->number) + ", latest header in db: " + to_string(highestInDb_));
+                                              + to_string(anchor_header->number) + ", latest header in db: " + to_string(highestInDb_));
         if (anchors_.size() >= anchor_limit)
             throw segment_cut_and_paste_error("segment cut&paste error, too many anchors: "
                 + to_string(anchors_.size()) + ", limit: " + to_string(anchor_limit));
 
-        anchor = std::make_shared<Anchor>(*anchorHeader, peerId);
-        anchors_[anchorHeader->parent_hash] = anchor;
+        anchor = std::make_shared<Anchor>(*anchor_header, peerId);
+        anchors_[anchor_header->parent_hash] = anchor;
         anchorQueue_.push(anchor);
     }
     else { // pre-existing
         anchor = a->second;
     }
 
+    // todo: modularize this block
     // Iterate over headers backwards (from parents towards children)
     std::shared_ptr<Link> prev_link;
     for(auto h = segment_slice.rbegin(); h != segment_slice.rend(); h++) {
