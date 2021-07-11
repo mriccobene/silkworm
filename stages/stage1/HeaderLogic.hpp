@@ -35,6 +35,13 @@ struct Link {
     bool preverified;                           // Ancestor of pre-verified header
     int idx;                                    // Index in the heap (used by Go binary heap impl, remove?)
 
+    Link(Header h, bool persisted_) {
+        blockHeight = h.number;
+        hash = h.hash();
+        header = std::make_shared<BlockHeader>(std::move(h));
+        persisted = persisted_;
+    }
+
     void remove_child(std::shared_ptr<Link> child) {
         std::remove_if(next.begin(), next.end(), [child](auto& link) {return (link->hash == child->hash);});
     }
@@ -46,6 +53,14 @@ struct Anchor {
     uint64_t timestamp;                         // Zero when anchor has just been created, otherwise timestamps when timeout on this anchor request expires
     int timeouts;                               // Number of timeout that this anchor has experiences - after certain threshold, it gets invalidated
     std::vector<std::shared_ptr<Link>> links;   // Links attached immediately to this anchor
+    PeerId peerId;
+
+    Anchor(const Header& header, PeerId p) {
+        parentHash = header.parent_hash;
+        blockHeight = header.number;
+        timestamp = 0;
+        peerId = p;
+    }
 
     void remove_child(std::shared_ptr<Link> child) {
         std::remove_if(links.begin(), links.end(), [child](auto& link) {return (link->hash == child->hash);});

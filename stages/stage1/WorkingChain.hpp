@@ -19,6 +19,7 @@
 
 #include "HeaderLogic.hpp"
 #include "stages/stage1/packets/GetBlockHeadersPacket.hpp"
+#include <span>
 
 namespace silkworm {
 
@@ -53,17 +54,23 @@ struct HeaderList: std::enable_shared_from_this<HeaderList> {
 
 // Segment, a sequence of headers connected to one another (with parent-hash relationship),
 // without any branching, ordered from high block number to lower block number
-struct Segment {
-    Segment(std::shared_ptr<HeaderList> l): storage_(l) {
+struct Segment:
+        public std::vector<HeaderList::Header_Ref> { // pointers/iterators to the headers that belongs to this segment
+
+    Segment(std::shared_ptr<HeaderList> line): line_(line) {}
+
+    void push_back (const HeaderList::Header_Ref& val) {
+        assert(size() == 0 || back()->number == val->number + 1); // also back()->parent_hash == val->hash() (expensive test)
+        std::vector<HeaderList::Header_Ref>::push_back(val);
     }
 
-    std::vector<HeaderList::Header_Ref> headers;     // pointers/iterators to the headers that belongs to this segment
+    HeaderList::Header_Ref lowest_header() const {return back();}
+
+    using Slice = std::span<const HeaderList::Header_Ref>; // a Segment slice
+
+  protected:
     //std::vector<something> headersRaw; // todo: do we need this?
-
-    HeaderList::Header_Ref lowest_header() {return *headers.rbegin();}
-
-protected:
-    std::shared_ptr<HeaderList> storage_; // all the headers
+    std::shared_ptr<HeaderList> line_; // all the headers
 };
 
 
@@ -72,6 +79,8 @@ protected:
 class WorkingChain {  // tentative name - todo: improve!
   public:
     WorkingChain(BlockNum highestInDb, BlockNum topSeenHeight);
+
+    void recover_from_db(DbTx&); // todo: make it private and call in the constructor?
 
     void highest_block_in_db(BlockNum n);
     BlockNum highest_block_in_db();
@@ -99,20 +108,22 @@ class WorkingChain {  // tentative name - todo: improve!
     std::optional<GetBlockHeadersPacket66> request_more_headers(); // anchor extension
 
     using IsANewBlock = bool;
-    auto process_segment(Segment, IsANewBlock, PeerId) -> RequestMoreHeaders;
+    auto process_segment(const Segment&, IsANewBlock, PeerId) -> RequestMoreHeaders;
 
     using Found = bool; using Start = int; using End = int;
-    auto find_anchor(Segment)                                 -> std::tuple<Found, Start>;
-    auto find_link(Segment segment, int start)                -> std::tuple<Found, End>;
-    auto get_link(Hash hash)                                  -> std::optional<std::shared_ptr<Link>>;
+    auto find_anchor(const Segment&)                         -> std::tuple<Found, Start>;
+    auto find_link(const Segment&, int start)                -> std::tuple<Found, End>;
+    auto get_link(Hash hash)                                 -> std::optional<std::shared_ptr<Link>>;
     void reduce_links();
     bool find_bad_header(const std::vector<BlockHeader>&);
+    auto add_header_as_link(const BlockHeader& header, bool persisted) -> std::shared_ptr<Link>;
+    void mark_as_preverified(std::shared_ptr<Link>);
 
     using Error = int;
-    void connect(Segment, Start, End);                          // throw SegmentCutAndPasteException
-    auto extendDown(Segment, Start, End) -> RequestMoreHeaders; // throw SegmentCutAndPasteException
-    void extendUp(Segment, Start, End);                         // throw SegmentCutAndPasteException
-    auto newAnchor(Segment, Start, End, PeerId) -> RequestMoreHeaders; // throw SegmentCutAndPasteException
+    void connect(const Segment&, Start, End);                          // throw SegmentCutAndPasteException
+    auto extendDown(const Segment&, Start, End) -> RequestMoreHeaders; // throw SegmentCutAndPasteException
+    void extendUp(const Segment&, Start, End);                         // throw SegmentCutAndPasteException
+    auto newAnchor(Segment::Slice, PeerId) -> RequestMoreHeaders; // throw SegmentCutAndPasteException
 
     Oldest_First_Link_Queue persistedLinkQueue_;
     Youngest_First_Link_Queue linkQueue_;
@@ -122,6 +133,7 @@ class WorkingChain {  // tentative name - todo: improve!
     BlockNum highestInDb_;
     BlockNum topSeenHeight_;
     std::set<Hash> badHeaders_;
+    std::set<Hash> preverifiedHashes_; // todo: fill!
 };
 
 }

@@ -56,9 +56,8 @@ void Stage1::execution_loop() { // no-thread version
 
     ConcurrentQueue<shared_ptr<Message>> messages{};
 
-    // set chain limits
-    BlockNum head_height = HeaderLogic::head_height(db_);
-    working_chain_.highest_block_in_db(head_height); // the second limit will be set at the each block announcements
+    // init chain
+    working_chain_.recover_from_db(db_); // todo: this use the same db connection, it is ok?
 
     // handling async rpc ---------------------------------------------------------------------------------------------
     std::thread rpc_handling{[&]() {    // todo: add try...catch to trap exceptions and set exiting_=true to cause other thread exiting

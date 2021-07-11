@@ -112,4 +112,22 @@ constexpr std::underlying_type_t<Enum> to_underlying( Enum e ) noexcept {
     return static_cast<std::underlying_type_t<Enum>>(e);
 }
 
+// range extension (from range-v3 ideas)
+//#include <ranges>
+//namespace std::ranges::views
+//{
+//    struct Slice
+//    {
+//        template<random_access_iterator Iter>
+//        constexpr auto operator()(Iter begin, Iter end) const {
+//            return subrange(begin, end);
+//        }
+//    };
+//
+//    inline constexpr Slice slice{};
+//}; // namespace views
+
+template<typename T>
+class ShowType;
+
 #endif  // SILKWORM_TYPES_HPP
