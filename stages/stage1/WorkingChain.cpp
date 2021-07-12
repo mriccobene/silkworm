@@ -821,8 +821,64 @@ func (hd *HeaderDownload) connect(segment *ChainSegment, start, end int) error {
 	return nil
 }
 */
-void WorkingChain::connect(Segment::Slice) { // throw segment_cut_and_paste_error
-    // todo: implement!
+void WorkingChain::connect(Segment::Slice segment_slice) { // throw segment_cut_and_paste_error
+    using std::to_string;
+
+    // todo: modularize this
+    auto link_header = *segment_slice.rbegin(); // lowest header
+    auto attachment_link = get_link(link_header->parent_hash);
+    if (!attachment_link)
+        throw segment_cut_and_paste_error("segment cut&paste error, connect attachment link not found for " +
+                                          to_hex(link_header->parent_hash));
+    if (attachment_link.value()->preverified && attachment_link.value()->next.size() > 0)
+        throw segment_cut_and_paste_error("segment cut&paste error, cannot connect to preverified link " +
+                                          to_string(attachment_link.value()->blockHeight) + " with children");
+
+    // todo: modularize this, his block is the same in extend_down
+    auto anchor_header = *segment_slice.begin(); // highest header
+    auto a = anchors_.find(anchor_header->hash());
+    bool attaching = a != anchors_.end();
+    if (!attaching)
+        throw segment_cut_and_paste_error("segment cut&paste error, connect attachment anchors not found for " +
+                                          to_hex(anchor_header->hash()));
+
+    // todo: this block is the same in extend_down
+    auto anchor = a->second;
+    auto anchor_preverified = false;
+    for (auto& link: anchor->links) {  // todo: use find_if
+        if (link->preverified) {
+            anchor_preverified = true;
+            break;
+        }
+    }
+
+    anchors_.erase(anchor->parentHash);
+
+    // todo: modularize this block, look at extend_up method
+    // Iterate over headers backwards (from parents towards children)
+    std::shared_ptr<Link> prev_link = attachment_link.value();
+    for(auto h = segment_slice.rbegin(); h != segment_slice.rend(); h++) {
+        auto header = *h;
+        bool persisted = false;
+        auto link = add_header_as_link(*header, persisted);
+        prev_link->next.push_back(link); // add link as next of the preceding
+        prev_link = link;
+        if (preverifiedHashes_.contains(link->hash))
+            mark_as_preverified(link);
+    }
+
+    // todo: this block is also in "extend_down" method
+    prev_link->next = std::move(anchor->links);
+    anchor->links.clear();
+    if (anchor_preverified)
+        mark_as_preverified(prev_link); // Mark the entire segment as preverified
+
+    // todo: this block is also in "extend_up" method
+    if (attachment_link.value()->persisted) {
+        auto link = links_.find(link_header->hash());
+        if (link != links_.end()) // todo: Erigon code assume true always, check!
+            insertList_.push_back(link->second);
+    }
 }
 
 /*
@@ -934,6 +990,7 @@ auto WorkingChain::extend_down(Segment::Slice segment_slice) -> RequestMoreHeade
             mark_as_preverified(link);
     }
 
+    // todo: this block is also in "connect" method
     prev_link->next = std::move(anchor->links);
     anchor->links.clear();
     if (anchor_preverified)
@@ -975,6 +1032,7 @@ func (hd *HeaderDownload) extendUp(segment *ChainSegment, start, end int) error 
 void WorkingChain::extend_up(Segment::Slice segment_slice) {  // throw segment_cut_and_paste_error
     using std::to_string;
 
+    // todo: modularize this looking at "connect" method
     auto link_header = *segment_slice.rbegin(); // lowest header
     auto attachment_link = get_link(link_header->parent_hash);
     if (!attachment_link)
@@ -984,7 +1042,7 @@ void WorkingChain::extend_up(Segment::Slice segment_slice) {  // throw segment_c
         throw segment_cut_and_paste_error("segment cut&paste error, cannot extend up from preverified link " +
                                           to_string(attachment_link.value()->blockHeight) + " with children");
 
-    // todo: modularize this block
+    // todo: modularize this block, look at connect method
     // Iterate over headers backwards (from parents towards children)
     std::shared_ptr<Link> prev_link = attachment_link.value();
     for(auto h = segment_slice.rbegin(); h != segment_slice.rend(); h++) {
@@ -1049,7 +1107,7 @@ func (hd *HeaderDownload) newAnchor(segment *ChainSegment, start, end int, peerI
 auto WorkingChain::new_anchor(Segment::Slice segment_slice, PeerId peerId) -> RequestMoreHeaders {  // throw segment_cut_and_paste_error
     using std::to_string;
 
-    auto anchor_header = *segment_slice.rbegin(); // lowest header
+    auto anchor_header = *segment_slice.rbegin(); // lowest header / todo: correct??? usually it is the linkHeader
 
     // todo: modularize this block in "add_anchor_if_not_present"
     // Add to anchors list if not
