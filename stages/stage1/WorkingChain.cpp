@@ -824,7 +824,7 @@ func (hd *HeaderDownload) connect(segment *ChainSegment, start, end int) error {
 void WorkingChain::connect(Segment::Slice segment_slice) { // throw segment_cut_and_paste_error
     using std::to_string;
 
-    // todo: modularize this
+    // the 3 following blocks are extend_up
     auto link_header = *segment_slice.rbegin(); // lowest header
     auto attachment_link = get_link(link_header->parent_hash);
     if (!attachment_link)
@@ -833,6 +833,24 @@ void WorkingChain::connect(Segment::Slice segment_slice) { // throw segment_cut_
     if (attachment_link.value()->preverified && attachment_link.value()->next.size() > 0)
         throw segment_cut_and_paste_error("segment cut&paste error, cannot connect to preverified link " +
                                           to_string(attachment_link.value()->blockHeight) + " with children");
+
+    // Iterate over headers backwards (from parents towards children)
+    std::shared_ptr<Link> prev_link = attachment_link.value();
+    for(auto h = segment_slice.rbegin(); h != segment_slice.rend(); h++) {
+        auto header = *h;
+        bool persisted = false;
+        auto link = add_header_as_link(*header, persisted);
+        prev_link->next.push_back(link); // add link as next of the preceding
+        prev_link = link;
+        if (preverifiedHashes_.contains(link->hash))
+            mark_as_preverified(link);
+    }
+
+    if (attachment_link.value()->persisted) {
+        auto link = links_.find(link_header->hash());
+        if (link != links_.end()) // todo: Erigon code assume true always, check!
+            insertList_.push_back(link->second);
+    }
 
     // todo: modularize this, his block is the same in extend_down
     auto anchor_header = *segment_slice.begin(); // highest header
@@ -854,31 +872,13 @@ void WorkingChain::connect(Segment::Slice segment_slice) { // throw segment_cut_
 
     anchors_.erase(anchor->parentHash);
 
-    // todo: modularize this block, look at extend_up method
-    // Iterate over headers backwards (from parents towards children)
-    std::shared_ptr<Link> prev_link = attachment_link.value();
-    for(auto h = segment_slice.rbegin(); h != segment_slice.rend(); h++) {
-        auto header = *h;
-        bool persisted = false;
-        auto link = add_header_as_link(*header, persisted);
-        prev_link->next.push_back(link); // add link as next of the preceding
-        prev_link = link;
-        if (preverifiedHashes_.contains(link->hash))
-            mark_as_preverified(link);
-    }
-
     // todo: this block is also in "extend_down" method
     prev_link->next = std::move(anchor->links);
     anchor->links.clear();
     if (anchor_preverified)
         mark_as_preverified(prev_link); // Mark the entire segment as preverified
 
-    // todo: this block is also in "extend_up" method
-    if (attachment_link.value()->persisted) {
-        auto link = links_.find(link_header->hash());
-        if (link != links_.end()) // todo: Erigon code assume true always, check!
-            insertList_.push_back(link->second);
-    }
+
 }
 
 /*
@@ -958,6 +958,8 @@ auto WorkingChain::extend_down(Segment::Slice segment_slice) -> RequestMoreHeade
         }
     }
 
+    anchors_.erase(anchor->parentHash);
+
     // todo: modularize this block in "add_anchor_if_not_present"
     auto new_anchor_header = *segment_slice.rbegin(); // lowest header
     std::shared_ptr<Anchor> new_anchor;
@@ -971,7 +973,7 @@ auto WorkingChain::extend_down(Segment::Slice segment_slice) -> RequestMoreHeade
         }
     }
 
-    anchors_.erase(anchor->parentHash);
+
 
     // todo: modularize this block
     // Iterate over headers backwards (from parents towards children)
@@ -1032,7 +1034,7 @@ func (hd *HeaderDownload) extendUp(segment *ChainSegment, start, end int) error 
 void WorkingChain::extend_up(Segment::Slice segment_slice) {  // throw segment_cut_and_paste_error
     using std::to_string;
 
-    // todo: modularize this looking at "connect" method
+    // Find previous link to extend up with the segment
     auto link_header = *segment_slice.rbegin(); // lowest header
     auto attachment_link = get_link(link_header->parent_hash);
     if (!attachment_link)
@@ -1042,7 +1044,6 @@ void WorkingChain::extend_up(Segment::Slice segment_slice) {  // throw segment_c
         throw segment_cut_and_paste_error("segment cut&paste error, cannot extend up from preverified link " +
                                           to_string(attachment_link.value()->blockHeight) + " with children");
 
-    // todo: modularize this block, look at connect method
     // Iterate over headers backwards (from parents towards children)
     std::shared_ptr<Link> prev_link = attachment_link.value();
     for(auto h = segment_slice.rbegin(); h != segment_slice.rend(); h++) {
@@ -1060,7 +1061,6 @@ void WorkingChain::extend_up(Segment::Slice segment_slice) {  // throw segment_c
         if (link != links_.end()) // todo: Erigon code assume true always, check!
             insertList_.push_back(link->second);
     }
-
 }
 
 /*

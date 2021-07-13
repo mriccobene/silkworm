@@ -332,10 +332,10 @@ TEST_CASE("BlockHeadersPacket (eth/66) decoding/encoding") {
 input:  ...
 decoded:
 */
-
+/*
 TEST_CASE("BlockBodiesPacket (eth/66) decoding/encoding") {
     // todo: implement!
     REQUIRE(false);
 }
-
+*/
 }
