@@ -19,6 +19,18 @@
 #include <algorithm>
 
 namespace silkworm {
+    // Useful definitions
+    // ----------------------------------------------------------------------------
+
+    class WorkingChain_ForTest: public WorkingChain {
+    public: // publication of internal members to test methods functioning
+        using WorkingChain::WorkingChain;
+        using WorkingChain::anchorQueue_;
+        using WorkingChain::anchors_;
+        using WorkingChain::linkQueue_;
+        using WorkingChain::links_;
+    };
+
 /*
     long int difficulty(const BlockHeader& header, const BlockHeader& parent) {
         return static_cast<long int>(parent.difficulty) +
@@ -26,7 +38,7 @@ namespace silkworm {
                + int(2^((header.number / 100000) - 2));
     }
 */
-    // TESTs related to WorkingChain
+    // TESTs related to HeaderList::split_into_segments
     // ----------------------------------------------------------------------------
 
     TEST_CASE("HeaderList::split_into_segments - No headers") {
@@ -116,6 +128,7 @@ namespace silkworm {
         REQUIRE(penalty == Penalty::WrongChildBlockHeightPenalty);
     }
 
+/* WrongChildDifficultyPenalty check is not implemented in Erigon/Silkworm code, so this test is commented
     TEST_CASE("HeaderList::split_into_segments - Two connected headers with wrong difficulty") {
         std::vector<BlockHeader> headers;
 
@@ -137,6 +150,7 @@ namespace silkworm {
         REQUIRE(segments.size() == 0);
         REQUIRE(penalty == Penalty::WrongChildDifficultyPenalty);
     }
+*/
 
     /* input:
      *         h1 <----- h2
@@ -336,22 +350,95 @@ namespace silkworm {
         REQUIRE(segments[0][0] != segments[1][0]);
     }
 
-    /*
-    TEST_CASE("WorkingChain ...") {
+    // TESTs related to WorkingChain::accept_headers (segment manipulation: connect, extend_down, extend_up, new_anchor
+    // ----------------------------------------------------------------------------
+
+    /* chain status:
+     *         void
+     *
+     * input:
+     *         h1 <----- h2
+     *
+     * output:
+     *         1 anchor, ?
+     */
+
+    TEST_CASE("WorkingChain::process_segment - test1 - new_anchor + extend_up") {
         using namespace std;
 
         BlockNum highestInDb = 0;
         BlockNum topSeenHeight = 1'000'000;
 
-        using RequestMoreHeaders = bool;
-        WorkingChain chain(highestInDb, topSeenHeight);
+        WorkingChain_ForTest chain(highestInDb, topSeenHeight);
 
-        std::vector<BlockHeader> headers;
-        headers.push_back(header1);
-        headers.push_back(header1);
-        PeerId peerId = 1;
-        auto [penalty, requestMoreHeaders] = chain.accept_headers(headers, peerId);
-        // test...
+        PeerId peerId = "1";
+
+        BlockHeader header1;
+        header1.number = 1;
+        header1.difficulty = 10;
+
+        BlockHeader header2;
+        header2.number = 2;
+        header2.difficulty = 1010;
+        header2.parent_hash = header1.hash();
+
+        INFO( "new_anchor" ) {
+            auto[penalty, requestMoreHeaders] = chain.accept_headers({header1, header2}, peerId);
+
+            REQUIRE(penalty == Penalty::NoPenalty);
+            REQUIRE(requestMoreHeaders == true);
+            REQUIRE(chain.anchorQueue_.size() == 1);
+            REQUIRE(chain.anchors_.size() == 1);
+            REQUIRE(chain.linkQueue_.size() == 2);
+            REQUIRE(chain.links_.size() == 2);
+
+            auto anchor = chain.anchors_[header1.parent_hash];
+            REQUIRE(anchor != nullptr);
+            REQUIRE(anchor->parentHash == header1.parent_hash);
+            REQUIRE(anchor->blockHeight == header1.number);
+            REQUIRE(anchor->peerId == peerId);
+
+            REQUIRE(anchor->links.size() == 1);
+            REQUIRE(anchor->links[0]->hash == header1.hash());
+            REQUIRE(anchor->links[0]->next.size() == 1);
+            REQUIRE(anchor->links[0]->next[0]->hash == header2.hash());
+        }
+
+        BlockHeader header3;
+        header3.number = 3;
+        header3.difficulty = 1010;
+        header3.parent_hash = header2.hash();
+
+        BlockHeader header4;
+        header4.number = 4;
+        header4.difficulty = 1010;
+        header4.parent_hash = header3.hash();
+
+        INFO( "extend_up" ) {
+            auto[penalty, requestMoreHeaders] = chain.accept_headers({header3, header4}, peerId);
+
+            REQUIRE(penalty == Penalty::NoPenalty);
+            REQUIRE(requestMoreHeaders == false);
+            REQUIRE(chain.anchorQueue_.size() == 1);
+            REQUIRE(chain.anchors_.size() == 1);
+            REQUIRE(chain.linkQueue_.size() == 4);
+            REQUIRE(chain.links_.size() == 4);
+
+            auto anchor = chain.anchors_[header1.parent_hash];
+            REQUIRE(anchor != nullptr);
+            REQUIRE(anchor->parentHash == header1.parent_hash);
+            REQUIRE(anchor->blockHeight == header1.number);
+            REQUIRE(anchor->links.size() == 1);
+
+            REQUIRE(anchor->links[0]->hash == header1.hash());
+            REQUIRE(anchor->links[0]->next.size() == 1);
+            REQUIRE(anchor->links[0]->next[0]->hash == header2.hash());
+            REQUIRE(anchor->links[0]->next[0]->next.size() == 1);
+            REQUIRE(anchor->links[0]->next[0]->next[0]->hash == header3.hash());
+            REQUIRE(anchor->links[0]->next[0]->next[0]->next.size() == 1);
+            REQUIRE(anchor->links[0]->next[0]->next[0]->next[0]->hash == header4.hash());
+        }
+
     }
-    */
+
 }

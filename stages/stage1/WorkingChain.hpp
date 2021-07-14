@@ -96,7 +96,7 @@ class WorkingChain {  // tentative name - todo: improve!
     void save_external_announce(Hash hash);
     bool has_link(Hash hash);
 
-  private:
+  protected:
     static constexpr BlockNum max_len = 192;
     static constexpr BlockNum stride = 8 * max_len;
     static constexpr size_t anchor_limit = 512;
